@@ -1,0 +1,374 @@
+{
+  "tables": [
+    {
+      "schema": "dbo",
+      "name": "customers",
+      "object_type": "USER_TABLE",
+      "columns": [
+        {
+          "name": "customer_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "customer_name",
+          "data_type": "varchar",
+          "is_nullable": false,
+          "max_length": 100,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "email",
+          "data_type": "varchar",
+          "is_nullable": true,
+          "max_length": 255,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "data_type": "datetime",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "updated_at",
+          "data_type": "datetime",
+          "is_nullable": true,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        }
+      ],
+      "row_count": 50000,
+      "dependencies": []
+    },
+    {
+      "schema": "dbo",
+      "name": "orders",
+      "object_type": "USER_TABLE",
+      "columns": [
+        {
+          "name": "order_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "customer_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "order_date",
+          "data_type": "datetime",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "total_amount",
+          "data_type": "decimal",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": 10,
+          "scale": 2,
+          "default_value": null
+        },
+        {
+          "name": "status",
+          "data_type": "varchar",
+          "is_nullable": false,
+          "max_length": 50,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        }
+      ],
+      "row_count": 150000,
+      "dependencies": [
+        "dbo.customers"
+      ]
+    },
+    {
+      "schema": "dbo",
+      "name": "order_items",
+      "object_type": "USER_TABLE",
+      "columns": [
+        {
+          "name": "order_item_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "order_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "product_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "quantity",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "unit_price",
+          "data_type": "decimal",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": 10,
+          "scale": 2,
+          "default_value": null
+        }
+      ],
+      "row_count": 400000,
+      "dependencies": [
+        "dbo.orders",
+        "dbo.products"
+      ]
+    },
+    {
+      "schema": "dbo",
+      "name": "products",
+      "object_type": "USER_TABLE",
+      "columns": [
+        {
+          "name": "product_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "product_name",
+          "data_type": "varchar",
+          "is_nullable": false,
+          "max_length": 200,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "category",
+          "data_type": "varchar",
+          "is_nullable": true,
+          "max_length": 100,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "price",
+          "data_type": "decimal",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": 10,
+          "scale": 2,
+          "default_value": null
+        }
+      ],
+      "row_count": 5000,
+      "dependencies": []
+    },
+    {
+      "schema": "dbo",
+      "name": "vw_customer_orders",
+      "object_type": "VIEW",
+      "columns": [
+        {
+          "name": "customer_id",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "customer_name",
+          "data_type": "varchar",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "order_count",
+          "data_type": "int",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": null,
+          "scale": null,
+          "default_value": null
+        },
+        {
+          "name": "total_spent",
+          "data_type": "decimal",
+          "is_nullable": false,
+          "max_length": null,
+          "precision": 10,
+          "scale": 2,
+          "default_value": null
+        }
+      ],
+      "row_count": null,
+      "dependencies": [
+        "dbo.customers",
+        "dbo.orders"
+      ]
+    }
+  ],
+  "stored_procedures": [
+    {
+      "schema": "dbo",
+      "name": "usp_GetCustomerOrders",
+      "definition": "\nCREATE PROCEDURE dbo.usp_GetCustomerOrders\n    @customer_id INT\nAS\nBEGIN\n    SELECT \n        o.order_id,\n        o.order_date,\n        o.total_amount,\n        o.status\n    FROM dbo.orders o\n    WHERE o.customer_id = @customer_id\n    ORDER BY o.order_date DESC\nEND\n                ",
+      "parameters": [
+        {
+          "name": "@customer_id",
+          "data_type": "int",
+          "is_output": false
+        }
+      ],
+      "dependencies": [
+        "dbo.orders"
+      ]
+    },
+    {
+      "schema": "dbo",
+      "name": "usp_CalculateRevenue",
+      "definition": "\nCREATE PROCEDURE dbo.usp_CalculateRevenue\n    @start_date DATETIME,\n    @end_date DATETIME\nAS\nBEGIN\n    SELECT \n        p.category,\n        SUM(oi.quantity * oi.unit_price) as total_revenue\n    FROM dbo.order_items oi\n    INNER JOIN dbo.orders o ON oi.order_id = o.order_id\n    INNER JOIN dbo.products p ON oi.product_id = p.product_id\n    WHERE o.order_date BETWEEN @start_date AND @end_date\n    GROUP BY p.category\nEND\n                ",
+      "parameters": [
+        {
+          "name": "@start_date",
+          "data_type": "datetime",
+          "is_output": false
+        },
+        {
+          "name": "@end_date",
+          "data_type": "datetime",
+          "is_output": false
+        }
+      ],
+      "dependencies": [
+        "dbo.order_items",
+        "dbo.orders",
+        "dbo.products"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "source_schema": "dbo",
+      "source_name": "orders",
+      "target_schema": "dbo",
+      "target_name": "customers",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "order_items",
+      "target_schema": "dbo",
+      "target_name": "orders",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "order_items",
+      "target_schema": "dbo",
+      "target_name": "products",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "vw_customer_orders",
+      "target_schema": "dbo",
+      "target_name": "customers",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "vw_customer_orders",
+      "target_schema": "dbo",
+      "target_name": "orders",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "usp_GetCustomerOrders",
+      "target_schema": "dbo",
+      "target_name": "orders",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "usp_CalculateRevenue",
+      "target_schema": "dbo",
+      "target_name": "order_items",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "usp_CalculateRevenue",
+      "target_schema": "dbo",
+      "target_name": "orders",
+      "dependency_type": "SELECT"
+    },
+    {
+      "source_schema": "dbo",
+      "source_name": "usp_CalculateRevenue",
+      "target_schema": "dbo",
+      "target_name": "products",
+      "dependency_type": "SELECT"
+    }
+  ],
+  "summary": {
+    "total_tables": 4,
+    "total_views": 1,
+    "total_procedures": 2,
+    "total_dependencies": 9
+  }
+}

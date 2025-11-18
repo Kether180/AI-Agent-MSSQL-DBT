@@ -1,0 +1,25 @@
+# MSSQL to dbt Migration Tool - Requirements
+
+# Core dependencies
+anthropic>=0.39.0
+python-dotenv>=1.0.0
+
+# Database connectivity
+pyodbc>=5.0.0
+sqlalchemy>=2.0.0
+
+# dbt
+dbt-core>=1.7.0
+dbt-duckdb>=1.7.0  # Using DuckDB for POC simplicity
+
+# Utilities
+pyyaml>=6.0
+jinja2>=3.1.0
+rich>=13.0.0
+click>=8.1.0
+networkx>=3.0  # For dependency graph analysis
+
+# Development
+pytest>=7.4.0
+black>=23.0.0
+mypy>=1.5.0

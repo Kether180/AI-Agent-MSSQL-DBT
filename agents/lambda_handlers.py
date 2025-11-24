@@ -14,7 +14,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from .state import MigrationState
-from .nodes import (
+from .native_nodes import (
     assessment_node, planner_node, executor_node,
     tester_node, rebuilder_node, evaluator_node
 )

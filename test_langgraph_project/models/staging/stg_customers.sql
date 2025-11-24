@@ -1,21 +1,8 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
+-- dbt model: stg_customers
+-- Source: dbo.customers
 
-with source as (
-    select * from {{ source('mssql', 'customers') }}
-),
+{{ config(materialized='view') }}
 
-renamed as (
-    select
-        customer_id,
-    customer_name,
-    email,
-    created_at,
-    updated_at
-    from source
-)
-
-select * from renamed
+SELECT
+    *
+FROM {{ source('mssql', 'customers') }}

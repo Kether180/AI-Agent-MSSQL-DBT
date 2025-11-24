@@ -3,338 +3,123 @@
   "models": [
     {
       "name": "stg_customers",
+      "source_object": "dbo.customers",
       "status": "completed",
       "attempts": 1,
       "errors": [],
-      "validation_score": 0.95,
-      "source_object": "dbo.customers",
-      "file_path": null
+      "validation_score": 0.8,
+      "file_path": "test_langgraph_project\\models\\staging\\stg_customers.sql",
+      "model_type": "staging",
+      "dependencies": []
     },
     {
       "name": "stg_orders",
+      "source_object": "dbo.orders",
       "status": "completed",
       "attempts": 1,
       "errors": [],
-      "validation_score": 0.95,
-      "source_object": "dbo.orders",
-      "file_path": null
+      "validation_score": 0.8,
+      "file_path": "test_langgraph_project\\models\\staging\\stg_orders.sql",
+      "model_type": "staging",
+      "dependencies": []
     },
     {
       "name": "stg_order_items",
+      "source_object": "dbo.order_items",
       "status": "completed",
       "attempts": 1,
       "errors": [],
-      "validation_score": 0.95,
-      "source_object": "dbo.order_items",
-      "file_path": null
+      "validation_score": 0.8,
+      "file_path": "test_langgraph_project\\models\\staging\\stg_order_items.sql",
+      "model_type": "staging",
+      "dependencies": []
     },
     {
       "name": "stg_products",
+      "source_object": "dbo.products",
       "status": "completed",
       "attempts": 1,
       "errors": [],
-      "validation_score": 0.95,
-      "source_object": "dbo.products",
-      "file_path": null
+      "validation_score": 0.8,
+      "file_path": "test_langgraph_project\\models\\staging\\stg_products.sql",
+      "model_type": "staging",
+      "dependencies": []
     },
     {
       "name": "stg_vw_customer_orders",
-      "status": "completed",
-      "attempts": 1,
-      "errors": [],
-      "validation_score": 0.95,
       "source_object": "dbo.vw_customer_orders",
-      "file_path": null
-    },
-    {
-      "name": "rpt_getcustomerorders",
       "status": "completed",
       "attempts": 1,
       "errors": [],
-      "validation_score": 0.95,
-      "source_object": "dbo.usp_GetCustomerOrders",
-      "file_path": null
-    },
-    {
-      "name": "rpt_calculaterevenue",
-      "status": "completed",
-      "attempts": 1,
-      "errors": [],
-      "validation_score": 0.95,
-      "source_object": "dbo.usp_CalculateRevenue",
-      "file_path": null
+      "validation_score": 0.8,
+      "file_path": "test_langgraph_project\\models\\staging\\stg_vw_customer_orders.sql",
+      "model_type": "staging",
+      "dependencies": []
     }
   ],
-  "current_model_index": 7,
-  "completed_count": 7,
+  "current_model_index": 5,
+  "completed_count": 5,
   "failed_count": 0,
   "assessment_complete": true,
   "plan_complete": true,
   "assessment": {
-    "total_objects": 7,
-    "tables": [
-      {
-        "full_name": "dbo.customers",
-        "schema": "dbo",
-        "name": "customers",
-        "type": "USER_TABLE",
-        "complexity": 1,
-        "priority": 1,
-        "row_count": 50000,
-        "column_count": 5,
-        "dependency_count": 0,
-        "recommendation": "migrate_as_source_and_staging",
-        "migrate": true
-      },
-      {
-        "full_name": "dbo.orders",
-        "schema": "dbo",
-        "name": "orders",
-        "type": "USER_TABLE",
-        "complexity": 2,
-        "priority": 2,
-        "row_count": 150000,
-        "column_count": 5,
-        "dependency_count": 1,
-        "recommendation": "migrate_as_source_and_staging",
-        "migrate": true
-      },
-      {
-        "full_name": "dbo.order_items",
-        "schema": "dbo",
-        "name": "order_items",
-        "type": "USER_TABLE",
-        "complexity": 2,
-        "priority": 2,
-        "row_count": 400000,
-        "column_count": 5,
-        "dependency_count": 2,
-        "recommendation": "migrate_as_source_and_staging",
-        "migrate": true
-      },
-      {
-        "full_name": "dbo.products",
-        "schema": "dbo",
-        "name": "products",
-        "type": "USER_TABLE",
-        "complexity": 0,
-        "priority": 1,
-        "row_count": 5000,
-        "column_count": 4,
-        "dependency_count": 0,
-        "recommendation": "migrate_as_source_and_staging",
-        "migrate": true
-      },
-      {
-        "full_name": "dbo.vw_customer_orders",
-        "schema": "dbo",
-        "name": "vw_customer_orders",
-        "type": "VIEW",
-        "complexity": 0,
-        "priority": 2,
-        "row_count": 0,
-        "column_count": 4,
-        "dependency_count": 2,
-        "recommendation": "migrate_as_view",
-        "migrate": true
-      }
+    "total_objects": 5,
+    "tables_count": 5,
+    "views_count": 0,
+    "procedures_count": 2,
+    "complexity": "medium",
+    "dependencies": [],
+    "challenges": [
+      "No LLM available for detailed analysis"
     ],
-    "procedures": [
-      {
-        "full_name": "dbo.usp_GetCustomerOrders",
-        "schema": "dbo",
-        "name": "usp_GetCustomerOrders",
-        "type": "PROCEDURE",
-        "complexity": 0,
-        "priority": 4,
-        "line_count": 15,
-        "dependency_count": 1,
-        "recommendation": "convert_to_dbt_model",
-        "migrate": true
-      },
-      {
-        "full_name": "dbo.usp_CalculateRevenue",
-        "schema": "dbo",
-        "name": "usp_CalculateRevenue",
-        "type": "PROCEDURE",
-        "complexity": 0,
-        "priority": 4,
-        "line_count": 16,
-        "dependency_count": 3,
-        "recommendation": "convert_to_dbt_model",
-        "migrate": true
-      }
-    ],
-    "strategy": {
-      "approach": "Iterative migration starting with base tables",
-      "phases": [
-        {
-          "phase": 1,
-          "name": "Base Tables",
-          "description": "Migrate tables with no dependencies first"
-        },
-        {
-          "phase": 2,
-          "name": "Dependent Tables",
-          "description": "Migrate tables with dependencies"
-        },
-        {
-          "phase": 3,
-          "name": "Views",
-          "description": "Convert views to dbt models"
-        },
-        {
-          "phase": 4,
-          "name": "Stored Procedures",
-          "description": "Convert simple procedures to dbt models"
-        }
-      ],
-      "estimated_duration": "2-4 weeks",
-      "risk_factors": [
-        "Complex stored procedures may require manual conversion",
-        "Data validation needed for all models",
-        "Performance optimization may be required"
-      ],
-      "recommendations": [
-        "Start with tables that have no dependencies",
-        "Validate each model before proceeding",
-        "Focus on business-critical tables first"
-      ]
-    },
-    "recommendations": [
-      "\ud83d\udccb 2 stored procedures recommended for conversion. Review business logic carefully.",
-      "\u2705 Start with base tables (no dependencies) for quickest wins",
-      "\ud83e\uddea Implement data quality tests for all migrated models"
-    ]
+    "migration_strategy": "Sequential migration of all objects",
+    "estimated_models": 5
   },
   "planning": {
+    "migration_order": "dependency-first",
     "models": [
       {
         "name": "stg_customers",
         "source_object": "dbo.customers",
-        "source_type": "TABLE",
-        "target_type": "model",
-        "materialization": "table",
+        "model_type": "staging",
         "dependencies": [],
-        "transformations": [
-          "Create source definition",
-          "Create staging model with basic transformations",
-          "Add freshness tests",
-          "Add data quality tests"
-        ],
-        "priority": 1
+        "priority": 1,
+        "description": "Staging model for customers"
       },
       {
         "name": "stg_orders",
         "source_object": "dbo.orders",
-        "source_type": "TABLE",
-        "target_type": "model",
-        "materialization": "table",
+        "model_type": "staging",
         "dependencies": [],
-        "transformations": [
-          "Create source definition",
-          "Create staging model with basic transformations",
-          "Add freshness tests",
-          "Add data quality tests"
-        ],
-        "priority": 2
+        "priority": 1,
+        "description": "Staging model for orders"
       },
       {
         "name": "stg_order_items",
         "source_object": "dbo.order_items",
-        "source_type": "TABLE",
-        "target_type": "model",
-        "materialization": "table",
+        "model_type": "staging",
         "dependencies": [],
-        "transformations": [
-          "Create source definition",
-          "Create staging model with basic transformations",
-          "Add freshness tests",
-          "Add data quality tests"
-        ],
-        "priority": 2
+        "priority": 1,
+        "description": "Staging model for order_items"
       },
       {
         "name": "stg_products",
         "source_object": "dbo.products",
-        "source_type": "TABLE",
-        "target_type": "model",
-        "materialization": "table",
+        "model_type": "staging",
         "dependencies": [],
-        "transformations": [
-          "Create source definition",
-          "Create staging model with basic transformations",
-          "Add freshness tests",
-          "Add data quality tests"
-        ],
-        "priority": 1
+        "priority": 1,
+        "description": "Staging model for products"
       },
       {
         "name": "stg_vw_customer_orders",
         "source_object": "dbo.vw_customer_orders",
-        "source_type": "VIEW",
-        "target_type": "model",
-        "materialization": "view",
-        "dependencies": [
-          "dbo.customers",
-          "dbo.orders"
-        ],
-        "transformations": [
-          "Convert view logic to dbt model"
-        ],
-        "priority": 3
-      },
-      {
-        "name": "rpt_getcustomerorders",
-        "source_object": "dbo.usp_GetCustomerOrders",
-        "source_type": "PROCEDURE",
-        "target_type": "model",
-        "materialization": "table",
-        "dependencies": [
-          "dbo.orders"
-        ],
-        "transformations": [
-          "Extract SELECT logic from procedure",
-          "Convert to dbt SQL",
-          "Add parameters as variables/macros"
-        ],
-        "priority": 4
-      },
-      {
-        "name": "rpt_calculaterevenue",
-        "source_object": "dbo.usp_CalculateRevenue",
-        "source_type": "PROCEDURE",
-        "target_type": "model",
-        "materialization": "table",
-        "dependencies": [
-          "dbo.order_items",
-          "dbo.orders",
-          "dbo.products"
-        ],
-        "transformations": [
-          "Extract SELECT logic from procedure",
-          "Convert to dbt SQL",
-          "Add parameters as variables/macros"
-        ],
-        "priority": 4
+        "model_type": "staging",
+        "dependencies": [],
+        "priority": 1,
+        "description": "Staging model for vw_customer_orders"
       }
     ],
-    "execution_order": [
-      "stg_customers",
-      "stg_products",
-      "stg_order_items",
-      "stg_orders",
-      "stg_vw_customer_orders",
-      "rpt_calculaterevenue",
-      "rpt_getcustomerorders"
-    ],
-    "naming_conventions": {
-      "sources": "src_<system>_<table>",
-      "staging": "stg_<table>",
-      "intermediate": "int_<description>",
-      "marts": "fct_<entity> or dim_<entity>"
-    },
-    "transformations": {}
+    "total_models": 5
   },
   "metadata": {
     "tables": [
@@ -712,7 +497,7 @@
   },
   "project_path": "./test_langgraph_project",
   "errors": [],
-  "started_at": "2025-11-24T14:05:56.553171",
+  "started_at": "2025-11-24T17:28:20.831271",
   "completed_at": null,
   "max_retries": 3,
   "current_retry": 0

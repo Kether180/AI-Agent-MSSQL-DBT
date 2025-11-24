@@ -1,21 +1,8 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
+-- dbt model: stg_order_items
+-- Source: dbo.order_items
 
-with source as (
-    select * from {{ source('mssql', 'order_items') }}
-),
+{{ config(materialized='view') }}
 
-renamed as (
-    select
-        order_item_id,
-    order_id,
-    product_id,
-    quantity,
-    unit_price
-    from source
-)
-
-select * from renamed
+SELECT
+    *
+FROM {{ source('mssql', 'order_items') }}

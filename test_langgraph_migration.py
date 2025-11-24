@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from agents.state import create_initial_state
 from agents.graph import create_migration_graph
-from agents.nodes import (
+from agents.native_nodes import (
     assessment_node, planner_node, executor_node,
     tester_node, rebuilder_node, evaluator_node
 )

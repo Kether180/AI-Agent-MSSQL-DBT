@@ -1,20 +1,8 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
+-- dbt model: stg_products
+-- Source: dbo.products
 
-with source as (
-    select * from {{ source('mssql', 'products') }}
-),
+{{ config(materialized='view') }}
 
-renamed as (
-    select
-        product_id,
-    product_name,
-    category,
-    price
-    from source
-)
-
-select * from renamed
+SELECT
+    *
+FROM {{ source('mssql', 'products') }}

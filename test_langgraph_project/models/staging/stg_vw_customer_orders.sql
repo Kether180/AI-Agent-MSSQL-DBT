@@ -1,10 +1,8 @@
-{{
-    config(
-        materialized='view'
-    )
-}}
+-- dbt model: stg_vw_customer_orders
+-- Source: dbo.vw_customer_orders
 
--- This model replicates the logic from MSSQL view: dbo.vw_customer_orders
--- TODO: Replace with actual view logic
+{{ config(materialized='view') }}
 
-select * from {{ source('mssql', 'vw_customer_orders') }}
+SELECT
+    *
+FROM {{ source('mssql', 'vw_customer_orders') }}

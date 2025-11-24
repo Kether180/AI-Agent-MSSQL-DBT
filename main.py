@@ -13,10 +13,10 @@ from pathlib import Path
 from typing import Optional
 
 from metadata_extractor import MSSQLMetadataExtractor
-from agent_system import (
+from legacy_agent_system import (
     AgentContext, MigrationOrchestrator, AgentRole
 )
-from agents import (
+from legacy_agents import (
     AssessmentAgent, PlannerAgent, ExecutorAgent,
     TesterAgent, RebuilderAgent, EvaluatorAgent
 )

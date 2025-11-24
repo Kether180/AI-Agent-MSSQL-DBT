@@ -105,7 +105,10 @@ def main():
     print("-" * 60)
 
     try:
-        config = {"configurable": {"thread_id": "test-migration-1"}}
+        config = {
+            "configurable": {"thread_id": "test-migration-1"},
+            "recursion_limit": 100  # Increase from default 25
+        }
 
         for i, output in enumerate(graph.stream(initial_state, config=config)):
             node_name = list(output.keys())[0]

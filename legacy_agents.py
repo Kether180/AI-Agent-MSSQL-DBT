@@ -14,7 +14,7 @@ import os
 import json
 from typing import Dict, List
 import networkx as nx
-from agent_system import (
+from legacy_agent_system import (
     BaseAgent, AgentRole, AgentContext, AgentResult
 )
 

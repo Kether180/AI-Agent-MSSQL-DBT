@@ -18,15 +18,17 @@ from .guardrails import (
     check_rate_limit, with_fallback, validate_json_output
 )
 
-# Import existing agent logic
+# Import existing agent logic from root directory
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from pathlib import Path
+root_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(root_dir))
 
-from agents import (
+from legacy_agents import (
     AssessmentAgent, PlannerAgent, ExecutorAgent,
     TesterAgent, RebuilderAgent, EvaluatorAgent
 )
-from agent_system import AgentContext
+from legacy_agent_system import AgentContext
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +85,7 @@ def assessment_node(state: MigrationState) -> MigrationState:
         context = AgentContext(
             metadata=state.get("metadata", {}),
             migration_state=dict(state),
-            project_path=state.get("project_path", ""),
+            dbt_project_path=state.get("project_path", ""),
             api_key=os.environ.get("ANTHROPIC_API_KEY")
         )
 
@@ -134,7 +136,7 @@ def planner_node(state: MigrationState) -> MigrationState:
         context = AgentContext(
             metadata=state.get("metadata", {}),
             migration_state=dict(state),
-            project_path=state.get("project_path", ""),
+            dbt_project_path=state.get("project_path", ""),
             api_key=os.environ.get("ANTHROPIC_API_KEY")
         )
 
@@ -207,7 +209,7 @@ def executor_node(state: MigrationState) -> MigrationState:
         context = AgentContext(
             metadata=state.get("metadata", {}),
             migration_state=dict(state),
-            project_path=state.get("project_path", ""),
+            dbt_project_path=state.get("project_path", ""),
             api_key=os.environ.get("ANTHROPIC_API_KEY")
         )
 
@@ -275,7 +277,7 @@ def tester_node(state: MigrationState) -> MigrationState:
         context = AgentContext(
             metadata=state.get("metadata", {}),
             migration_state=dict(state),
-            project_path=state.get("project_path", ""),
+            dbt_project_path=state.get("project_path", ""),
             api_key=os.environ.get("ANTHROPIC_API_KEY")
         )
 
@@ -341,7 +343,7 @@ def rebuilder_node(state: MigrationState) -> MigrationState:
         context = AgentContext(
             metadata=state.get("metadata", {}),
             migration_state=dict(state),
-            project_path=state.get("project_path", ""),
+            dbt_project_path=state.get("project_path", ""),
             api_key=os.environ.get("ANTHROPIC_API_KEY")
         )
 
@@ -395,7 +397,7 @@ def evaluator_node(state: MigrationState) -> MigrationState:
         context = AgentContext(
             metadata=state.get("metadata", {}),
             migration_state=dict(state),
-            project_path=state.get("project_path", ""),
+            dbt_project_path=state.get("project_path", ""),
             api_key=os.environ.get("ANTHROPIC_API_KEY")
         )
 

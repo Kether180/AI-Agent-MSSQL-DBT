@@ -22,9 +22,25 @@ from .nodes import (
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Initialize AWS clients
-s3_client = boto3.client('s3')
-secrets_client = boto3.client('secretsmanager')
+# Lazy-loaded AWS clients (only initialize when needed)
+_s3_client = None
+_secrets_client = None
+
+
+def get_s3_client():
+    """Get or create S3 client"""
+    global _s3_client
+    if _s3_client is None:
+        _s3_client = boto3.client('s3')
+    return _s3_client
+
+
+def get_secrets_client():
+    """Get or create Secrets Manager client"""
+    global _secrets_client
+    if _secrets_client is None:
+        _secrets_client = boto3.client('secretsmanager')
+    return _secrets_client
 
 
 def get_secret(secret_name: str) -> str:
@@ -41,7 +57,7 @@ def get_secret(secret_name: str) -> str:
         ClientError: If secret cannot be retrieved
     """
     try:
-        response = secrets_client.get_secret_value(SecretId=secret_name)
+        response = get_secrets_client().get_secret_value(SecretId=secret_name)
         return response['SecretString']
     except ClientError as e:
         logger.error(f"Error retrieving secret {secret_name}: {e}")
@@ -63,7 +79,7 @@ def load_state_from_s3(bucket: str, key: str) -> MigrationState:
         ClientError: If state cannot be loaded
     """
     try:
-        response = s3_client.get_object(Bucket=bucket, Key=key)
+        response = get_s3_client().get_object(Bucket=bucket, Key=key)
         state_json = response['Body'].read().decode('utf-8')
         return json.loads(state_json)
     except ClientError as e:
@@ -85,7 +101,7 @@ def save_state_to_s3(bucket: str, key: str, state: MigrationState) -> None:
     """
     try:
         state_json = json.dumps(state, indent=2, default=str)
-        s3_client.put_object(
+        get_s3_client().put_object(
             Bucket=bucket,
             Key=key,
             Body=state_json.encode('utf-8'),

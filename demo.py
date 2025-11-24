@@ -15,8 +15,8 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from metadata_extractor import MSSQLMetadataExtractor
-from agent_system import AgentContext, MigrationOrchestrator
-from agents import (
+from legacy_agent_system import AgentContext, MigrationOrchestrator
+from legacy_agents import (
     AssessmentAgent, PlannerAgent, ExecutorAgent,
     TesterAgent, RebuilderAgent, EvaluatorAgent
 )

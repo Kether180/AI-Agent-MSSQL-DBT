@@ -28,6 +28,7 @@ This tool automates the complex process of migrating MSSQL databases to dbt usin
 - [Documentation](#-documentation)
 - [Example Output](#-example-output)
 - [Understanding the Agents](#-understanding-the-agents)
+- [LangGraph Architecture](#-langgraph-architecture)
 - [Configuration](#-configuration)
 - [Testing](#-testing)
 - [Key Features](#-key-features)
@@ -431,6 +432,64 @@ Plus comprehensive schema documentation in `_schema.yml` with all model definiti
 - Validates row counts, schema, and data
 - Calculates validation scores
 - Identifies discrepancies
+
+## 🆕 LangGraph Architecture
+
+The project now includes a **LangGraph-based implementation** alongside the original custom orchestrator.
+
+### What is LangGraph?
+
+LangGraph is a framework for building stateful, multi-agent workflows with:
+- **Typed State Management**: Pydantic models and TypedDict
+- **Visual Workflow Graphs**: Clear conditional routing
+- **Built-in Checkpointing**: Resumable migrations
+- **AWS Integration**: Lambda + Step Functions deployment
+
+### LangGraph Features
+
+✅ **Type-Safe State** - Pydantic validation for all state transitions
+✅ **Security Guardrails** - LLM input/output validation, SQL sanitization
+✅ **Rate Limiting** - Per-agent request limits
+✅ **Cloud Deployment** - AWS CDK infrastructure as code
+✅ **Lambda Functions** - Serverless execution for each agent
+✅ **Step Functions** - AWS-managed orchestration
+
+### Quick Start with LangGraph
+
+```python
+from agents import create_initial_state, create_migration_graph
+from agents.nodes import (
+    assessment_node, planner_node, executor_node,
+    tester_node, rebuilder_node, evaluator_node
+)
+
+# Create state
+state = create_initial_state(metadata, "./my_project")
+
+# Create graph
+graph = create_migration_graph(
+    assessment_node, planner_node, executor_node,
+    tester_node, rebuilder_node, evaluator_node
+)
+
+# Run migration
+for output in graph.stream(state):
+    print(f"Completed: {list(output.keys())[0]}")
+```
+
+### Test LangGraph Workflow
+
+```bash
+python test_langgraph_migration.py
+```
+
+### Documentation
+
+For complete LangGraph architecture details, see:
+- **[LANGGRAPH_ARCHITECTURE.md](LANGGRAPH_ARCHITECTURE.md)** - Comprehensive architecture guide
+- State management, workflow graphs, AWS deployment
+- Security guardrails, Lambda handlers
+- Comparison with original implementation
 
 ## 🔧 Configuration
 

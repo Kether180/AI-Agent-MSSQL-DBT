@@ -1,0 +1,181 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Migrated from MSSQL TABLE: dbo.customers
+    columns:
+      - name: customer_id
+        description: "int"
+      - name: customer_name
+        description: "varchar"
+      - name: email
+        description: "varchar"
+      - name: created_at
+        description: "datetime"
+      - name: updated_at
+        description: "datetime"
+
+version: 2
+
+models:
+  - name: stg_orders
+    description: >
+      Migrated from MSSQL TABLE: dbo.orders
+    columns:
+      - name: order_id
+        description: "int"
+      - name: customer_id
+        description: "int"
+      - name: order_date
+        description: "datetime"
+      - name: total_amount
+        description: "decimal"
+      - name: status
+        description: "varchar"
+
+version: 2
+
+models:
+  - name: stg_order_items
+    description: >
+      Migrated from MSSQL TABLE: dbo.order_items
+    columns:
+      - name: order_item_id
+        description: "int"
+      - name: order_id
+        description: "int"
+      - name: product_id
+        description: "int"
+      - name: quantity
+        description: "int"
+      - name: unit_price
+        description: "decimal"
+
+version: 2
+
+models:
+  - name: stg_products
+    description: >
+      Migrated from MSSQL TABLE: dbo.products
+    columns:
+      - name: product_id
+        description: "int"
+      - name: product_name
+        description: "varchar"
+      - name: category
+        description: "varchar"
+      - name: price
+        description: "decimal"
+
+version: 2
+
+models:
+  - name: stg_vw_customer_orders
+    description: >
+      Migrated from MSSQL VIEW: dbo.vw_customer_orders
+
+version: 2
+
+models:
+  - name: rpt_getcustomerorders
+    description: >
+      Migrated from MSSQL PROCEDURE: dbo.usp_GetCustomerOrders
+
+version: 2
+
+models:
+  - name: rpt_calculaterevenue
+    description: >
+      Migrated from MSSQL PROCEDURE: dbo.usp_CalculateRevenue
+
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Migrated from MSSQL TABLE: dbo.customers
+    columns:
+      - name: customer_id
+        description: "int"
+      - name: customer_name
+        description: "varchar"
+      - name: email
+        description: "varchar"
+      - name: created_at
+        description: "datetime"
+      - name: updated_at
+        description: "datetime"
+
+version: 2
+
+models:
+  - name: stg_orders
+    description: >
+      Migrated from MSSQL TABLE: dbo.orders
+    columns:
+      - name: order_id
+        description: "int"
+      - name: customer_id
+        description: "int"
+      - name: order_date
+        description: "datetime"
+      - name: total_amount
+        description: "decimal"
+      - name: status
+        description: "varchar"
+
+version: 2
+
+models:
+  - name: stg_order_items
+    description: >
+      Migrated from MSSQL TABLE: dbo.order_items
+    columns:
+      - name: order_item_id
+        description: "int"
+      - name: order_id
+        description: "int"
+      - name: product_id
+        description: "int"
+      - name: quantity
+        description: "int"
+      - name: unit_price
+        description: "decimal"
+
+version: 2
+
+models:
+  - name: stg_products
+    description: >
+      Migrated from MSSQL TABLE: dbo.products
+    columns:
+      - name: product_id
+        description: "int"
+      - name: product_name
+        description: "varchar"
+      - name: category
+        description: "varchar"
+      - name: price
+        description: "decimal"
+
+version: 2
+
+models:
+  - name: stg_vw_customer_orders
+    description: >
+      Migrated from MSSQL VIEW: dbo.vw_customer_orders
+
+version: 2
+
+models:
+  - name: rpt_getcustomerorders
+    description: >
+      Migrated from MSSQL PROCEDURE: dbo.usp_GetCustomerOrders
+
+version: 2
+
+models:
+  - name: rpt_calculaterevenue
+    description: >
+      Migrated from MSSQL PROCEDURE: dbo.usp_CalculateRevenue

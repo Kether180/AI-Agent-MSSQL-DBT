@@ -155,32 +155,62 @@ The tool uses 6 specialized agents:
 - **`test_migration.py`** - Simple test script for running migrations without encoding issues
 - **`requirements.txt`** - Python dependencies
 
-## Documentation
+## 📁 Project Structure
 
-Comprehensive documentation is available to help you understand and use the migration tool:
+```
+AI-Agent-MSSQL-DBT/
+├── agents/                    # Migration logic & LangGraph workflows
+│   ├── nodes.py              # Agent implementations (Assessment, Planner, Executor, etc.)
+│   ├── workflow.py           # LangGraph workflow orchestration
+│   └── adapter.py            # Database adapters
+├── app/                       # Core SaaS platform
+│   ├── models.py             # SQLAlchemy database models
+│   ├── database.py           # Database connection and session management
+│   └── services.py           # Business logic services (Auth, Usage, Migration)
+├── flask_app/                 # Admin dashboard (Flask)
+│   ├── __init__.py           # Flask app factory
+│   ├── routes/               # Route blueprints
+│   └── templates/            # Jinja2 HTML templates
+├── fastapi_app/               # Public REST API (FastAPI)
+│   ├── main.py               # FastAPI application
+│   ├── routes/               # API endpoint routes
+│   └── dependencies.py       # Authentication dependencies
+├── tests/                     # Test suites
+│   ├── test_saas_platform.py         # SaaS platform tests
+│   └── test_langgraph_migration.py   # LangGraph agent tests
+├── cdk/                       # AWS CDK infrastructure code
+├── ARCHITECTURE.md            # Architecture patterns and design principles
+├── MODULARITY.md              # Software concepts and coding style guide
+├── TEST_RESULTS.md            # Latest test results
+└── README.md                  # This file
+```
 
-- **[HOW_TO_RUN.md](HOW_TO_RUN.md)** - Complete step-by-step usage guide (450+ lines)
-  - Quick start instructions
-  - Command reference
-  - Troubleshooting guide
-  - Real-world examples
+## 📚 Documentation
 
-- **[CHANGES.md](CHANGES.md)** - Detailed list of all fixes and improvements (320+ lines)
-  - All 6 bugs that were fixed
-  - Before/after code comparisons
-  - Impact analysis
-  - Data flow diagrams
+Comprehensive documentation is available to help you understand and use the platform:
 
-- **[SUMMARY.md](SUMMARY.md)** - Quick reference guide (300+ lines)
-  - Project overview and architecture
-  - Success metrics and results
-  - Key commands and verification checklist
-  - What you learned section
+### Architecture & Design
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architecture documentation
+  - Modular monolith → microservices ready design
+  - Layered architecture pattern
+  - 8 design patterns explained
+  - SOLID principles in practice
+  - Technology choices rationale
+  - Scalability path
 
-- **[UNICODE_BUG_EXPLANATION.md](UNICODE_BUG_EXPLANATION.md)** - Deep dive on Windows encoding issue (250+ lines)
-  - Root cause analysis
-  - Why it didn't break functionality
-  - Multiple fix options explained
+- **[MODULARITY.md](MODULARITY.md)** - Software concepts and coding style
+  - Modularity principles (independence, separation of concerns)
+  - Design patterns with examples (DI, Repository, Service Layer, etc.)
+  - SOLID principles in practice
+  - Code quality principles (DRY, KISS, YAGNI)
+  - Coding style guidelines
+  - Testing philosophy
+
+### Testing & Results
+- **[TEST_RESULTS.md](TEST_RESULTS.md)** - Latest test results
+  - 6/6 tests passing (100% success rate)
+  - Platform component validation
+  - Test credentials and next steps
 
 ## 🚀 Quick Start
 
@@ -198,17 +228,26 @@ pip install -r requirements.txt
 
 The POC includes mock data for testing without a live MSSQL database.
 
-**Recommended: Use the simple test script**
+**Recommended: Test the SaaS platform**
+
+```bash
+# Run comprehensive platform tests
+python tests/test_saas_platform.py
+```
+
+This will test all platform components (database, services, Flask, FastAPI, auth).
+
+**Or test the migration workflow:**
 
 ```bash
 # Run the demo migration (generates 7 dbt models)
-python test_migration.py
+python tests/test_langgraph_migration.py
 ```
 
 This will:
 1. Extract mock MSSQL metadata
 2. Initialize a dbt project at `./test_dbt_project/`
-3. Run the full migration
+3. Run the full migration workflow
 4. Generate 7 SQL models successfully
 
 **Alternative: Use the CLI**
@@ -553,16 +592,34 @@ Without API key:
 
 ## 🧪 Testing
 
-### Run the Demo
+### SaaS Platform Tests
 
 ```bash
-python test_migration.py
+# Run comprehensive SaaS platform tests
+python tests/test_saas_platform.py
+```
+
+This will test:
+1. Database connectivity
+2. Services layer (Auth, Usage, Migration)
+3. Flask application initialization
+4. FastAPI application initialization
+5. User authentication
+6. API key validation
+
+**Expected**: 6/6 tests passing (100% success rate)
+
+### Migration Workflow Tests
+
+```bash
+# Run LangGraph migration tests
+python tests/test_langgraph_migration.py
 ```
 
 This will:
 1. Extract mock metadata
 2. Initialize a dbt project at `./test_dbt_project/`
-3. Run complete migration
+3. Run complete migration workflow
 4. Display results (7/7 models successfully generated)
 
 **Expected Output:**

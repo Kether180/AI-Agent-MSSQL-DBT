@@ -22,7 +22,6 @@ sqlalchemy>=2.0.0
 
 # dbt
 dbt-core>=1.7.0
-dbt-duckdb>=1.7.0  # Using DuckDB for POC simplicity
 
 # Utilities
 pyyaml>=6.0

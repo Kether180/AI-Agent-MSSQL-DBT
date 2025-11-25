@@ -44,8 +44,6 @@ test_metadata.json
 my_project/
 demo_dbt_project/
 test_fix_project/
-*.duckdb
-*.duckdb.wal
 
 # Sensitive Data
 .env

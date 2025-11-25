@@ -663,10 +663,8 @@ After running migration, verify:
 1. **No Real dbt Testing**: Doesn't run actual `dbt compile` or `dbt run` commands
 2. **Simplified Validation**: Basic file existence check, not actual data comparison
 3. **Single-threaded**: Sequential model processing (not parallelized)
-4. **No UI**: Command-line only (architecture supports future UI)
-5. **Basic SQL Conversion**: Stored procedures marked as TODO for manual review
-6. **DuckDB for Testing**: Uses DuckDB instead of actual data warehouse
-7. **No Incremental Logic**: Focuses on structure, not incremental patterns
+4. **Basic SQL Conversion**: Stored procedures marked as TODO for manual review
+5. **No Incremental Logic**: Focuses on structure, not incremental patterns
 
 ## 🔮 Production Enhancements
 
@@ -772,7 +770,6 @@ This tool is ideal for:
 - **dbt-core 1.7.0+** - Data transformation framework
 - **NetworkX** - Dependency graph analysis
 - **pyodbc** - MSSQL connectivity
-- **DuckDB** - Testing and POC validation
 
 ### SaaS Platform (New)
 - **Flask 3.0** - Admin dashboard web framework

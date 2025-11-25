@@ -1,13 +1,6 @@
 # Web Application Dependencies
 
-# Flask (Admin Dashboard)
-Flask==3.0.0
-Flask-SQLAlchemy==3.1.1
-Flask-Login==0.6.3
-Flask-WTF==1.2.1
-WTForms==3.1.1
-
-# FastAPI (Public API)
+# FastAPI (Backend API)
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6

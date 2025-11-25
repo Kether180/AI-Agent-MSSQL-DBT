@@ -163,54 +163,52 @@ AI-Agent-MSSQL-DBT/
 │   ├── nodes.py              # Agent implementations (Assessment, Planner, Executor, etc.)
 │   ├── workflow.py           # LangGraph workflow orchestration
 │   └── adapter.py            # Database adapters
-├── app/                       # Core SaaS platform
+├── app/                       # Core backend services
 │   ├── models.py             # SQLAlchemy database models
 │   ├── database.py           # Database connection and session management
 │   └── services.py           # Business logic services (Auth, Usage, Migration)
-├── flask_app/                 # Admin dashboard (Flask)
-│   ├── __init__.py           # Flask app factory
-│   ├── routes/               # Route blueprints
-│   └── templates/            # Jinja2 HTML templates
-├── fastapi_app/               # Public REST API (FastAPI)
+├── fastapi_app/               # Backend REST API (FastAPI)
 │   ├── main.py               # FastAPI application
 │   ├── routes/               # API endpoint routes
 │   └── dependencies.py       # Authentication dependencies
+├── frontend/                  # Vue.js 3 frontend (NEW!)
+│   ├── src/
+│   │   ├── api/              # API client (Axios)
+│   │   ├── components/       # Vue components
+│   │   ├── views/            # Page components
+│   │   ├── stores/           # Pinia state management
+│   │   ├── router/           # Vue Router
+│   │   └── types/            # TypeScript interfaces
+│   ├── package.json
+│   └── vite.config.ts
 ├── tests/                     # Test suites
-│   ├── test_saas_platform.py         # SaaS platform tests
-│   └── test_langgraph_migration.py   # LangGraph agent tests
+│   ├── test_saas_platform.py         # Backend tests
+│   └── test_langgraph_migration.py   # LangGraph tests
+├── docs/                      # Documentation
+│   ├── architecture/         # Architecture docs
+│   ├── guides/               # User guides
+│   ├── pdfs/                 # PDF documentation
+│   └── README.md             # Docs index
 ├── cdk/                       # AWS CDK infrastructure code
-├── ARCHITECTURE.md            # Architecture patterns and design principles
-├── MODULARITY.md              # Software concepts and coding style guide
-├── TEST_RESULTS.md            # Latest test results
 └── README.md                  # This file
 ```
 
 ## 📚 Documentation
 
-Comprehensive documentation is available to help you understand and use the platform:
+All documentation is organized in the **[docs/](docs/)** folder.
 
-### Architecture & Design
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architecture documentation
-  - Modular monolith → microservices ready design
-  - Layered architecture pattern
-  - 8 design patterns explained
-  - SOLID principles in practice
-  - Technology choices rationale
-  - Scalability path
+**Quick Links:**
+- **[Documentation Index](docs/README.md)** - Complete documentation guide
+- **[Architecture](docs/architecture/)** - System design and patterns
+- **[User Guides](docs/guides/)** - Getting started and tutorials
+- **[PDFs](docs/pdfs/)** - Printable documentation
 
-- **[MODULARITY.md](MODULARITY.md)** - Software concepts and coding style
-  - Modularity principles (independence, separation of concerns)
-  - Design patterns with examples (DI, Repository, Service Layer, etc.)
-  - SOLID principles in practice
-  - Code quality principles (DRY, KISS, YAGNI)
-  - Coding style guidelines
-  - Testing philosophy
-
-### Testing & Results
-- **[TEST_RESULTS.md](TEST_RESULTS.md)** - Latest test results
-  - 6/6 tests passing (100% success rate)
-  - Platform component validation
-  - Test credentials and next steps
+### Key Documents
+- **[Vue Frontend Guide](docs/guides/VUE_FRONTEND_GUIDE.md)** - Complete Vue.js 3 setup
+- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System architecture
+- **[Quick Start](docs/guides/QUICKSTART.md)** - Get started quickly
+- **[ETL vs dbt Benefits](docs/pdfs/ETL_VS_DBT_BENEFITS.pdf)** - Why migrate (PDF)
+- **[SOLID Principles](docs/pdfs/SOLID_PRINCIPLES_STUDY_GUIDE.pdf)** - Code quality guide (PDF)
 
 ## 🚀 Quick Start
 
@@ -235,7 +233,7 @@ The POC includes mock data for testing without a live MSSQL database.
 python tests/test_saas_platform.py
 ```
 
-This will test all platform components (database, services, Flask, FastAPI, auth).
+This will test all platform components (database, services, FastAPI backend, auth).
 
 **Or test the migration workflow:**
 
@@ -602,12 +600,11 @@ python tests/test_saas_platform.py
 This will test:
 1. Database connectivity
 2. Services layer (Auth, Usage, Migration)
-3. Flask application initialization
-4. FastAPI application initialization
-5. User authentication
-6. API key validation
+3. FastAPI application initialization
+4. User authentication
+5. API key validation
 
-**Expected**: 6/6 tests passing (100% success rate)
+**Expected**: 5/5 tests passing (100% success rate)
 
 ### Migration Workflow Tests
 
@@ -692,11 +689,12 @@ This project now includes a complete **SaaS platform** for offering MSSQL to dbt
 
 ### Features
 
-- **Flask Admin Dashboard** (Port 5000)
+- **Vue.js 3 Frontend** (Port 5173)
+  - Modern, interactive user interface
+  - TypeScript for type safety
   - User authentication and management
   - Migration monitoring and tracking
-  - API key generation
-  - Usage statistics
+  - Real-time updates with Pinia state management
 
 - **FastAPI REST API** (Port 8000)
   - RESTful migration endpoints
@@ -713,19 +711,22 @@ This project now includes a complete **SaaS platform** for offering MSSQL to dbt
 ### Quick Start
 
 ```bash
-# Start Admin Dashboard
-python run_flask.py
-# Access: http://localhost:5000
+# Start Vue.js Frontend
+cd frontend
+npm install
+npm run dev
+# Access: http://localhost:5173
 
-# Start Public API
+# Start FastAPI Backend (in another terminal)
 python run_fastapi.py
-# Access: http://localhost:8000/docs
+# Access API docs: http://localhost:8000/docs
 ```
 
 For complete SaaS setup instructions, see:
-- **[QUICKSTART.md](QUICKSTART.md)** - Running the SaaS platform
-- **[SAAS_DEVELOPMENT_GUIDE.md](SAAS_DEVELOPMENT_GUIDE.md)** - Architecture and deployment
-- **[COMPLETED.md](COMPLETED.md)** - Implementation summary
+- **[QUICKSTART.md](docs/guides/QUICKSTART.md)** - Running the SaaS platform
+- **[Vue Frontend Guide](docs/guides/VUE_FRONTEND_GUIDE.md)** - Complete Vue.js 3 setup
+- **[SAAS_DEVELOPMENT_GUIDE.md](docs/guides/SAAS_DEVELOPMENT_GUIDE.md)** - Architecture and deployment
+- **[COMPLETED.md](docs/guides/COMPLETED.md)** - Implementation summary
 
 ## 📚 Additional Resources
 
@@ -734,7 +735,8 @@ For complete SaaS setup instructions, see:
 - [MSSQL Documentation](https://docs.microsoft.com/en-us/sql/)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Flask Documentation](https://flask.palletsprojects.com/)
+- [Vue.js 3 Documentation](https://vuejs.org/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
 
 ## 🤝 Use Cases
 
@@ -772,7 +774,9 @@ This tool is ideal for:
 - **pyodbc** - MSSQL connectivity
 
 ### SaaS Platform (New)
-- **Flask 3.0** - Admin dashboard web framework
+- **Vue.js 3** - Modern frontend framework with Composition API
+- **TypeScript** - Type-safe JavaScript development
+- **Pinia** - State management for Vue 3
 - **FastAPI 0.104** - REST API framework
 - **SQLAlchemy 2.0** - Database ORM
 - **SQLite** - Local database (development)

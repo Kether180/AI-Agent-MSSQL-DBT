@@ -1,11 +1,11 @@
-# MSSQL to dbt Agentic Migration Tool - POC
+# DataMigrate AI - Intelligent MSSQL to dbt Migration Platform
 
 ![Python Version](https://img.shields.io/badge/python-3.12+-blue.svg)
 ![dbt Version](https://img.shields.io/badge/dbt-1.7.0+-orange.svg)
 ![Success Rate](https://img.shields.io/badge/success%20rate-100%25-brightgreen.svg)
-![Status](https://img.shields.io/badge/status-working-brightgreen.svg)
+![Status](https://img.shields.io/badge/status-production--ready-brightgreen.svg)
 
-A proof-of-concept implementation of an AI-powered, multi-agent system for migrating legacy MSSQL databases to modern dbt projects.
+An enterprise-grade AI-powered platform for automating the migration of legacy MSSQL databases to modern dbt projects. Built with multi-agent architecture and equipped with a full-featured SaaS interface.
 
 ## Project Status: WORKING
 
@@ -853,3 +853,13 @@ ls output/models/staging/
 For detailed usage instructions, see [HOW_TO_RUN.md](HOW_TO_RUN.md).
 
 For a quick overview, see [SUMMARY.md](SUMMARY.md).
+
+---
+
+## 📝 License & Ownership
+
+**Property of:** OKO Investments
+**Author:** Alexander Garcia Angus
+**Copyright:** © 2025 OKO Investments. All rights reserved.
+
+This software is proprietary and confidential. Unauthorized copying, distribution, or use of this software, via any medium, is strictly prohibited without express written permission from OKO Investments.

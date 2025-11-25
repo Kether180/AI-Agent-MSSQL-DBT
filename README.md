@@ -15,7 +15,7 @@ This project has been fully debugged and tested. All agents work together to suc
 
 ## 🎯 Overview
 
-This tool automates the complex process of migrating MSSQL databases to dbt using a specialized multi-agent architecture powered by Claude. Each agent handles a specific part of the migration workflow, enabling iterative, validated, and intelligent migration with minimal human intervention.
+This tool automates the complex process of migrating MSSQL databases to dbt using a specialized multi-agent architecture powered by AI. Each agent handles a specific part of the migration workflow, enabling iterative, validated, and intelligent migration with minimal human intervention.
 
 ## Table of Contents
 
@@ -342,7 +342,7 @@ Plus comprehensive schema documentation in `_schema.yml` with all model definiti
 - Calculates complexity scores for each object
 - Prioritizes migration order
 - Recommends what to migrate vs. leave as legacy
-- Uses Claude to generate migration strategy
+- Uses AI to generate migration strategy
 
 **Output**:
 ```json
@@ -397,7 +397,7 @@ Plus comprehensive schema documentation in `_schema.yml` with all model definiti
 - Creates model SQL with proper dbt syntax
 - Generates schema.yml with documentation
 - Adds configuration for materialization
-- Can use Claude to translate complex SQL
+- Can use AI to translate complex SQL
 
 **Output**: Creates files in dbt project:
 - `models/staging/stg_customers.sql`
@@ -419,7 +419,7 @@ Plus comprehensive schema documentation in `_schema.yml` with all model definiti
 
 **Key Features**:
 - Analyzes error messages
-- Uses Claude to propose fixes
+- Uses AI to propose fixes
 - Regenerates models with corrections
 - Iterates until success or max attempts
 
@@ -506,13 +506,13 @@ For real databases:
 - Full metadata extraction
 - Real SQL conversion
 
-### Claude API Integration
+### AI API Integration
 
 When `ANTHROPIC_API_KEY` is set:
-- Assessment Agent uses Claude for strategy generation
-- Planner Agent uses Claude for complex mapping
-- Executor Agent uses Claude for SQL translation
-- Rebuilder Agent uses Claude for error fixing
+- Assessment Agent uses AI for strategy generation
+- Planner Agent uses AI for complex mapping
+- Executor Agent uses AI for SQL translation
+- Rebuilder Agent uses AI for error fixing
 
 Without API key:
 - Falls back to rule-based logic
@@ -631,11 +631,55 @@ To make this production-ready, consider:
 - [ ] Rollback capability
 - [ ] Multi-tenancy support
 
+## 🌐 SaaS Platform
+
+This project now includes a complete **SaaS platform** for offering MSSQL to dbt migration as a service!
+
+### Features
+
+- **Flask Admin Dashboard** (Port 5000)
+  - User authentication and management
+  - Migration monitoring and tracking
+  - API key generation
+  - Usage statistics
+
+- **FastAPI REST API** (Port 8000)
+  - RESTful migration endpoints
+  - API key authentication
+  - Rate limiting
+  - Auto-generated OpenAPI documentation
+
+- **Database Layer**
+  - User and API key management
+  - Migration history tracking
+  - Usage logging for billing
+  - Model file storage
+
+### Quick Start
+
+```bash
+# Start Admin Dashboard
+python run_flask.py
+# Access: http://localhost:5000
+
+# Start Public API
+python run_fastapi.py
+# Access: http://localhost:8000/docs
+```
+
+For complete SaaS setup instructions, see:
+- **[QUICKSTART.md](QUICKSTART.md)** - Running the SaaS platform
+- **[SAAS_DEVELOPMENT_GUIDE.md](SAAS_DEVELOPMENT_GUIDE.md)** - Architecture and deployment
+- **[COMPLETED.md](COMPLETED.md)** - Implementation summary
+
 ## 📚 Additional Resources
 
 - [dbt Documentation](https://docs.getdbt.com/)
-- [Anthropic Claude API](https://docs.anthropic.com/)
+- [Anthropic API](https://docs.anthropic.com/)
 - [MSSQL Documentation](https://docs.microsoft.com/en-us/sql/)
+- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Flask Documentation](https://flask.palletsprojects.com/)
 
 ## 🤝 Use Cases
 
@@ -663,12 +707,33 @@ This tool is ideal for:
 
 ## Tech Stack
 
+### Core Migration Engine
 - **Python 3.12+** - Core programming language
-- **Anthropic Claude API** - Optional AI-powered strategy generation
+- **LangGraph** - Multi-agent workflow orchestration
+- **LangChain** - AI agent framework
+- **Anthropic API** - AI-powered strategy generation (optional)
 - **dbt-core 1.7.0+** - Data transformation framework
 - **NetworkX** - Dependency graph analysis
 - **pyodbc** - MSSQL connectivity
 - **DuckDB** - Testing and POC validation
+
+### SaaS Platform (New)
+- **Flask 3.0** - Admin dashboard web framework
+- **FastAPI 0.104** - REST API framework
+- **SQLAlchemy 2.0** - Database ORM
+- **SQLite** - Local database (development)
+- **PostgreSQL** - Production database (recommended)
+- **Pydantic 2.0** - Data validation
+- **Tailwind CSS** - UI styling
+- **Uvicorn** - ASGI server
+
+### Infrastructure & Deployment
+- **AWS CDK** - Infrastructure as code
+- **AWS Lambda** - Serverless agent execution
+- **AWS Step Functions** - Workflow orchestration
+- **AWS RDS** - Managed PostgreSQL (production)
+- **Docker** - Containerization (planned)
+- **Kubernetes** - Container orchestration (planned)
 
 ## 📝 License
 

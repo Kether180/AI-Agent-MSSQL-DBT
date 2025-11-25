@@ -1,0 +1,26 @@
+# DataMigrate AI - Terraform Variables Example
+# Copy this file to terraform.tfvars and customize for your environment
+
+# Environment Configuration
+environment = "dev"  # Options: dev, staging, prod
+aws_region  = "us-east-1"
+
+# Network Configuration
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+# Database Configuration
+db_instance_class = "db.t3.micro"  # Free tier: db.t3.micro, Prod: db.t3.medium or larger
+db_name           = "datamigrate_ai"
+db_username       = "admin"
+db_password       = "CHANGE_ME_TO_STRONG_PASSWORD"  # Use AWS Secrets Manager in production!
+
+# ECS Configuration
+fastapi_image     = "<your-aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/datamigrate-ai/fastapi:latest"
+fastapi_cpu       = 512   # 256, 512, 1024, 2048, 4096 (0.25, 0.5, 1, 2, 4 vCPU)
+fastapi_memory    = 1024  # Must be compatible with CPU (see AWS docs)
+ecs_desired_count = 2     # Number of tasks to run
+
+# Frontend Configuration (Optional)
+domain_name     = ""  # e.g., "app.datamigrate.ai" (leave empty for default CloudFront domain)
+certificate_arn = ""  # ACM certificate ARN for HTTPS (required if using custom domain)

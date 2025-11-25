@@ -65,3 +65,12 @@ logs/
 *.bak
 *.swp
 new.py
+
+# Terraform
+terraform/.terraform/
+terraform/**/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+terraform/.terraform.lock.hcl
+terraform/**/*.tfplan

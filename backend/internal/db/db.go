@@ -255,3 +255,93 @@ func runAlterTableMigrations() error {
 
 	return nil
 }
+
+// RunRAGMigrations sets up pgvector extension and RAG tables
+func RunRAGMigrations() error {
+	// Enable pgvector extension (requires superuser or extension already installed)
+	_, err := DB.Exec("CREATE EXTENSION IF NOT EXISTS vector")
+	if err != nil {
+		log.Printf("Warning: Could not create vector extension (may need superuser): %v", err)
+		log.Println("RAG features will be disabled until pgvector is installed")
+		return nil // Don't fail - RAG is optional
+	}
+
+	ragSchema := `
+	-- Schema pattern embeddings (for learning from migrations)
+	CREATE TABLE IF NOT EXISTS schema_embeddings (
+		id SERIAL PRIMARY KEY,
+		source_type VARCHAR(50) NOT NULL,           -- 'table', 'column', 'relationship', 'procedure'
+		source_name VARCHAR(255) NOT NULL,          -- Original name (e.g., 'dbo.Customers')
+		source_schema JSONB NOT NULL,               -- Full schema definition
+		embedding vector(1536),                     -- OpenAI ada-002 embedding dimension
+		metadata JSONB,                             -- Additional context
+		migration_id INTEGER REFERENCES migrations(id) ON DELETE SET NULL,
+		organization_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	-- SQL transformation patterns (successful transformations)
+	CREATE TABLE IF NOT EXISTS transformation_embeddings (
+		id SERIAL PRIMARY KEY,
+		source_sql TEXT NOT NULL,                   -- Original MSSQL
+		target_sql TEXT NOT NULL,                   -- Generated dbt SQL
+		transformation_type VARCHAR(50) NOT NULL,   -- 'table', 'view', 'procedure', 'function'
+		embedding vector(1536),                     -- Embedding of source_sql
+		quality_score FLOAT DEFAULT 0.0,            -- 0-1 score from validation
+		metadata JSONB,                             -- Transformation context
+		migration_id INTEGER REFERENCES migrations(id) ON DELETE SET NULL,
+		organization_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	-- dbt best practices knowledge base
+	CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+		id SERIAL PRIMARY KEY,
+		category VARCHAR(100) NOT NULL,             -- 'materialization', 'testing', 'naming', 'performance'
+		title VARCHAR(255) NOT NULL,
+		content TEXT NOT NULL,                      -- The actual knowledge/best practice
+		embedding vector(1536),
+		source VARCHAR(255),                        -- 'dbt_docs', 'community', 'internal'
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	-- RAG query cache (for performance)
+	CREATE TABLE IF NOT EXISTS rag_query_cache (
+		id SERIAL PRIMARY KEY,
+		query_hash VARCHAR(64) UNIQUE NOT NULL,     -- SHA-256 of query
+		query_text TEXT NOT NULL,
+		results JSONB NOT NULL,                     -- Cached results
+		hit_count INTEGER DEFAULT 1,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		expires_at TIMESTAMP NOT NULL
+	);
+
+	-- Create vector similarity search indexes (IVFFlat for performance)
+	CREATE INDEX IF NOT EXISTS idx_schema_embeddings_vector
+		ON schema_embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+
+	CREATE INDEX IF NOT EXISTS idx_transformation_embeddings_vector
+		ON transformation_embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+
+	CREATE INDEX IF NOT EXISTS idx_knowledge_embeddings_vector
+		ON knowledge_embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+
+	-- Regular indexes for filtering
+	CREATE INDEX IF NOT EXISTS idx_schema_embeddings_type ON schema_embeddings(source_type);
+	CREATE INDEX IF NOT EXISTS idx_schema_embeddings_org ON schema_embeddings(organization_id);
+	CREATE INDEX IF NOT EXISTS idx_transformation_embeddings_type ON transformation_embeddings(transformation_type);
+	CREATE INDEX IF NOT EXISTS idx_transformation_embeddings_score ON transformation_embeddings(quality_score);
+	CREATE INDEX IF NOT EXISTS idx_knowledge_embeddings_category ON knowledge_embeddings(category);
+	CREATE INDEX IF NOT EXISTS idx_rag_query_cache_hash ON rag_query_cache(query_hash);
+	CREATE INDEX IF NOT EXISTS idx_rag_query_cache_expires ON rag_query_cache(expires_at);
+	`
+
+	_, err = DB.Exec(ragSchema)
+	if err != nil {
+		return fmt.Errorf("failed to create RAG tables: %w", err)
+	}
+
+	log.Println("RAG (pgvector) migrations completed")
+	return nil
+}

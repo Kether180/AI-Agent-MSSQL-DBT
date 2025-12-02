@@ -26,6 +26,9 @@ type Config struct {
 
 	// CORS
 	AllowedOrigins []string
+
+	// AI Service
+	AIServiceURL string
 }
 
 func Load() (*Config, error) {
@@ -55,6 +58,9 @@ func Load() (*Config, error) {
 			"http://localhost:5174",
 			"http://localhost:3000",
 		},
+
+		// AI Service
+		AIServiceURL: getEnv("AI_SERVICE_URL", "http://localhost:8001"),
 	}
 
 	return cfg, nil

@@ -1,0 +1,15 @@
+# Grafana Dashboard Provisioning
+# Auto-loads dashboards from the dashboards folder
+
+apiVersion: 1
+
+providers:
+  - name: 'DataMigrate Dashboards'
+    orgId: 1
+    folder: 'DataMigrate AI'
+    folderUid: 'datamigrate'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

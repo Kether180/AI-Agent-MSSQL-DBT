@@ -2,9 +2,12 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/datamigrate-ai/backend/internal/aiservice"
 	"github.com/datamigrate-ai/backend/internal/db"
 	"github.com/datamigrate-ai/backend/internal/middleware"
 	"github.com/datamigrate-ai/backend/internal/models"
@@ -153,6 +156,62 @@ func (h *MigrationsHandler) Start(c *gin.Context) {
 		return
 	}
 
+	// First, get the migration details including source_database
+	var migration struct {
+		ID             int64          `db:"id"`
+		SourceDatabase string         `db:"source_database"`
+		TargetProject  string         `db:"target_project"`
+		Config         sql.NullString `db:"config"`
+		Status         string         `db:"status"`
+	}
+
+	err = db.DB.Get(&migration, `
+		SELECT id, source_database, target_project, config, status
+		FROM migrations
+		WHERE id = $1 AND user_id = $2
+	`, id, userID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Migration not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch migration"})
+		return
+	}
+
+	if migration.Status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Migration is not in pending status"})
+		return
+	}
+
+	// Get the source database connection details
+	var connection struct {
+		ID       int64  `db:"id"`
+		Name     string `db:"name"`
+		DBType   string `db:"db_type"`
+		Host     string `db:"host"`
+		Port     int    `db:"port"`
+		Database string `db:"database_name"`
+		Username string `db:"username"`
+		Password string `db:"password"`
+	}
+
+	err = db.DB.Get(&connection, `
+		SELECT id, name, db_type, host, port, database_name, username, password
+		FROM database_connections
+		WHERE name = $1 AND user_id = $2
+	`, migration.SourceDatabase, userID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Source database connection not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch database connection"})
+		return
+	}
+
 	// Update status to running
 	result, err := db.DB.Exec(`
 		UPDATE migrations SET status = 'running', progress = 0, updated_at = NOW()
@@ -170,9 +229,52 @@ func (h *MigrationsHandler) Start(c *gin.Context) {
 		return
 	}
 
-	// TODO: Trigger AI service to process the migration
+	// Parse tables from config if available
+	var tables []string
+	if migration.Config.Valid {
+		var config struct {
+			Tables []string `json:"tables"`
+		}
+		if err := json.Unmarshal([]byte(migration.Config.String), &config); err == nil {
+			tables = config.Tables
+		}
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Migration started"})
+	// Trigger AI service to process the migration
+	aiClient := aiservice.GetClient()
+	if aiClient != nil {
+		req := aiservice.MigrationRequest{
+			MigrationID: id,
+			SourceConnection: map[string]interface{}{
+				"type":     connection.DBType,
+				"host":     connection.Host,
+				"port":     connection.Port,
+				"database": connection.Database,
+				"username": connection.Username,
+				"password": connection.Password,
+			},
+			TargetProject: migration.TargetProject,
+			Tables:        tables,
+			IncludeViews:  false,
+		}
+
+		go func() {
+			// Call AI service in background
+			_, err := aiClient.StartMigration(req)
+			if err != nil {
+				log.Printf("Failed to trigger AI service for migration %d: %v", id, err)
+				// Update migration status to failed
+				db.DB.Exec(`
+					UPDATE migrations SET status = 'failed', error = $1, updated_at = NOW()
+					WHERE id = $2
+				`, "Failed to connect to AI service: "+err.Error(), id)
+			}
+		}()
+	} else {
+		log.Printf("AI service client not initialized, migration %d started in manual mode", id)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Migration started", "migration_id": id})
 }
 
 // Stop stops a running migration

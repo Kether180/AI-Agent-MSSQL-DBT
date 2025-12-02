@@ -35,6 +35,7 @@ Complete documentation for DataMigrate AI - MSSQL to dbt Migration Platform.
 - **Recommended Model**: SQLCoder 15B (85% SQL accuracy)
 - **Data Collection**: Schema patterns only (never actual data)
 - **Privacy Options**: Anonymized, Named (with discount), or Opt-out
+- **RAG**: pgvector-powered learning from past migrations
 
 ### Architecture
 - **Backend**: Go (Gin) for API + Python for AI agents

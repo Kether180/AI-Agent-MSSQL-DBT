@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/datamigrate-ai/backend/internal/aiservice"
 	"github.com/datamigrate-ai/backend/internal/api"
 	"github.com/datamigrate-ai/backend/internal/config"
 	"github.com/datamigrate-ai/backend/internal/db"
@@ -25,6 +26,15 @@ func main() {
 	if err := db.RunMigrations(); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
+
+	// Run RAG migrations (pgvector - optional, won't fail if extension not available)
+	if err := db.RunRAGMigrations(); err != nil {
+		log.Printf("Warning: RAG migrations failed: %v", err)
+	}
+
+	// Initialize AI service client
+	aiservice.Init(cfg.AIServiceURL)
+	log.Printf("AI service client initialized: %s", cfg.AIServiceURL)
 
 	// Setup router
 	router := api.SetupRouter(cfg)

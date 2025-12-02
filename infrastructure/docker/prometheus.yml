@@ -1,0 +1,40 @@
+# Prometheus Configuration for DataMigrate AI
+# Collects metrics from Go backend and PostgreSQL
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alerting configuration (optional - can add alertmanager later)
+alerting:
+  alertmanagers: []
+
+# Rule files (optional - can add alert rules later)
+rule_files: []
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Go Backend API metrics
+  # Requires /metrics endpoint in the Go backend
+  - job_name: 'datamigrate-backend'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # PostgreSQL metrics (using postgres_exporter - optional)
+  # Uncomment when postgres_exporter is added
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['datamigrate-postgres-dev:9187']
+
+  # Node metrics (host machine - optional)
+  # Uncomment when node_exporter is added
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['host.docker.internal:9100']

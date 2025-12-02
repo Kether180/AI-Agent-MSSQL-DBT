@@ -837,6 +837,119 @@ For fine-tuning, we recommend **SQLCoder 15B** by Defog:
 4. **Privacy** - Keep all data on-premises with custom model
 
 
+## 🧠 RAG (Retrieval-Augmented Generation)
+
+DataMigrate AI uses **RAG** to learn from past migrations and improve accuracy over time using **pgvector** for vector similarity search.
+
+### What is RAG?
+
+**RAG (Retrieval-Augmented Generation)** combines information retrieval with LLM generation:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Traditional LLM Approach                      │
+│                                                                  │
+│   User Query ──────────────► LLM ──────────────► Response       │
+│                         (only training data)                     │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                      RAG-Enhanced Approach                       │
+│                                                                  │
+│   User Query ─┬─────► Vector Search ─────► Similar Examples     │
+│               │       (pgvector)                │                │
+│               │                                 │                │
+│               └─────────────────────────────────┼────► LLM ────► │
+│                                                 │    (with       │
+│                                                 │    context)    │
+│                 Retrieved Context ──────────────┘                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why RAG for Database Migrations?
+
+| Benefit | Description |
+|---------|-------------|
+| **Learning from History** | Each successful migration improves future accuracy |
+| **Pattern Recognition** | Find similar schemas/transformations from past projects |
+| **Best Practices** | Automatically apply dbt conventions and standards |
+| **Reduced Hallucinations** | Ground LLM responses in real, validated examples |
+| **Organization-Specific** | Learn your company's naming conventions and patterns |
+
+### How It Works
+
+1. **Store**: When a migration succeeds, we embed the transformation pattern
+2. **Search**: For new migrations, find similar past transformations
+3. **Augment**: Provide these examples as context to the LLM
+4. **Generate**: LLM produces better SQL with relevant examples
+
+### RAG Data Types
+
+| Type | What We Store | Purpose |
+|------|--------------|---------|
+| **Schema Embeddings** | Table/column structures | Find similar schemas |
+| **Transformation Embeddings** | Source SQL → dbt SQL pairs | Learn patterns |
+| **Knowledge Embeddings** | dbt best practices | Apply standards |
+
+### Why pgvector (Not a Dedicated Vector DB)?
+
+We chose **pgvector** (PostgreSQL extension) over dedicated vector databases like Pinecone or Weaviate:
+
+| Factor | pgvector | Pinecone/Weaviate |
+|--------|----------|-------------------|
+| **Infrastructure** | Same PostgreSQL | New service to manage |
+| **Cost** | Free (already have PG) | $70-300+/month |
+| **Complexity** | Single database | Two databases |
+| **Our Vector Count** | <50K (perfect fit) | Overkill |
+| **Latency** | <50ms | <10ms (unnecessary) |
+| **ACID Transactions** | Yes (with other data) | No |
+
+**When we'd switch to dedicated:**
+- >500K vectors
+- Sub-10ms latency requirements
+- Millions of queries/day
+
+### Usage Example
+
+```python
+from agents.rag_service import get_rag_service
+
+rag = get_rag_service()
+
+# Find similar transformations for context
+similar = rag.search_transformations(
+    source_sql="SELECT * FROM dbo.Orders WHERE status = 'active'"
+)
+
+# Build context for LLM prompt
+context = rag.build_context(
+    source_sql="SELECT * FROM dbo.Customers",
+    include_knowledge=True
+)
+
+# The context includes:
+# - Similar past transformations (with quality scores)
+# - Relevant dbt best practices
+# - Schema patterns from your organization
+```
+
+### RAG Statistics
+
+Check RAG system health:
+
+```python
+stats = rag.get_stats()
+# {
+#   "available": True,
+#   "schema_embeddings": 1250,
+#   "transformation_embeddings": 3400,
+#   "knowledge_embeddings": 50,
+#   "cache_entries": 120,
+#   "cache_hits": 890
+# }
+```
+
+
 ## 🛡️ Enterprise Security - Guardian Agent
 
 DataMigrate AI includes a **Guardian Agent** - an enterprise-grade security layer that protects all AI agent operations. This is critical for companies handling sensitive database migrations.

@@ -74,3 +74,10 @@ terraform/*.tfstate.*
 terraform/*.tfvars
 terraform/.terraform.lock.hcl
 terraform/**/*.tfplan
+
+# Infrastructure Docker (Terraform)
+infrastructure/docker/.terraform/
+infrastructure/docker/*.tfstate
+infrastructure/docker/*.tfstate.*
+infrastructure/docker/.terraform.lock.hcl
+infrastructure/docker/secrets.tfvars

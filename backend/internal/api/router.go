@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/datamigrate-ai/backend/internal/config"
+	"github.com/datamigrate-ai/backend/internal/metrics"
 	"github.com/datamigrate-ai/backend/internal/middleware"
 	"github.com/datamigrate-ai/backend/internal/security"
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,9 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 
 	// Initialize JWT middleware
 	middleware.InitJWT(cfg)
+
+	// Prometheus metrics middleware (before other middleware)
+	router.Use(metrics.PrometheusMiddleware())
 
 	// Initialize Guardian Agent (Security Layer)
 	guardian := security.GetGuardian()
@@ -52,6 +56,9 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok", "service": "datamigrate-api"})
 	})
+
+	// Prometheus metrics endpoint
+	router.GET("/metrics", metrics.Handler())
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")

@@ -203,7 +203,6 @@ All documentation is organized in the **[docs/](docs/)** folder.
 
 **Quick Links:**
 - **[Documentation Index](docs/README.md)** - Complete documentation guide
-- **[Architecture](docs/architecture/)** - System design patterns (markdown)
 - **[PDF Documentation](docs/)** - Business, infrastructure, and ML documentation
 
 ### Key Documents

@@ -11,14 +11,9 @@ Complete documentation for DataMigrate AI - MSSQL to dbt Migration Platform.
 
 ```
 docs/
-├── architecture/                              # Architecture markdown docs
-│   ├── KARPENTER_VS_CLUSTER_AUTOSCALER.md    # Karpenter cost analysis
-│   ├── KUBERNETES_TERRAFORM_ARCHITECTURE.md   # K8s + Terraform guide
-│   ├── LANGGRAPH_ARCHITECTURE.md             # AI agent workflow
-│   └── RUST_VS_FASTAPI_BACKEND.md            # Backend comparison
-├── GUARDIAN_AGENT_DOCUMENTATION.md            # Security agent docs
-├── *.pdf / *.docx                             # PDF and Word documents
-└── README.md                                  # This file
+├── GUARDIAN_AGENT_DOCUMENTATION.md    # Security agent docs
+├── *.pdf / *.docx                     # PDF and Word documents
+└── README.md                          # This file
 ```
 
 ---
@@ -43,34 +38,6 @@ docs/
 | **KARPENTER_VS_CLUSTER_AUTOSCALER.pdf/docx** | Karpenter cost savings analysis (40-60% savings) |
 | **KUBERNETES_TERRAFORM_ARCHITECTURE.pdf/docx** | Complete K8s + Terraform infrastructure guide |
 | **LANGGRAPH_ARCHITECTURE.pdf/docx** | Multi-agent AI workflow documentation |
-
----
-
-## Architecture Documentation (Markdown)
-
-Located in `architecture/`
-
-### Infrastructure
-- **[KARPENTER_VS_CLUSTER_AUTOSCALER.md](architecture/KARPENTER_VS_CLUSTER_AUTOSCALER.md)**
-  - 40-60% cost savings analysis
-  - 10x faster scaling comparison
-  - Implementation guide with Terraform
-
-- **[KUBERNETES_TERRAFORM_ARCHITECTURE.md](architecture/KUBERNETES_TERRAFORM_ARCHITECTURE.md)**
-  - Complete EKS infrastructure
-  - Cost breakdown (Dev: $250/mo, Prod: $1,300/mo)
-  - Deployment workflow
-
-### AI Agents
-- **[LANGGRAPH_ARCHITECTURE.md](architecture/LANGGRAPH_ARCHITECTURE.md)**
-  - 6-agent workflow (Assessment, Planner, Executor, Tester, Rebuilder, Evaluator)
-  - State management with TypedDict
-  - AWS Lambda + Step Functions deployment
-
-### Backend
-- **[RUST_VS_FASTAPI_BACKEND.md](architecture/RUST_VS_FASTAPI_BACKEND.md)**
-  - Go vs Rust vs Python comparison
-  - TCO analysis
 
 ---
 

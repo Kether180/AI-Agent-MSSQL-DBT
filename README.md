@@ -203,14 +203,7 @@ All documentation is organized in the **[docs/](docs/)** folder.
 
 **Quick Links:**
 - **[Documentation Index](docs/README.md)** - Complete documentation guide
-- **[PDF Documentation](docs/)** - Business, infrastructure, and ML documentation
-
-### Key Documents
-- **[LangGraph Architecture](docs/LANGGRAPH_ARCHITECTURE.pdf)** - AI agent workflow (PDF)
-- **[Kubernetes + Terraform](docs/KUBERNETES_TERRAFORM_ARCHITECTURE.pdf)** - Infrastructure guide (PDF)
-- **[Karpenter Analysis](docs/KARPENTER_VS_CLUSTER_AUTOSCALER.pdf)** - Cost optimization (PDF)
-- **[ML Strategy](docs/DATAMIGRATE_AI_ML_STRATEGY.pdf)** - Machine learning roadmap (PDF)
-- **[Sales Deck - Denmark](docs/DATAMIGRATE_AI_SALES_DECK_DENMARK.pdf)** - Business presentation (PDF)
+- **[Guardian Agent](docs/GUARDIAN_AGENT_DOCUMENTATION.md)** - Security implementation
 
 ## 🚀 Quick Start
 
@@ -751,8 +744,7 @@ python -m uvicorn ai_service:app --port 8001
 
 For complete architecture details, see:
 - **[Documentation Index](docs/README.md)** - All documentation
-- **[Kubernetes + Terraform Architecture](docs/KUBERNETES_TERRAFORM_ARCHITECTURE.pdf)** - Infrastructure guide
-- **[LangGraph Architecture](docs/LANGGRAPH_ARCHITECTURE.pdf)** - AI agent workflow
+- **[Guardian Agent](docs/GUARDIAN_AGENT_DOCUMENTATION.md)** - Security implementation
 
 ## 📚 Additional Resources
 
@@ -844,11 +836,6 @@ For fine-tuning, we recommend **SQLCoder 15B** by Defog:
 3. **Cost Reduction** - 90% lower inference costs with self-hosted model
 4. **Privacy** - Keep all data on-premises with custom model
 
-### Documentation
-
-For complete ML strategy, see:
-- **[ML Strategy PDF](docs/DATAMIGRATE_AI_ML_STRATEGY.pdf)** - Full technical roadmap
-- **[Data Collection Contract](docs/DATA_COLLECTION_AGREEMENT_TEMPLATE.pdf)** - Customer agreement template
 
 ## 🛡️ Enterprise Security - Guardian Agent
 

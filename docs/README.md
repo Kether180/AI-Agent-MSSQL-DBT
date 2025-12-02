@@ -7,65 +7,14 @@ Complete documentation for DataMigrate AI - MSSQL to dbt Migration Platform.
 
 ---
 
-## Folder Structure
-
-```
-docs/
-├── GUARDIAN_AGENT_DOCUMENTATION.md    # Security agent docs
-├── *.pdf / *.docx                     # PDF and Word documents
-└── README.md                          # This file
-```
-
----
-
-## PDF & Word Documentation
-
-### Business & Sales
-| Document | Description |
-|----------|-------------|
-| **DATAMIGRATE_AI_SALES_DECK_DENMARK.pdf/docx** | Denmark market sales deck with pricing (50K-2M DKK) |
-| **DATAMIGRATE_AI_COMPLETE_ARCHITECTURE.pdf/docx** | Full system architecture overview |
-
-### ML Strategy & Contracts
-| Document | Description |
-|----------|-------------|
-| **DATAMIGRATE_AI_ML_STRATEGY.pdf/docx** | Complete ML strategy with SQLCoder recommendation |
-| **DATA_COLLECTION_AGREEMENT_TEMPLATE.pdf/docx** | Customer data collection contract template |
-
-### Infrastructure & Architecture
-| Document | Description |
-|----------|-------------|
-| **KARPENTER_VS_CLUSTER_AUTOSCALER.pdf/docx** | Karpenter cost savings analysis (40-60% savings) |
-| **KUBERNETES_TERRAFORM_ARCHITECTURE.pdf/docx** | Complete K8s + Terraform infrastructure guide |
-| **LANGGRAPH_ARCHITECTURE.pdf/docx** | Multi-agent AI workflow documentation |
-
----
-
-## Security Documentation
+## Available Documentation
 
 - **[GUARDIAN_AGENT_DOCUMENTATION.md](GUARDIAN_AGENT_DOCUMENTATION.md)**
   - Security agent implementation
   - Input/output validation
   - SQL injection prevention
-
----
-
-## Quick Links
-
-### For Business
-1. Sales Deck: `DATAMIGRATE_AI_SALES_DECK_DENMARK.pdf`
-2. ML Strategy: `DATAMIGRATE_AI_ML_STRATEGY.pdf`
-3. Customer Contract: `DATA_COLLECTION_AGREEMENT_TEMPLATE.pdf`
-
-### For DevOps
-1. Infrastructure: `KUBERNETES_TERRAFORM_ARCHITECTURE.pdf`
-2. Cost Optimization: `KARPENTER_VS_CLUSTER_AUTOSCALER.pdf`
-3. Architecture Overview: `DATAMIGRATE_AI_COMPLETE_ARCHITECTURE.pdf`
-
-### For AI/ML Engineers
-1. Agent Workflow: `LANGGRAPH_ARCHITECTURE.pdf`
-2. Security: `GUARDIAN_AGENT_DOCUMENTATION.md`
-3. ML Strategy: `DATAMIGRATE_AI_ML_STRATEGY.pdf`
+  - Rate limiting
+  - Audit logging
 
 ---
 

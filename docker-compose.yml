@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: datamigrate-postgres
+    environment:
+      POSTGRES_USER: datamigrate
+      POSTGRES_PASSWORD: datamigrate123
+      POSTGRES_DB: datamigrate
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U datamigrate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - datamigrate-network
+
+  # Go Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: datamigrate-backend
+    environment:
+      SERVER_PORT: "8080"
+      SERVER_HOST: "0.0.0.0"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: datamigrate
+      DB_PASSWORD: datamigrate123
+      DB_NAME: datamigrate
+      DB_SSL_MODE: disable
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRATION_HOURS: "24"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - datamigrate-network
+    restart: unless-stopped
+
+  # Vue Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: datamigrate-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - datamigrate-network
+    restart: unless-stopped
+
+  # Python AI Agents Service (connects to existing agents)
+  ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents
+    container_name: datamigrate-ai
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      BACKEND_URL: http://backend:8080
+    ports:
+      - "8001:8001"
+    depends_on:
+      - backend
+    networks:
+      - datamigrate-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  datamigrate-network:
+    driver: bridge

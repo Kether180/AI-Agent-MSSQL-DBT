@@ -1,0 +1,30 @@
+# Python AI Agents Service
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies for pyodbc
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    unixodbc-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install FastAPI for API wrapper
+RUN pip install --no-cache-dir fastapi uvicorn httpx
+
+# Copy the agents and API wrapper
+COPY agents/ ./agents/
+COPY ai_service.py .
+
+# Expose port
+EXPOSE 8001
+
+# Run the FastAPI service
+CMD ["uvicorn", "ai_service:app", "--host", "0.0.0.0", "--port", "8001"]

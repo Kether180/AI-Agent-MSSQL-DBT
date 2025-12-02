@@ -32,6 +32,7 @@ This tool automates the complex process of migrating MSSQL databases to dbt usin
 - [Configuration](#-configuration)
 - [Testing](#-testing)
 - [Key Features](#-key-features)
+- [**Enterprise Security - Guardian Agent**](#️-enterprise-security---guardian-agent) ⭐ NEW
 - [Use Cases](#-use-cases)
 - [Limitations](#-limitations-poc)
 - [Production Enhancements](#-production-enhancements)
@@ -159,19 +160,23 @@ The tool uses 6 specialized agents:
 
 ```
 AI-Agent-MSSQL-DBT/
-├── agents/                    # Migration logic & LangGraph workflows
-│   ├── nodes.py              # Agent implementations (Assessment, Planner, Executor, etc.)
-│   ├── workflow.py           # LangGraph workflow orchestration
-│   └── adapter.py            # Database adapters
-├── app/                       # Core backend services
-│   ├── models.py             # SQLAlchemy database models
-│   ├── database.py           # Database connection and session management
-│   └── services.py           # Business logic services (Auth, Usage, Migration)
-├── fastapi_app/               # Backend REST API (FastAPI)
-│   ├── main.py               # FastAPI application
-│   ├── routes/               # API endpoint routes
-│   └── dependencies.py       # Authentication dependencies
-├── frontend/                  # Vue.js 3 frontend (NEW!)
+├── agents/                    # AI Migration Agents (Python + LangGraph)
+│   ├── native_nodes.py       # Agent implementations (Assessment, Planner, Executor, etc.)
+│   ├── graph.py              # LangGraph workflow orchestration
+│   ├── state.py              # Migration state management
+│   ├── guardrails.py         # Security guardrails for LLM
+│   ├── guardian_agent.py     # Security agent (prompt injection, rate limiting)
+│   └── lambda_handlers.py    # AWS Lambda handlers for serverless deployment
+├── backend/                   # Go API Server (Gin Framework)
+│   ├── cmd/server/           # Main entry point
+│   ├── internal/
+│   │   ├── api/              # REST API handlers
+│   │   ├── db/               # Database layer (PostgreSQL)
+│   │   ├── middleware/       # JWT auth, CORS
+│   │   ├── models/           # Data models
+│   │   └── security/         # Guardian Agent (Go implementation)
+│   └── go.mod                # Go dependencies
+├── frontend/                  # Vue.js 3 Frontend
 │   ├── src/
 │   │   ├── api/              # API client (Axios)
 │   │   ├── components/       # Vue components
@@ -185,9 +190,8 @@ AI-Agent-MSSQL-DBT/
 │   ├── test_saas_platform.py         # Backend tests
 │   └── test_langgraph_migration.py   # LangGraph tests
 ├── docs/                      # Documentation
-│   ├── architecture/         # Architecture docs
-│   ├── guides/               # User guides
-│   ├── pdfs/                 # PDF documentation
+│   ├── *.pdf                 # PDF documentation (agents, architecture)
+│   ├── *.md                  # Markdown documentation
 │   └── README.md             # Docs index
 ├── cdk/                       # AWS CDK infrastructure code
 └── README.md                  # This file
@@ -685,7 +689,23 @@ To make this production-ready, consider:
 
 ## 🌐 SaaS Platform
 
-This project now includes a complete **SaaS platform** for offering MSSQL to dbt migration as a service!
+This project includes a complete **SaaS platform** for offering MSSQL to dbt migration as a service!
+
+### Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Vue.js 3       │────▶│  Go API         │────▶│  Python Agents  │
+│  Frontend       │     │  (Gin)          │     │  (LangGraph)    │
+│  Port 5173      │     │  Port 8000      │     │  Port 8001      │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                               │
+                               ▼
+                        ┌─────────────────┐
+                        │  PostgreSQL     │
+                        │  Database       │
+                        └─────────────────┘
+```
 
 ### Features
 
@@ -696,17 +716,22 @@ This project now includes a complete **SaaS platform** for offering MSSQL to dbt
   - Migration monitoring and tracking
   - Real-time updates with Pinia state management
 
-- **FastAPI REST API** (Port 8000)
-  - RESTful migration endpoints
-  - API key authentication
-  - Rate limiting
-  - Auto-generated OpenAPI documentation
+- **Go Backend API** (Port 8000)
+  - High-performance REST API (5-10x faster than Python)
+  - JWT authentication
+  - Guardian Agent security middleware
+  - Rate limiting and audit logging
+
+- **Python AI Service** (Port 8001)
+  - LangGraph agent orchestration
+  - Claude API integration
+  - Migration workflow execution
 
 - **Database Layer**
+  - PostgreSQL for production
   - User and API key management
   - Migration history tracking
-  - Usage logging for billing
-  - Model file storage
+  - Security audit logs
 
 ### Quick Start
 
@@ -717,16 +742,19 @@ npm install
 npm run dev
 # Access: http://localhost:5173
 
-# Start FastAPI Backend (in another terminal)
-python run_fastapi.py
-# Access API docs: http://localhost:8000/docs
+# Start Go Backend (in another terminal)
+cd backend
+go run cmd/server/main.go
+# Access API: http://localhost:8000
+
+# Start Python AI Service (optional, for migrations)
+python -m uvicorn ai_service:app --port 8001
 ```
 
 For complete SaaS setup instructions, see:
 - **[QUICKSTART.md](docs/guides/QUICKSTART.md)** - Running the SaaS platform
 - **[Vue Frontend Guide](docs/guides/VUE_FRONTEND_GUIDE.md)** - Complete Vue.js 3 setup
-- **[SAAS_DEVELOPMENT_GUIDE.md](docs/guides/SAAS_DEVELOPMENT_GUIDE.md)** - Architecture and deployment
-- **[COMPLETED.md](docs/guides/COMPLETED.md)** - Implementation summary
+- **[Go+Python Architecture](docs/GO_PYTHON_ARCHITECTURE.pdf)** - Hybrid architecture guide
 
 ## 📚 Additional Resources
 
@@ -761,36 +789,158 @@ This tool is ideal for:
 ✅ **100% Success Rate** - All test models generate successfully (7/7)
 ✅ **Cross-Platform** - Works on Windows, Linux, and macOS
 ✅ **Mock Mode** - Test without database connection
+✅ **Enterprise Security** - Guardian Agent with comprehensive threat protection
+
+## 🛡️ Enterprise Security - Guardian Agent
+
+DataMigrate AI includes a **Guardian Agent** - an enterprise-grade security layer that protects all AI agent operations. This is critical for companies handling sensitive database migrations.
+
+### Security Features
+
+| Feature | Description |
+|---------|-------------|
+| **Prompt Injection Prevention** | 25+ detection patterns block malicious AI prompt manipulation |
+| **SQL Injection Detection** | Prevents harmful SQL from being generated or executed |
+| **XSS Protection** | Blocks cross-site scripting attempts in all inputs |
+| **Rate Limiting** | Sliding window algorithm prevents abuse and DoS attacks |
+| **Input/Output Validation** | All agent inputs and outputs are validated against security policies |
+| **Audit Logging** | Complete audit trail of all security events for compliance |
+| **Multi-Tenant Isolation** | Per-organization security policies and rate limits |
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Guardian Agent                            │
+│                 (Security Orchestrator)                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Pattern    │  │    Rate      │  │    Audit     │      │
+│  │  Detector    │  │   Limiter    │  │   Logger     │      │
+│  │              │  │              │  │              │      │
+│  │ - SQL Inject │  │ - Per User   │  │ - Events     │      │
+│  │ - XSS        │  │ - Per Org    │  │ - Metrics    │      │
+│  │ - Prompt Inj │  │ - Per Agent  │  │ - Compliance │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Protected Agents                          │
+│  Assessment → Planner → Executor → Tester → Rebuilder       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Python Integration (Decorator Pattern)
+
+Protect any AI agent with a simple decorator:
+
+```python
+from agents import protected_agent, get_guardian
+
+# Easy protection with decorator
+@protected_agent("my_custom_agent")
+def my_agent_function(input_text: str, **kwargs):
+    # Your agent logic here - automatically protected!
+    result = process_with_ai(input_text)
+    return result
+
+# Or manual validation
+guardian = get_guardian()
+is_safe, threats = guardian.validate_input(user_input, "assessment")
+if not is_safe:
+    raise SecurityException(f"Blocked threats: {threats}")
+```
+
+### Go Backend Integration (Middleware)
+
+The Guardian Agent is integrated as Gin middleware in the Go API:
+
+```go
+// Automatic protection for all API requests
+guardian := security.GetGuardian()
+router.Use(guardian.Middleware())
+
+// Security API endpoints
+securityRoutes.GET("/audit-logs", securityHandler.GetAuditLogs)
+securityRoutes.GET("/dashboard", securityHandler.GetSecurityDashboard)
+securityRoutes.POST("/validate", securityHandler.ValidateInput)
+```
+
+### Security Dashboard
+
+Access the security dashboard at `/api/v1/security/dashboard` (admin only) to view:
+- Real-time threat detection statistics
+- Recent blocked attacks
+- Rate limiting status
+- Audit log summary
+
+### Compliance & Audit
+
+All security events are logged for compliance requirements:
+- SOC 2 Type II audit trails
+- GDPR data protection logging
+- HIPAA security event tracking
+- PCI-DSS threat monitoring
+
+### Documentation
+
+For complete security documentation, see:
+- **[Guardian Agent Documentation](docs/GUARDIAN_AGENT_DOCUMENTATION.md)** - Full implementation guide
+- **[Security API Reference](docs/guardian_agent_documentation.pdf)** - PDF documentation
+
+### Why Security Matters for Database Migrations
+
+When migrating databases, you're handling:
+- **Sensitive Schema Information** - Table structures, column names, relationships
+- **Business Logic** - Stored procedures contain proprietary algorithms
+- **Data Patterns** - Sample data may contain PII or financial information
+
+The Guardian Agent ensures that:
+1. No malicious prompts can manipulate AI agents
+2. Generated SQL is validated before execution
+3. All operations are logged for audit
+4. Rate limits prevent abuse of AI resources
 
 ## Tech Stack
 
-### Core Migration Engine
-- **Python 3.12+** - Core programming language
+### Core Migration Engine (Python)
+- **Python 3.12+** - AI agents and migration logic
 - **LangGraph** - Multi-agent workflow orchestration
 - **LangChain** - AI agent framework
-- **Anthropic API** - AI-powered strategy generation (optional)
+- **Anthropic Claude API** - AI-powered strategy generation
 - **dbt-core 1.7.0+** - Data transformation framework
 - **NetworkX** - Dependency graph analysis
 - **pyodbc** - MSSQL connectivity
 
-### SaaS Platform (New)
+### Backend API (Go)
+- **Go 1.21+** - High-performance API server
+- **Gin** - Web framework (5-10x faster than Python)
+- **GORM** - ORM for PostgreSQL
+- **JWT-Go** - Authentication
+- **Guardian Agent** - Security middleware
+
+### Frontend (Vue.js)
 - **Vue.js 3** - Modern frontend framework with Composition API
 - **TypeScript** - Type-safe JavaScript development
 - **Pinia** - State management for Vue 3
-- **FastAPI 0.104** - REST API framework
-- **SQLAlchemy 2.0** - Database ORM
-- **SQLite** - Local database (development)
-- **PostgreSQL** - Production database (recommended)
-- **Pydantic 2.0** - Data validation
+- **Vue Router** - Client-side routing
 - **Tailwind CSS** - UI styling
-- **Uvicorn** - ASGI server
+- **Axios** - HTTP client
+
+### Database & Security
+- **PostgreSQL 16** - Production database
+- **Guardian Agent** - Prompt injection prevention, rate limiting
+- **Audit Logging** - SOC 2, GDPR, HIPAA compliance
 
 ### Infrastructure & Deployment
 - **AWS CDK** - Infrastructure as code
 - **AWS Lambda** - Serverless agent execution
 - **AWS Step Functions** - Workflow orchestration
 - **AWS RDS** - Managed PostgreSQL (production)
-- **Docker** - Containerization (planned)
+- **Docker** - Containerization
 - **Kubernetes** - Container orchestration (planned)
 
 ## 📝 License

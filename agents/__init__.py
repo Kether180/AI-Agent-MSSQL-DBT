@@ -57,6 +57,18 @@ from .guardrails import (
     log_security_event
 )
 
+from .guardian_agent import (
+    GuardianAgent,
+    SecurityEvent,
+    SecurityPolicy,
+    SecurityException,
+    ThreatLevel,
+    EventType,
+    get_guardian,
+    protected_agent,
+    validate_agent_input
+)
+
 from .lambda_handlers import (
     assessment_lambda,
     planner_lambda,
@@ -114,6 +126,16 @@ __all__ = [
     "validate_migration_state",
     "sanitize_file_path",
     "log_security_event",
+    # Guardian Agent (Security)
+    "GuardianAgent",
+    "SecurityEvent",
+    "SecurityPolicy",
+    "SecurityException",
+    "ThreatLevel",
+    "EventType",
+    "get_guardian",
+    "protected_agent",
+    "validate_agent_input",
     # Lambda Handlers
     "assessment_lambda",
     "planner_lambda",

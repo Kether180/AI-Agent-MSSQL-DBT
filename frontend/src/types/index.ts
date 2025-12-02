@@ -1,9 +1,42 @@
+// Organization types
+export interface Organization {
+  id: number
+  name: string
+  slug: string
+  plan: 'free' | 'starter' | 'professional' | 'enterprise'
+  max_users: number
+  max_migrations: number
+  created_at: string
+  updated_at: string
+}
+
 // User types
 export interface User {
   id: number
   email: string
+  first_name?: string
+  last_name?: string
+  job_title?: string
+  phone?: string
+  organization_id?: number
+  role: 'admin' | 'member' | 'viewer'
   is_admin: boolean
+  is_active: boolean
+  last_login_at?: string
   created_at: string
+  updated_at: string
+  organization?: Organization
+}
+
+// Registration types
+export interface RegisterCredentials {
+  email: string
+  password: string
+  first_name: string
+  last_name: string
+  organization_name: string
+  job_title?: string
+  phone?: string
 }
 
 // Migration types
@@ -11,6 +44,10 @@ export interface Migration {
   id: number
   name: string
   status: 'pending' | 'running' | 'completed' | 'failed'
+  progress: number
+  source_database: string
+  target_project: string
+  tables_count: number
   created_at: string
   completed_at?: string
   user_id: number

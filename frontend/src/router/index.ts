@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // Views
 import LoginView from '@/views/LoginView.vue'
+import RegisterView from '@/views/RegisterView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import MigrationsView from '@/views/MigrationsView.vue'
 
@@ -27,6 +28,16 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       requiresAuth: false,
       title: 'Login - DataMigrate AI',
+      guestOnly: true // Redirect to dashboard if already logged in
+    }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: RegisterView,
+    meta: {
+      requiresAuth: false,
+      title: 'Register - DataMigrate AI',
       guestOnly: true // Redirect to dashboard if already logged in
     }
   },

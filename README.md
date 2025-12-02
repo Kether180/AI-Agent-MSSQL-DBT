@@ -789,6 +789,67 @@ This tool is ideal for:
 ✅ **Cross-Platform** - Works on Windows, Linux, and macOS
 ✅ **Mock Mode** - Test without database connection
 ✅ **Enterprise Security** - Guardian Agent with comprehensive threat protection
+✅ **Model Router** - Multi-provider AI support with intelligent routing
+✅ **Fine-tuning Ready** - Data collection pipeline for custom model training
+
+## 🤖 ML Strategy & Fine-Tuning
+
+DataMigrate AI includes a comprehensive machine learning strategy for continuous improvement through custom model fine-tuning.
+
+### Model Router
+
+The **Model Router** (`agents/model_router.py`) provides intelligent LLM abstraction:
+
+| Feature | Description |
+|---------|-------------|
+| **Multi-Provider Support** | Claude, GPT-4, Ollama, Custom (vLLM) |
+| **Task-Based Routing** | Routes by complexity (simple→cheap, critical→best) |
+| **Fallback Chains** | Automatic fallback if primary model fails |
+| **Fine-tuning Data Collection** | Captures high-quality examples for training |
+
+### Recommended Model: SQLCoder 15B
+
+For fine-tuning, we recommend **SQLCoder 15B** by Defog:
+
+| Metric | SQLCoder 15B | GPT-4 | CodeLlama 34B |
+|--------|-------------|-------|---------------|
+| **SQL Accuracy** | 85% | 82% | 78% |
+| **License** | Apache 2.0 | Proprietary | Llama 2 |
+| **Parameters** | 15B | ~1.7T | 34B |
+| **Self-Hosted** | Yes | No | Yes |
+
+### Data Collection Strategy
+
+**What We Collect:**
+- Schema patterns (table/column structures)
+- SQL transformation patterns
+- Migration success/failure patterns
+
+**What We NEVER Collect:**
+- Actual data values
+- Customer PII
+- Credentials or secrets
+
+### Customer Data Options
+
+| Option | Description | Discount |
+|--------|-------------|----------|
+| **Anonymized** | Table_A, col_001 patterns | Standard pricing |
+| **Named** | Real table/column names (opt-in) | 15% discount |
+| **No Collection** | Opt-out entirely | Standard pricing |
+
+### Fine-Tuning Benefits
+
+1. **Better SQL Generation** - Custom model trained on real migration patterns
+2. **Faster Migrations** - Reduced API calls with local model inference
+3. **Cost Reduction** - 90% lower inference costs with self-hosted model
+4. **Privacy** - Keep all data on-premises with custom model
+
+### Documentation
+
+For complete ML strategy, see:
+- **[ML Strategy PDF](docs/DATAMIGRATE_AI_ML_STRATEGY.pdf)** - Full technical roadmap
+- **[Data Collection Contract](docs/DATA_COLLECTION_AGREEMENT_TEMPLATE.pdf)** - Customer agreement template
 
 ## 🛡️ Enterprise Security - Guardian Agent
 

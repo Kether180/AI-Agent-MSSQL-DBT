@@ -203,16 +203,15 @@ All documentation is organized in the **[docs/](docs/)** folder.
 
 **Quick Links:**
 - **[Documentation Index](docs/README.md)** - Complete documentation guide
-- **[Architecture](docs/architecture/)** - System design and patterns
-- **[User Guides](docs/guides/)** - Getting started and tutorials
-- **[PDFs](docs/pdfs/)** - Printable documentation
+- **[Architecture](docs/architecture/)** - System design patterns (markdown)
+- **[PDF Documentation](docs/)** - Business, infrastructure, and ML documentation
 
 ### Key Documents
-- **[Vue Frontend Guide](docs/guides/VUE_FRONTEND_GUIDE.md)** - Complete Vue.js 3 setup
-- **[Architecture](docs/architecture/ARCHITECTURE.md)** - System architecture
-- **[Quick Start](docs/guides/QUICKSTART.md)** - Get started quickly
-- **[ETL vs dbt Benefits](docs/pdfs/ETL_VS_DBT_BENEFITS.pdf)** - Why migrate (PDF)
-- **[SOLID Principles](docs/pdfs/SOLID_PRINCIPLES_STUDY_GUIDE.pdf)** - Code quality guide (PDF)
+- **[LangGraph Architecture](docs/LANGGRAPH_ARCHITECTURE.pdf)** - AI agent workflow (PDF)
+- **[Kubernetes + Terraform](docs/KUBERNETES_TERRAFORM_ARCHITECTURE.pdf)** - Infrastructure guide (PDF)
+- **[Karpenter Analysis](docs/KARPENTER_VS_CLUSTER_AUTOSCALER.pdf)** - Cost optimization (PDF)
+- **[ML Strategy](docs/DATAMIGRATE_AI_ML_STRATEGY.pdf)** - Machine learning roadmap (PDF)
+- **[Sales Deck - Denmark](docs/DATAMIGRATE_AI_SALES_DECK_DENMARK.pdf)** - Business presentation (PDF)
 
 ## 🚀 Quick Start
 
@@ -751,10 +750,10 @@ go run cmd/server/main.go
 python -m uvicorn ai_service:app --port 8001
 ```
 
-For complete SaaS setup instructions, see:
-- **[QUICKSTART.md](docs/guides/QUICKSTART.md)** - Running the SaaS platform
-- **[Vue Frontend Guide](docs/guides/VUE_FRONTEND_GUIDE.md)** - Complete Vue.js 3 setup
-- **[Go+Python Architecture](docs/GO_PYTHON_ARCHITECTURE.pdf)** - Hybrid architecture guide
+For complete architecture details, see:
+- **[Documentation Index](docs/README.md)** - All documentation
+- **[Kubernetes + Terraform Architecture](docs/KUBERNETES_TERRAFORM_ARCHITECTURE.pdf)** - Infrastructure guide
+- **[LangGraph Architecture](docs/LANGGRAPH_ARCHITECTURE.pdf)** - AI agent workflow
 
 ## 📚 Additional Resources
 
@@ -889,7 +888,6 @@ All security events are logged for compliance requirements:
 
 For complete security documentation, see:
 - **[Guardian Agent Documentation](docs/GUARDIAN_AGENT_DOCUMENTATION.md)** - Full implementation guide
-- **[Security API Reference](docs/guardian_agent_documentation.pdf)** - PDF documentation
 
 ### Why Security Matters for Database Migrations
 
@@ -957,17 +955,15 @@ This project demonstrates a multi-agent architecture for database migration. Con
 
 **Issue: Unicode encoding errors on Windows**
 - **Solution**: Use `test_migration.py` instead of `main.py`
-- **Details**: See [UNICODE_BUG_EXPLANATION.md](UNICODE_BUG_EXPLANATION.md)
+- **Details**: The test script handles Windows console encoding properly
 
 **Issue: Models not generating**
-- **Check**: Ensure all 6 fixes are applied (see [CHANGES.md](CHANGES.md))
-- **Verify**: Planning data is saved to migration_state
+- **Check**: Verify that LangGraph agents are initialized correctly
+- **Verify**: Check `migration_state.json` for planning data
 
 **Issue: Can't find migration plans**
 - **Solution**: Ensure PlannerAgent saves data to `migration_state['planning']`
-- **Details**: See [CHANGES.md](CHANGES.md#issue-2-planning-data-not-saved-to-migration-state)
-
-For more troubleshooting help, see [HOW_TO_RUN.md](HOW_TO_RUN.md#troubleshooting).
+- **Verify**: Run the full migration workflow from `tests/test_langgraph_migration.py`
 
 ## Quick Commands Reference
 
@@ -997,12 +993,6 @@ ls output/models/staging/
 - **95% Validation Score** - Simulated data match
 - **0 Encoding Errors** - After Unicode fix
 - **State Persistence** - Resumable migrations
-
----
-
-For detailed usage instructions, see [HOW_TO_RUN.md](HOW_TO_RUN.md).
-
-For a quick overview, see [SUMMARY.md](SUMMARY.md).
 
 ---
 

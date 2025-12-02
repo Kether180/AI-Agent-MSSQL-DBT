@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/datamigrate-ai/backend/internal/db"
+	"github.com/datamigrate-ai/backend/internal/dbtest"
 	"github.com/datamigrate-ai/backend/internal/middleware"
 	"github.com/datamigrate-ai/backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -179,7 +180,17 @@ func (h *ConnectionsHandler) Test(c *gin.Context) {
 		return
 	}
 
-	var connection models.DatabaseConnection
+	// Fetch connection with password for testing
+	var connection struct {
+		ID       int64  `db:"id"`
+		DBType   string `db:"db_type"`
+		Host     string `db:"host"`
+		Port     int    `db:"port"`
+		Database string `db:"database_name"`
+		Username string `db:"username"`
+		Password string `db:"password"`
+	}
+
 	err = db.DB.Get(&connection, `
 		SELECT id, db_type, host, port, database_name, username, password
 		FROM database_connections
@@ -195,7 +206,19 @@ func (h *ConnectionsHandler) Test(c *gin.Context) {
 		return
 	}
 
-	// TODO: Actually test the connection based on db_type
-	// For now, return success
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Connection test successful"})
+	// Test the actual database connection
+	result := dbtest.TestConnection(dbtest.ConnectionParams{
+		DBType:   connection.DBType,
+		Host:     connection.Host,
+		Port:     connection.Port,
+		Database: connection.Database,
+		Username: connection.Username,
+		Password: connection.Password,
+	})
+
+	if result.Success {
+		c.JSON(http.StatusOK, result)
+	} else {
+		c.JSON(http.StatusBadRequest, result)
+	}
 }

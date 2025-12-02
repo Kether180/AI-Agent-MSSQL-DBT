@@ -1,158 +1,126 @@
 # Documentation
 
-Complete documentation for the MSSQL to dbt Migration Platform.
+Complete documentation for DataMigrate AI - MSSQL to dbt Migration Platform.
 
-## 📁 Folder Structure
+**Author:** Alexander Garcia Angus
+**Property of:** OKO Investments
+
+---
+
+## Folder Structure
 
 ```
 docs/
-├── architecture/       # Architecture and design documents
-├── guides/            # User guides and tutorials
-├── pdfs/              # PDF documentation
-└── README.md          # This file
+├── architecture/                              # Architecture markdown docs
+│   ├── KARPENTER_VS_CLUSTER_AUTOSCALER.md    # Karpenter cost analysis
+│   ├── KUBERNETES_TERRAFORM_ARCHITECTURE.md   # K8s + Terraform guide
+│   ├── LANGGRAPH_ARCHITECTURE.md             # AI agent workflow
+│   └── RUST_VS_FASTAPI_BACKEND.md            # Backend comparison
+├── GUARDIAN_AGENT_DOCUMENTATION.md            # Security agent docs
+├── *.pdf / *.docx                             # PDF and Word documents
+└── README.md                                  # This file
 ```
 
 ---
 
-## 🏗️ Architecture Documentation
+## PDF & Word Documentation
+
+### Business & Sales
+| Document | Description |
+|----------|-------------|
+| **DATAMIGRATE_AI_SALES_DECK_DENMARK.pdf/docx** | Denmark market sales deck with pricing (50K-2M DKK) |
+| **DATAMIGRATE_AI_COMPLETE_ARCHITECTURE.pdf/docx** | Full system architecture overview |
+
+### ML Strategy & Contracts
+| Document | Description |
+|----------|-------------|
+| **DATAMIGRATE_AI_ML_STRATEGY.pdf/docx** | Complete ML strategy with SQLCoder recommendation |
+| **DATA_COLLECTION_AGREEMENT_TEMPLATE.pdf/docx** | Customer data collection contract template |
+
+### Infrastructure & Architecture
+| Document | Description |
+|----------|-------------|
+| **KARPENTER_VS_CLUSTER_AUTOSCALER.pdf/docx** | Karpenter cost savings analysis (40-60% savings) |
+| **KUBERNETES_TERRAFORM_ARCHITECTURE.pdf/docx** | Complete K8s + Terraform infrastructure guide |
+| **LANGGRAPH_ARCHITECTURE.pdf/docx** | Multi-agent AI workflow documentation |
+
+---
+
+## Architecture Documentation (Markdown)
 
 Located in `architecture/`
 
-### Core Architecture
-- **[ARCHITECTURE.md](architecture/ARCHITECTURE.md)** - Complete system architecture
-  - Modular monolith → microservices ready
-  - Layered architecture pattern
-  - SOLID principles applied
-  - Design patterns explained
-  - Technology choices rationale
+### Infrastructure
+- **[KARPENTER_VS_CLUSTER_AUTOSCALER.md](architecture/KARPENTER_VS_CLUSTER_AUTOSCALER.md)**
+  - 40-60% cost savings analysis
+  - 10x faster scaling comparison
+  - Implementation guide with Terraform
 
-- **[MODULARITY.md](architecture/MODULARITY.md)** - Software concepts and coding style
-  - Modularity principles
-  - Design patterns with examples
-  - SOLID, DRY, KISS, YAGNI explained
-  - Code quality guidelines
-  - Testing philosophy
+- **[KUBERNETES_TERRAFORM_ARCHITECTURE.md](architecture/KUBERNETES_TERRAFORM_ARCHITECTURE.md)**
+  - Complete EKS infrastructure
+  - Cost breakdown (Dev: $250/mo, Prod: $1,300/mo)
+  - Deployment workflow
 
-### Agent Architecture
-- **[LANGGRAPH_ARCHITECTURE.md](architecture/LANGGRAPH_ARCHITECTURE.md)** - LangGraph multi-agent system
-  - Agent workflow orchestration
-  - State management
-  - Conditional routing
+### AI Agents
+- **[LANGGRAPH_ARCHITECTURE.md](architecture/LANGGRAPH_ARCHITECTURE.md)**
+  - 6-agent workflow (Assessment, Planner, Executor, Tester, Rebuilder, Evaluator)
+  - State management with TypedDict
+  - AWS Lambda + Step Functions deployment
 
-- **[NATIVE_ARCHITECTURE.md](architecture/NATIVE_ARCHITECTURE.md)** - Native implementation details
-  - Agent nodes implementation
-  - Migration workflow
+### Backend
+- **[RUST_VS_FASTAPI_BACKEND.md](architecture/RUST_VS_FASTAPI_BACKEND.md)**
+  - Go vs Rust vs Python comparison
+  - TCO analysis
 
 ---
 
-## 📚 User Guides
+## Security Documentation
 
-Located in `guides/`
-
-### Getting Started
-- **[QUICKSTART.md](guides/QUICKSTART.md)** - Quick start guide
-  - Installation instructions
-  - Running the applications
-  - Basic usage
-
-- **[VUE_FRONTEND_GUIDE.md](guides/VUE_FRONTEND_GUIDE.md)** - Vue.js frontend guide
-  - Complete Vue 3 + TypeScript setup
-  - Component examples
-  - API integration
-  - State management with Pinia
-
-### Development Guides
-- **[SAAS_DEVELOPMENT_GUIDE.md](guides/SAAS_DEVELOPMENT_GUIDE.md)** - SaaS platform development
-  - Architecture overview
-  - Service layer design
-  - Deployment strategies
-  - Scaling considerations
-
-- **[UI_ENHANCEMENT_PROPOSAL.md](guides/UI_ENHANCEMENT_PROPOSAL.md)** - UI enhancement options
-  - HTMX + Alpine.js approach
-  - Vue.js vs React comparison
-  - Implementation plans
-
-### Learning Resources
-- **[RECOMMENDED_BOOKS.md](guides/RECOMMENDED_BOOKS.md)** - Recommended reading
-  - Top 10 books on software engineering
-  - SOLID principles
-  - Design patterns
-  - Clean code practices
-
-### Results & Status
-- **[TEST_RESULTS.md](guides/TEST_RESULTS.md)** - Test results
-  - Platform tests (6/6 passing)
-  - Migration workflow tests
-  - Test credentials
-
-- **[COMPLETED.md](guides/COMPLETED.md)** - Implementation summary
-  - Completed features
-  - Current status
-  - Next steps
+- **[GUARDIAN_AGENT_DOCUMENTATION.md](GUARDIAN_AGENT_DOCUMENTATION.md)**
+  - Security agent implementation
+  - Input/output validation
+  - SQL injection prevention
 
 ---
 
-## 📄 PDF Documentation
+## Quick Links
 
-Located in `pdfs/`
+### For Business
+1. Sales Deck: `DATAMIGRATE_AI_SALES_DECK_DENMARK.pdf`
+2. ML Strategy: `DATAMIGRATE_AI_ML_STRATEGY.pdf`
+3. Customer Contract: `DATA_COLLECTION_AGREEMENT_TEMPLATE.pdf`
 
-- **[ETL_VS_DBT_BENEFITS.pdf](pdfs/ETL_VS_DBT_BENEFITS.pdf)** - Why migrate from ETL to dbt
-  - Cost comparison (65% savings)
-  - Development speed (10x faster)
-  - Real-world examples
-  - Business and technical benefits
+### For DevOps
+1. Infrastructure: `KUBERNETES_TERRAFORM_ARCHITECTURE.pdf`
+2. Cost Optimization: `KARPENTER_VS_CLUSTER_AUTOSCALER.pdf`
+3. Architecture Overview: `DATAMIGRATE_AI_COMPLETE_ARCHITECTURE.pdf`
 
-- **[SOLID_PRINCIPLES_STUDY_GUIDE.pdf](pdfs/SOLID_PRINCIPLES_STUDY_GUIDE.pdf)** - SOLID principles guide
-  - Complete study guide
-  - Code examples
-  - Practice exercises
-  - DRY, KISS, YAGNI explained
-
----
-
-## 🚀 Quick Links
-
-### For Users
-1. Start here: [QUICKSTART.md](guides/QUICKSTART.md)
-2. Frontend setup: [VUE_FRONTEND_GUIDE.md](guides/VUE_FRONTEND_GUIDE.md)
-3. Test results: [TEST_RESULTS.md](guides/TEST_RESULTS.md)
-
-### For Developers
-1. Architecture: [ARCHITECTURE.md](architecture/ARCHITECTURE.md)
-2. Code style: [MODULARITY.md](architecture/MODULARITY.md)
-3. Development guide: [SAAS_DEVELOPMENT_GUIDE.md](guides/SAAS_DEVELOPMENT_GUIDE.md)
-
-### For Learning
-1. ETL vs dbt: [ETL_VS_DBT_BENEFITS.pdf](pdfs/ETL_VS_DBT_BENEFITS.pdf)
-2. SOLID principles: [SOLID_PRINCIPLES_STUDY_GUIDE.pdf](pdfs/SOLID_PRINCIPLES_STUDY_GUIDE.pdf)
-3. Book recommendations: [RECOMMENDED_BOOKS.md](guides/RECOMMENDED_BOOKS.md)
+### For AI/ML Engineers
+1. Agent Workflow: `LANGGRAPH_ARCHITECTURE.pdf`
+2. Security: `GUARDIAN_AGENT_DOCUMENTATION.md`
+3. ML Strategy: `DATAMIGRATE_AI_ML_STRATEGY.pdf`
 
 ---
 
-## 📝 Documentation Standards
+## Key Highlights
 
-All documentation follows these standards:
+### Cost Savings
+- **Karpenter**: 40-60% infrastructure cost savings ($960-4,200/year)
+- **Go Backend**: 5-10x faster API responses vs Python
+- **Spot Instances**: 70% discount with intelligent fallback
 
-- **Markdown format** for text documents (.md)
-- **PDF format** for printable guides (.pdf)
-- **Clear headings** with emoji icons for easy scanning
-- **Code examples** with syntax highlighting
-- **Diagrams** using ASCII art or mermaid
-- **Tables** for comparisons and data
+### ML Strategy
+- **Recommended Model**: SQLCoder 15B (85% SQL accuracy)
+- **Data Collection**: Schema patterns only (never actual data)
+- **Privacy Options**: Anonymized, Named (with discount), or Opt-out
 
----
-
-## 🤝 Contributing to Documentation
-
-When adding new documentation:
-
-1. Place in appropriate folder (architecture/, guides/, pdfs/)
-2. Use markdown format
-3. Add entry to this README
-4. Follow existing naming conventions
-5. Include examples and diagrams where helpful
+### Architecture
+- **Backend**: Go (Gin) for API + Python for AI agents
+- **Frontend**: Vue.js 3 + TypeScript
+- **Infrastructure**: EKS + Terraform + Karpenter
+- **AI Framework**: LangGraph + LangChain
 
 ---
 
-**Last Updated**: November 2025
+**Last Updated**: December 2025
+**Copyright**: OKO Investments. All rights reserved.

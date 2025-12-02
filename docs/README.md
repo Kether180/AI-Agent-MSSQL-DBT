@@ -9,6 +9,12 @@ Complete documentation for DataMigrate AI - MSSQL to dbt Migration Platform.
 
 ## Available Documentation
 
+- **[BRANCHING_GUIDELINES.md](BRANCHING_GUIDELINES.md)**
+  - Git workflow and branch structure
+  - Daily developer workflow
+  - Commands reference
+  - Emergency procedures
+
 - **[GUARDIAN_AGENT_DOCUMENTATION.md](GUARDIAN_AGENT_DOCUMENTATION.md)**
   - Security agent implementation
   - Input/output validation

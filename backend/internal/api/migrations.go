@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/datamigrate-ai/backend/internal/aiservice"
 	"github.com/datamigrate-ai/backend/internal/db"
@@ -21,13 +22,25 @@ func NewMigrationsHandler() *MigrationsHandler {
 }
 
 // GetAll returns all migrations for the current user
+// @Summary List all migrations
+// @Description Get all migrations for the current user
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} models.Migration
+// @Failure 500 {object} map[string]string
+// @Router /migrations [get]
 func (h *MigrationsHandler) GetAll(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
 	var migrations []models.Migration
 	err := db.DB.Select(&migrations, `
 		SELECT id, name, status, progress, source_database, target_project,
-		       tables_count, user_id, error, created_at, completed_at, updated_at
+		       tables_count, COALESCE(views_count, 0) as views_count,
+		       COALESCE(foreign_keys_count, 0) as foreign_keys_count,
+		       COALESCE(models_generated, 0) as models_generated,
+		       user_id, error, created_at, completed_at, updated_at
 		FROM migrations
 		WHERE user_id = $1
 		ORDER BY created_at DESC
@@ -46,6 +59,18 @@ func (h *MigrationsHandler) GetAll(c *gin.Context) {
 }
 
 // GetOne returns a single migration by ID
+// @Summary Get migration details
+// @Description Get detailed information about a specific migration
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Migration ID"
+// @Success 200 {object} models.Migration
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /migrations/{id} [get]
 func (h *MigrationsHandler) GetOne(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -57,7 +82,10 @@ func (h *MigrationsHandler) GetOne(c *gin.Context) {
 	var migration models.Migration
 	err = db.DB.Get(&migration, `
 		SELECT id, name, status, progress, source_database, target_project,
-		       tables_count, user_id, error, config, created_at, completed_at, updated_at
+		       tables_count, COALESCE(views_count, 0) as views_count,
+		       COALESCE(foreign_keys_count, 0) as foreign_keys_count,
+		       COALESCE(models_generated, 0) as models_generated,
+		       user_id, error, config, created_at, completed_at, updated_at
 		FROM migrations
 		WHERE id = $1 AND user_id = $2
 	`, id, userID)
@@ -75,6 +103,17 @@ func (h *MigrationsHandler) GetOne(c *gin.Context) {
 }
 
 // Create creates a new migration
+// @Summary Create a new migration
+// @Description Create a new migration project
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body models.CreateMigrationRequest true "Migration configuration"
+// @Success 201 {object} models.Migration
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /migrations [post]
 func (h *MigrationsHandler) Create(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
@@ -113,6 +152,18 @@ func (h *MigrationsHandler) Create(c *gin.Context) {
 }
 
 // Delete deletes a migration
+// @Summary Delete a migration
+// @Description Delete a migration project (cannot delete running migrations)
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Migration ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /migrations/{id} [delete]
 func (h *MigrationsHandler) Delete(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -148,6 +199,18 @@ func (h *MigrationsHandler) Delete(c *gin.Context) {
 }
 
 // Start starts a pending migration
+// @Summary Start a migration
+// @Description Start a pending migration to begin extracting metadata and generating dbt project
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Migration ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /migrations/{id}/start [post]
 func (h *MigrationsHandler) Start(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -187,18 +250,19 @@ func (h *MigrationsHandler) Start(c *gin.Context) {
 
 	// Get the source database connection details
 	var connection struct {
-		ID       int64  `db:"id"`
-		Name     string `db:"name"`
-		DBType   string `db:"db_type"`
-		Host     string `db:"host"`
-		Port     int    `db:"port"`
-		Database string `db:"database_name"`
-		Username string `db:"username"`
-		Password string `db:"password"`
+		ID             int64  `db:"id"`
+		Name           string `db:"name"`
+		DBType         string `db:"db_type"`
+		Host           string `db:"host"`
+		Port           int    `db:"port"`
+		Database       string `db:"database_name"`
+		Username       string `db:"username"`
+		Password       string `db:"password"`
+		UseWindowsAuth bool   `db:"use_windows_auth"`
 	}
 
 	err = db.DB.Get(&connection, `
-		SELECT id, name, db_type, host, port, database_name, username, password
+		SELECT id, name, db_type, host, port, database_name, username, password, COALESCE(use_windows_auth, false) as use_windows_auth
 		FROM database_connections
 		WHERE name = $1 AND user_id = $2
 	`, migration.SourceDatabase, userID)
@@ -246,12 +310,13 @@ func (h *MigrationsHandler) Start(c *gin.Context) {
 		req := aiservice.MigrationRequest{
 			MigrationID: id,
 			SourceConnection: map[string]interface{}{
-				"type":     connection.DBType,
-				"host":     connection.Host,
-				"port":     connection.Port,
-				"database": connection.Database,
-				"username": connection.Username,
-				"password": connection.Password,
+				"type":             connection.DBType,
+				"host":             connection.Host,
+				"port":             connection.Port,
+				"database":         connection.Database,
+				"username":         connection.Username,
+				"password":         connection.Password,
+				"use_windows_auth": connection.UseWindowsAuth,
 			},
 			TargetProject: migration.TargetProject,
 			Tables:        tables,
@@ -278,6 +343,17 @@ func (h *MigrationsHandler) Start(c *gin.Context) {
 }
 
 // Stop stops a running migration
+// @Summary Stop a migration
+// @Description Stop a running migration
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Migration ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /migrations/{id}/stop [post]
 func (h *MigrationsHandler) Stop(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -306,6 +382,14 @@ func (h *MigrationsHandler) Stop(c *gin.Context) {
 }
 
 // GetStats returns dashboard statistics
+// @Summary Get dashboard statistics
+// @Description Get migration statistics for the current user's dashboard
+// @Tags stats
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} models.DashboardStats
+// @Router /stats [get]
 func (h *MigrationsHandler) GetStats(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
@@ -324,7 +408,179 @@ func (h *MigrationsHandler) GetStats(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
+// GetFiles returns the list of generated dbt files for a migration
+// @Summary Get migration files
+// @Description Get list of generated dbt files for a migration
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Migration ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 503 {object} map[string]string
+// @Router /migrations/{id}/files [get]
+func (h *MigrationsHandler) GetFiles(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid migration ID"})
+		return
+	}
+
+	// Verify user owns this migration
+	var migration models.Migration
+	err = db.DB.Get(&migration, "SELECT id FROM migrations WHERE id = $1 AND user_id = $2", id, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Migration not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	// Get files from AI service
+	aiClient := aiservice.GetClient()
+	if aiClient == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "AI service not available"})
+		return
+	}
+
+	files, err := aiClient.GetMigrationFiles(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, files)
+}
+
+// GetFileContent returns the content of a specific dbt file
+// @Summary Get file content
+// @Description Get the content of a specific generated dbt file
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Migration ID"
+// @Param filepath path string true "File path within the project"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 503 {object} map[string]string
+// @Router /migrations/{id}/files/{filepath} [get]
+func (h *MigrationsHandler) GetFileContent(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid migration ID"})
+		return
+	}
+
+	filePath := c.Param("filepath")
+	// Gin's wildcard (*filepath) includes leading slash, strip it
+	filePath = strings.TrimPrefix(filePath, "/")
+	if filePath == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File path required"})
+		return
+	}
+
+	// Verify user owns this migration
+	var migration models.Migration
+	err = db.DB.Get(&migration, "SELECT id FROM migrations WHERE id = $1 AND user_id = $2", id, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Migration not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	// Get file content from AI service
+	aiClient := aiservice.GetClient()
+	if aiClient == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "AI service not available"})
+		return
+	}
+
+	content, err := aiClient.GetMigrationFileContent(id, filePath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, content)
+}
+
+// DownloadProject returns the URL to download the dbt project
+// @Summary Download dbt project
+// @Description Get download URL for the completed dbt project as ZIP
+// @Tags migrations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Migration ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 503 {object} map[string]string
+// @Router /migrations/{id}/download [get]
+func (h *MigrationsHandler) DownloadProject(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid migration ID"})
+		return
+	}
+
+	// Verify user owns this migration
+	var migration models.Migration
+	err = db.DB.Get(&migration, "SELECT id, status FROM migrations WHERE id = $1 AND user_id = $2", id, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Migration not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	if migration.Status != "completed" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Migration not completed yet"})
+		return
+	}
+
+	// Get download URL from AI service
+	aiClient := aiservice.GetClient()
+	if aiClient == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "AI service not available"})
+		return
+	}
+
+	downloadURL := aiClient.GetMigrationDownloadURL(id)
+
+	c.JSON(http.StatusOK, gin.H{
+		"download_url": downloadURL,
+		"migration_id": id,
+	})
+}
+
 // UpdateStatus updates migration status (internal endpoint for AI service)
+// @Summary Update migration status (Internal)
+// @Description Internal endpoint for AI service to update migration status
+// @Tags internal
+// @Accept json
+// @Produce json
+// @Param id path int true "Migration ID"
+// @Param request body object true "Status update"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /internal/migrations/{id}/status [patch]
 func (h *MigrationsHandler) UpdateStatus(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -333,9 +589,13 @@ func (h *MigrationsHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	var req struct {
-		Status   string  `json:"status"`
-		Progress int     `json:"progress"`
-		Error    *string `json:"error,omitempty"`
+		Status           string  `json:"status"`
+		Progress         int     `json:"progress"`
+		Error            *string `json:"error,omitempty"`
+		TablesCount      *int    `json:"tables_count,omitempty"`
+		ViewsCount       *int    `json:"views_count,omitempty"`
+		ForeignKeysCount *int    `json:"foreign_keys_count,omitempty"`
+		ModelsGenerated  *int    `json:"models_generated,omitempty"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -351,6 +611,30 @@ func (h *MigrationsHandler) UpdateStatus(c *gin.Context) {
 	if req.Error != nil {
 		query += ", error = $" + strconv.Itoa(argIndex)
 		args = append(args, *req.Error)
+		argIndex++
+	}
+
+	if req.TablesCount != nil {
+		query += ", tables_count = $" + strconv.Itoa(argIndex)
+		args = append(args, *req.TablesCount)
+		argIndex++
+	}
+
+	if req.ViewsCount != nil {
+		query += ", views_count = $" + strconv.Itoa(argIndex)
+		args = append(args, *req.ViewsCount)
+		argIndex++
+	}
+
+	if req.ForeignKeysCount != nil {
+		query += ", foreign_keys_count = $" + strconv.Itoa(argIndex)
+		args = append(args, *req.ForeignKeysCount)
+		argIndex++
+	}
+
+	if req.ModelsGenerated != nil {
+		query += ", models_generated = $" + strconv.Itoa(argIndex)
+		args = append(args, *req.ModelsGenerated)
 		argIndex++
 	}
 

@@ -1,0 +1,50 @@
+# Multi-stage Dockerfile for Railway deployment
+# Builds frontend + backend in a single container
+
+# Stage 1: Build Frontend
+FROM node:20-alpine AS frontend-builder
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci --only=production=false
+COPY frontend/ ./
+RUN npm run build-only
+
+# Stage 2: Build Backend
+FROM golang:1.22-alpine AS backend-builder
+WORKDIR /backend
+RUN apk add --no-cache git
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+COPY backend/ ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server
+
+# Stage 3: Production Image
+FROM alpine:3.19
+WORKDIR /app
+
+# Install dependencies
+RUN apk --no-cache add ca-certificates tzdata nginx
+
+# Copy backend binary
+COPY --from=backend-builder /server ./server
+
+# Copy frontend build
+COPY --from=frontend-builder /frontend/dist /usr/share/nginx/html
+
+# Copy nginx config and startup script
+COPY deploy/nginx.conf /etc/nginx/http.d/default.conf
+COPY deploy/start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Create nginx directories and set permissions
+RUN mkdir -p /run/nginx && \
+    chown -R nginx:nginx /run/nginx
+
+# Expose port (Railway uses PORT env var, defaults to 80)
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD wget -q --spider http://localhost/health || exit 1
+
+CMD ["/app/start.sh"]

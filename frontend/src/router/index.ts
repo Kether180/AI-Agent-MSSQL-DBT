@@ -6,6 +6,7 @@ import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import MigrationsView from '@/views/MigrationsView.vue'
+import LandingView from '@/views/LandingView.vue'
 
 // Lazy-loaded views
 const MigrationDetailView = () => import('@/views/MigrationDetailView.vue')
@@ -14,12 +15,21 @@ const ProfileView = () => import('@/views/ProfileView.vue')
 const SettingsView = () => import('@/views/SettingsView.vue')
 const DocumentationView = () => import('@/views/DocumentationView.vue')
 const NotFoundView = () => import('@/views/NotFoundView.vue')
+const ForgotPasswordView = () => import('@/views/ForgotPasswordView.vue')
+const ResetPasswordView = () => import('@/views/ResetPasswordView.vue')
+const DataPrepAgentView = () => import('@/views/DataPrepAgentView.vue')
+const MLFineTuningView = () => import('@/views/MLFineTuningView.vue')
 
 // Route definitions
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/dashboard'
+    name: 'Landing',
+    component: LandingView,
+    meta: {
+      requiresAuth: false,
+      title: 'DataMigrate AI - AI-Powered Database Migrations'
+    }
   },
   {
     path: '/login',
@@ -39,6 +49,26 @@ const routes: Array<RouteRecordRaw> = [
       requiresAuth: false,
       title: 'Register - DataMigrate AI',
       guestOnly: true // Redirect to dashboard if already logged in
+    }
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPasswordView,
+    meta: {
+      requiresAuth: false,
+      title: 'Forgot Password - DataMigrate AI',
+      guestOnly: true
+    }
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPasswordView,
+    meta: {
+      requiresAuth: false,
+      title: 'Reset Password - DataMigrate AI',
+      guestOnly: true
     }
   },
   {
@@ -103,6 +133,24 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       requiresAuth: true,
       title: 'Documentation - DataMigrate AI'
+    }
+  },
+  {
+    path: '/agents/dataprep',
+    name: 'DataPrepAgent',
+    component: DataPrepAgentView,
+    meta: {
+      requiresAuth: true,
+      title: 'DataPrep AI Agent - DataMigrate AI'
+    }
+  },
+  {
+    path: '/agents/ml-finetuning',
+    name: 'MLFineTuning',
+    component: MLFineTuningView,
+    meta: {
+      requiresAuth: true,
+      title: 'ML Fine-Tuning Agent - DataMigrate AI'
     }
   },
   {

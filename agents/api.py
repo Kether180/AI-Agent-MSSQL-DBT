@@ -28,6 +28,11 @@ import uvicorn
 from .mssql_extractor import MSSQLExtractor, extract_mssql_metadata
 from .dbt_generator import DBTProjectGenerator, create_dbt_project
 from .validation_agent import ValidationAgent, validate_migration, enhance_schema_yml, SourceConnectionInfo
+from .dbt_executor import (
+    DbtExecutor, WarehouseConnection, WarehouseType,
+    DeploymentResult, DeploymentStatus, deploy_to_warehouse
+)
+from .data_quality_agent import DataQualityAgent, scan_source_data_quality
 
 # Configure logging
 logging.basicConfig(
@@ -976,6 +981,281 @@ async def chat(request: ChatRequest):
         return ChatResponse(
             response="I apologize, but I'm having trouble processing your request. Please try again or check the Documentation section for help."
         )
+
+
+# =============================================================================
+# WAREHOUSE DEPLOYMENT ENDPOINTS
+# =============================================================================
+
+class WarehouseConnectionRequest(BaseModel):
+    """Warehouse connection configuration"""
+    warehouse_type: str  # snowflake, bigquery, databricks
+    # Snowflake
+    account: Optional[str] = None
+    warehouse: Optional[str] = None
+    database: Optional[str] = None
+    schema_name: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+    # BigQuery
+    project: Optional[str] = None
+    dataset: Optional[str] = None
+    keyfile: Optional[str] = None
+    keyfile_json: Optional[Dict[str, Any]] = None
+    location: Optional[str] = None
+    # Databricks
+    host: Optional[str] = None
+    http_path: Optional[str] = None
+    token: Optional[str] = None
+    catalog: Optional[str] = None
+
+
+class DeployRequest(BaseModel):
+    """Request to deploy a migration to a warehouse"""
+    connection: WarehouseConnectionRequest
+    run_tests: bool = True
+    full_refresh: bool = False
+
+
+class DeployResponse(BaseModel):
+    """Deployment result response"""
+    deployment_id: Optional[int] = None
+    status: str
+    dbt_run: Optional[Dict[str, Any]] = None
+    dbt_test: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+
+
+# Store for deployment results
+deployments_store: Dict[int, Dict[str, Any]] = {}
+deployment_counter = [0]  # Using list to allow mutation in nested function
+
+
+@app.post("/migrations/{migration_id}/deploy", response_model=DeployResponse)
+async def deploy_migration(migration_id: int, request: DeployRequest, background_tasks: BackgroundTasks):
+    """
+    Deploy a completed migration to a target data warehouse.
+
+    This executes:
+    1. dbt run - Creates tables/views in the warehouse
+    2. dbt test - Validates data quality (optional)
+
+    Supports: Snowflake, BigQuery, Databricks
+    """
+    # Find the project path
+    project_path = find_migration_project_path(migration_id)
+
+    if not project_path:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No dbt project found for migration {migration_id}"
+        )
+
+    # Generate deployment ID
+    deployment_counter[0] += 1
+    deployment_id = deployment_counter[0]
+
+    # Build connection config
+    conn = request.connection
+    connection_config = {
+        "account": conn.account,
+        "warehouse": conn.warehouse,
+        "database": conn.database,
+        "schema": conn.schema_name,
+        "username": conn.username,
+        "password": conn.password,
+        "role": conn.role,
+        "project": conn.project,
+        "dataset": conn.dataset,
+        "keyfile": conn.keyfile,
+        "keyfile_json": conn.keyfile_json,
+        "location": conn.location,
+        "host": conn.host,
+        "http_path": conn.http_path,
+        "token": conn.token,
+        "catalog": conn.catalog,
+    }
+
+    # Initialize deployment record
+    deployments_store[deployment_id] = {
+        "deployment_id": deployment_id,
+        "migration_id": migration_id,
+        "status": "running",
+        "started_at": datetime.now().isoformat()
+    }
+
+    logger.info(f"Starting deployment {deployment_id} for migration {migration_id} to {conn.warehouse_type}")
+
+    # Run deployment in background
+    async def run_deployment():
+        try:
+            result = deploy_to_warehouse(
+                project_path=str(project_path),
+                warehouse_type=conn.warehouse_type,
+                connection_config=connection_config,
+                run_tests=request.run_tests,
+                full_refresh=request.full_refresh
+            )
+
+            deployments_store[deployment_id].update(result)
+            deployments_store[deployment_id]["completed_at"] = datetime.now().isoformat()
+
+            logger.info(f"Deployment {deployment_id} completed: {result.get('status')}")
+
+        except Exception as e:
+            logger.error(f"Deployment {deployment_id} failed: {e}", exc_info=True)
+            deployments_store[deployment_id]["status"] = "failed"
+            deployments_store[deployment_id]["error"] = str(e)
+            deployments_store[deployment_id]["completed_at"] = datetime.now().isoformat()
+
+    background_tasks.add_task(run_deployment)
+
+    return DeployResponse(
+        deployment_id=deployment_id,
+        status="running",
+        started_at=deployments_store[deployment_id]["started_at"]
+    )
+
+
+@app.get("/migrations/{migration_id}/deployments/{deployment_id}", response_model=DeployResponse)
+async def get_deployment_status(migration_id: int, deployment_id: int):
+    """Get the status of a deployment"""
+    if deployment_id not in deployments_store:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Deployment {deployment_id} not found"
+        )
+
+    deployment = deployments_store[deployment_id]
+
+    if deployment.get("migration_id") != migration_id:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Deployment {deployment_id} does not belong to migration {migration_id}"
+        )
+
+    return DeployResponse(
+        deployment_id=deployment.get("deployment_id"),
+        status=deployment.get("status", "unknown"),
+        dbt_run=deployment.get("dbt_run"),
+        dbt_test=deployment.get("dbt_test"),
+        error=deployment.get("error"),
+        started_at=deployment.get("started_at"),
+        completed_at=deployment.get("completed_at")
+    )
+
+
+@app.get("/migrations/{migration_id}/deployments")
+async def list_deployments(migration_id: int):
+    """List all deployments for a migration"""
+    deployments = [
+        d for d in deployments_store.values()
+        if d.get("migration_id") == migration_id
+    ]
+
+    return {
+        "migration_id": migration_id,
+        "deployments": deployments
+    }
+
+
+# =============================================================================
+# DATA QUALITY SCANNING ENDPOINTS
+# =============================================================================
+
+class DataQualityScanRequest(BaseModel):
+    """Request to scan source database for data quality issues"""
+    host: str
+    port: int = 1433
+    database: str
+    username: str = ""
+    password: str = ""
+    use_windows_auth: bool = False
+    tables: Optional[List[str]] = None
+    sample_size: int = 10000
+
+
+class DataQualityScanResponse(BaseModel):
+    """Data quality scan results"""
+    database_name: str
+    server: str
+    tables_scanned: int
+    total_rows_scanned: int
+    total_issues: int
+    critical_issues: int
+    error_issues: int
+    warning_issues: int
+    info_issues: int
+    overall_score: float
+    scan_started_at: Optional[str] = None
+    scan_completed_at: Optional[str] = None
+    issues_by_severity: Dict[str, List[Dict[str, Any]]]
+    tables: List[Dict[str, Any]]
+
+
+@app.post("/data-quality/scan", response_model=DataQualityScanResponse)
+async def scan_data_quality(request: DataQualityScanRequest):
+    """
+    Scan source MSSQL database for data quality issues.
+
+    This helps users understand what problems exist in their source data
+    BEFORE migration, so they can make informed decisions.
+
+    Checks include:
+    - Null value analysis (completeness)
+    - Duplicate detection (uniqueness)
+    - Foreign key violations (referential integrity)
+    - Missing primary keys
+    - Constant/low-cardinality columns
+
+    Returns a quality score (0-100) and detailed issue report.
+    """
+    try:
+        result = scan_source_data_quality(
+            server=request.host,
+            database=request.database,
+            username=request.username,
+            password=request.password,
+            port=request.port,
+            use_windows_auth=request.use_windows_auth,
+            tables=request.tables,
+            sample_size=request.sample_size
+        )
+
+        logger.info(f"Data quality scan completed: {result['tables_scanned']} tables, score: {result['overall_score']}")
+
+        return DataQualityScanResponse(**result)
+
+    except Exception as e:
+        logger.error(f"Data quality scan failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Data quality scan failed: {str(e)}"
+        )
+
+
+@app.post("/connections/{connection_id}/scan-quality")
+async def scan_connection_data_quality(connection_id: int):
+    """
+    Scan a saved connection for data quality issues.
+
+    This endpoint would integrate with the Go backend to fetch
+    connection details and run a scan. For now, returns a placeholder.
+    """
+    # In production, this would:
+    # 1. Fetch connection details from Go backend
+    # 2. Decrypt password
+    # 3. Run scan_source_data_quality
+    # 4. Return results
+
+    return {
+        "message": "This endpoint requires integration with Go backend",
+        "connection_id": connection_id,
+        "status": "not_implemented"
+    }
 
 
 # =============================================================================

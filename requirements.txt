@@ -30,6 +30,15 @@ rich>=13.0.0
 click>=8.1.0
 networkx>=3.0  # For dependency graph analysis
 
+# FastAPI AI Service
+fastapi>=0.109.0
+uvicorn>=0.27.0
+httpx>=0.26.0
+
+# RAG/Embeddings
+voyageai>=0.2.0
+cohere>=4.40.0
+
 # Development
 pytest>=7.4.0
 black>=23.0.0

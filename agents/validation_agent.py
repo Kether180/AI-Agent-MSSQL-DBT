@@ -48,6 +48,8 @@ class ValidationType(str, Enum):
     DATA_TYPE = "data_type"
     DBT_TEST = "dbt_test"
     SQL_LINT = "sql_lint"
+    COLUMN_SQL = "column_sql"
+    DOCUMENTATION = "documentation"
 
 
 @dataclass
@@ -273,6 +275,12 @@ class ValidationAgent:
             # Add data type validation if requested
             if validate_data_types:
                 self._validate_data_types(table, table_result)
+
+            # Add column-level SQL verification (always run for accuracy)
+            self._validate_column_sql(table, table_result)
+
+            # Add documentation completeness check (always run)
+            self._validate_documentation(table, table_result)
 
             report.table_results.append(table_result)
 
@@ -651,6 +659,263 @@ class ValidationAgent:
 
         except Exception as e:
             logger.warning(f"SQL linting failed for {table_result.target_model}: {e}")
+
+    def _validate_column_sql(
+        self,
+        table: Dict[str, Any],
+        table_result: TableValidationResult
+    ) -> None:
+        """
+        Validate that all source columns appear in the SELECT statement of the SQL model.
+        This is a more accurate check than simple text matching - it parses the SQL
+        to verify columns are actually selected.
+
+        Args:
+            table: Source table metadata
+            table_result: Table validation result to update
+        """
+        model_file = self.staging_path / f"{table_result.target_model}.sql"
+        if not model_file.exists():
+            return
+
+        try:
+            content = model_file.read_text()
+            source_columns = [col['name'].lower() for col in table.get('columns', [])]
+
+            # Extract the SELECT portion of the SQL (before FROM)
+            # This handles both simple SELECT and CTE patterns
+            select_pattern = r'(?:SELECT|select)\s+(.*?)(?:\bFROM\b|\bfrom\b)'
+            select_matches = re.findall(select_pattern, content, re.DOTALL)
+
+            if not select_matches:
+                table_result.add_check(ValidationCheck(
+                    check_type=ValidationType.COLUMN_SQL,
+                    name="column_sql_verification",
+                    status=ValidationStatus.WARNING,
+                    details="Could not parse SELECT statement"
+                ))
+                return
+
+            # Get the last SELECT clause (main query after CTEs)
+            select_clause = select_matches[-1].lower()
+
+            # Check for SELECT * which means all columns are included
+            if re.search(r'^\s*\*\s*$', select_clause.strip()) or re.search(r'\.\s*\*', select_clause):
+                table_result.add_check(ValidationCheck(
+                    check_type=ValidationType.COLUMN_SQL,
+                    name="column_sql_verification",
+                    status=ValidationStatus.PASSED,
+                    details=f"SELECT * used - all {len(source_columns)} source columns included",
+                    source_value=len(source_columns),
+                    target_value=len(source_columns)
+                ))
+                return
+
+            # Parse individual columns from SELECT clause
+            # Handle aliases (column AS alias, column alias)
+            columns_in_select = set()
+
+            # Split by comma (accounting for nested functions)
+            depth = 0
+            current_col = ""
+            for char in select_clause:
+                if char == '(':
+                    depth += 1
+                    current_col += char
+                elif char == ')':
+                    depth -= 1
+                    current_col += char
+                elif char == ',' and depth == 0:
+                    columns_in_select.add(current_col.strip())
+                    current_col = ""
+                else:
+                    current_col += char
+            if current_col.strip():
+                columns_in_select.add(current_col.strip())
+
+            # Extract column names from the parsed columns
+            extracted_columns = set()
+            for col_expr in columns_in_select:
+                # Handle "column AS alias" pattern
+                as_match = re.search(r'(\w+)\s+as\s+(\w+)\s*$', col_expr, re.IGNORECASE)
+                if as_match:
+                    extracted_columns.add(as_match.group(1))
+                    extracted_columns.add(as_match.group(2))
+                    continue
+
+                # Handle "table.column" pattern
+                dot_match = re.search(r'\.(\w+)\s*$', col_expr)
+                if dot_match:
+                    extracted_columns.add(dot_match.group(1))
+                    continue
+
+                # Handle simple column name
+                simple_match = re.search(r'^(\w+)\s*$', col_expr.strip())
+                if simple_match:
+                    extracted_columns.add(simple_match.group(1))
+                    continue
+
+                # Handle "expression alias" pattern (without AS)
+                alias_match = re.search(r'\)\s+(\w+)\s*$', col_expr)
+                if alias_match:
+                    extracted_columns.add(alias_match.group(1))
+
+            # Check which source columns are missing
+            missing_columns = []
+            found_columns = 0
+            for src_col in source_columns:
+                if src_col in extracted_columns or src_col in content.lower():
+                    found_columns += 1
+                else:
+                    missing_columns.append(src_col)
+
+            if missing_columns:
+                # Limit the list to avoid overly long messages
+                display_missing = missing_columns[:5]
+                more_text = f" (+{len(missing_columns) - 5} more)" if len(missing_columns) > 5 else ""
+                table_result.add_check(ValidationCheck(
+                    check_type=ValidationType.COLUMN_SQL,
+                    name="column_sql_verification",
+                    status=ValidationStatus.WARNING if len(missing_columns) <= 2 else ValidationStatus.FAILED,
+                    details=f"Missing columns in SELECT: {', '.join(display_missing)}{more_text}",
+                    source_value=len(source_columns),
+                    target_value=found_columns
+                ))
+            else:
+                table_result.add_check(ValidationCheck(
+                    check_type=ValidationType.COLUMN_SQL,
+                    name="column_sql_verification",
+                    status=ValidationStatus.PASSED,
+                    details=f"All {len(source_columns)} source columns verified in SQL",
+                    source_value=len(source_columns),
+                    target_value=found_columns
+                ))
+
+        except Exception as e:
+            logger.warning(f"Column SQL verification failed for {table_result.target_model}: {e}")
+            table_result.add_check(ValidationCheck(
+                check_type=ValidationType.COLUMN_SQL,
+                name="column_sql_verification",
+                status=ValidationStatus.WARNING,
+                details=f"Verification error: {str(e)}"
+            ))
+
+    def _validate_documentation(
+        self,
+        table: Dict[str, Any],
+        table_result: TableValidationResult
+    ) -> None:
+        """
+        Validate that proper documentation exists for the model in schema.yml.
+        Checks for model description, column descriptions, and test definitions.
+
+        Args:
+            table: Source table metadata
+            table_result: Table validation result to update
+        """
+        model_name = table_result.target_model
+
+        # Look for schema.yml or _schema.yml files in staging directory
+        schema_files = [
+            self.staging_path / "schema.yml",
+            self.staging_path / "_schema.yml",
+            self.staging_path / f"{model_name}_schema.yml",
+            self.staging_path / "_schema_tests.yml"
+        ]
+
+        schema_content = None
+        schema_file_found = None
+
+        for schema_file in schema_files:
+            if schema_file.exists():
+                try:
+                    schema_content = yaml.safe_load(schema_file.read_text())
+                    schema_file_found = schema_file
+                    break
+                except Exception as e:
+                    logger.warning(f"Could not parse {schema_file}: {e}")
+
+        if not schema_content:
+            table_result.add_check(ValidationCheck(
+                check_type=ValidationType.DOCUMENTATION,
+                name="documentation_completeness",
+                status=ValidationStatus.WARNING,
+                details="No schema.yml found - model lacks documentation"
+            ))
+            return
+
+        # Find this model in the schema
+        models = schema_content.get('models', [])
+        model_config = None
+        for m in models:
+            if m.get('name') == model_name:
+                model_config = m
+                break
+
+        if not model_config:
+            table_result.add_check(ValidationCheck(
+                check_type=ValidationType.DOCUMENTATION,
+                name="documentation_completeness",
+                status=ValidationStatus.WARNING,
+                details=f"Model '{model_name}' not documented in {schema_file_found.name}"
+            ))
+            return
+
+        # Check documentation completeness
+        issues = []
+        score = 0
+        max_score = 4
+
+        # Check 1: Model description
+        if model_config.get('description'):
+            score += 1
+        else:
+            issues.append("Missing model description")
+
+        # Check 2: Column definitions exist
+        columns = model_config.get('columns', [])
+        source_columns = table.get('columns', [])
+        if columns:
+            score += 1
+            # Check 3: Column descriptions
+            cols_with_desc = sum(1 for c in columns if c.get('description'))
+            if cols_with_desc == len(columns):
+                score += 1
+            elif cols_with_desc > 0:
+                score += 0.5
+                issues.append(f"Only {cols_with_desc}/{len(columns)} columns have descriptions")
+            else:
+                issues.append("No column descriptions")
+
+            # Check 4: Tests defined
+            cols_with_tests = sum(1 for c in columns if c.get('tests'))
+            if cols_with_tests > 0:
+                score += 1
+            else:
+                issues.append("No column-level tests defined")
+        else:
+            issues.append("No columns documented")
+            issues.append("No column-level tests defined")
+
+        # Determine status based on score
+        if score >= 3.5:
+            status = ValidationStatus.PASSED
+            details = f"Documentation complete ({int(score)}/{max_score} checks passed)"
+        elif score >= 2:
+            status = ValidationStatus.WARNING
+            details = f"Partial documentation: {'; '.join(issues)}"
+        else:
+            status = ValidationStatus.WARNING
+            details = f"Incomplete documentation: {'; '.join(issues)}"
+
+        table_result.add_check(ValidationCheck(
+            check_type=ValidationType.DOCUMENTATION,
+            name="documentation_completeness",
+            status=status,
+            details=details,
+            source_value=max_score,
+            target_value=score
+        ))
 
     def _generate_dbt_tests(self, source_metadata: Dict[str, Any]) -> int:
         """

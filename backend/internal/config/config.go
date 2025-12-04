@@ -24,11 +24,17 @@ type Config struct {
 	JWTSecret     string
 	JWTExpiration int // hours
 
+	// Encryption - for encrypting sensitive data like database passwords
+	EncryptionKey string // 32-byte key for AES-256, base64 encoded or raw 32 chars
+
 	// CORS
 	AllowedOrigins []string
 
 	// AI Service
 	AIServiceURL string
+
+	// Environment
+	Environment string // development, staging, production
 }
 
 func Load() (*Config, error) {
@@ -59,11 +65,28 @@ func Load() (*Config, error) {
 			"http://localhost:3000",
 		},
 
-		// AI Service
-		AIServiceURL: getEnv("AI_SERVICE_URL", "http://localhost:8001"),
+		// AI Service (Python FastAPI microservice)
+		AIServiceURL: getEnv("AI_SERVICE_URL", "http://localhost:8081"),
+
+		// Encryption key for database credentials (REQUIRED in production)
+		// Generate with: openssl rand -base64 32
+		EncryptionKey: getEnv("ENCRYPTION_KEY", ""),
+
+		// Environment
+		Environment: getEnv("ENVIRONMENT", "development"),
 	}
 
 	return cfg, nil
+}
+
+// IsProduction returns true if running in production environment
+func (c *Config) IsProduction() bool {
+	return c.Environment == "production"
+}
+
+// IsDevelopment returns true if running in development environment
+func (c *Config) IsDevelopment() bool {
+	return c.Environment == "development" || c.Environment == ""
 }
 
 func (c *Config) GetDSN() string {

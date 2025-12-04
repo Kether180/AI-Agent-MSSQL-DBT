@@ -90,6 +90,9 @@ func RunMigrations() error {
 		source_database VARCHAR(255),
 		target_project VARCHAR(255),
 		tables_count INTEGER DEFAULT 0,
+		views_count INTEGER DEFAULT 0,
+		foreign_keys_count INTEGER DEFAULT 0,
+		models_generated INTEGER DEFAULT 0,
 		user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
 		error TEXT,
 		config JSONB,
@@ -106,8 +109,9 @@ func RunMigrations() error {
 		host VARCHAR(255) NOT NULL,
 		port INTEGER NOT NULL,
 		database_name VARCHAR(255) NOT NULL,
-		username VARCHAR(255) NOT NULL,
-		password VARCHAR(255) NOT NULL,
+		username VARCHAR(255),
+		password VARCHAR(255),
+		use_windows_auth BOOLEAN DEFAULT FALSE,
 		is_source BOOLEAN DEFAULT TRUE,
 		user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -133,6 +137,25 @@ func RunMigrations() error {
 		level VARCHAR(20) NOT NULL,
 		message TEXT NOT NULL,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	-- Warehouse deployments table (for tracking dbt deployments)
+	CREATE TABLE IF NOT EXISTS warehouse_deployments (
+		id SERIAL PRIMARY KEY,
+		migration_id INTEGER REFERENCES migrations(id) ON DELETE CASCADE,
+		connection_id INTEGER REFERENCES database_connections(id) ON DELETE CASCADE,
+		status VARCHAR(50) DEFAULT 'pending',
+		dbt_run_status VARCHAR(50),
+		dbt_test_status VARCHAR(50),
+		tables_created INTEGER DEFAULT 0,
+		tests_passed INTEGER DEFAULT 0,
+		tests_failed INTEGER DEFAULT 0,
+		dbt_run_output TEXT,
+		dbt_test_output TEXT,
+		error TEXT,
+		user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		completed_at TIMESTAMP
 	);
 
 	-- Security audit logs table (Guardian Agent)
@@ -188,6 +211,16 @@ func RunMigrations() error {
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);
 
+	-- Password reset tokens table
+	CREATE TABLE IF NOT EXISTS password_reset_tokens (
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+		token VARCHAR(255) UNIQUE NOT NULL,
+		expires_at TIMESTAMP NOT NULL,
+		used_at TIMESTAMP,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
 	-- Create indexes (indexes for organization_id columns created after ALTER TABLE)
 	CREATE INDEX IF NOT EXISTS idx_organizations_slug ON organizations(slug);
 	CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -204,6 +237,8 @@ func RunMigrations() error {
 	CREATE INDEX IF NOT EXISTS idx_security_audit_logs_created_at ON security_audit_logs(created_at);
 	CREATE INDEX IF NOT EXISTS idx_rate_limits_identifier ON rate_limits(identifier);
 	CREATE INDEX IF NOT EXISTS idx_blocked_patterns_type ON blocked_patterns(pattern_type);
+	CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+	CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
 	`
 
 	_, err := DB.Exec(schema)
@@ -236,13 +271,29 @@ func runAlterTableMigrations() error {
 		// Add organization_id to migrations table
 		"ALTER TABLE migrations ADD COLUMN IF NOT EXISTS organization_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE",
 
+		// Add migration metadata columns
+		"ALTER TABLE migrations ADD COLUMN IF NOT EXISTS views_count INTEGER DEFAULT 0",
+		"ALTER TABLE migrations ADD COLUMN IF NOT EXISTS foreign_keys_count INTEGER DEFAULT 0",
+		"ALTER TABLE migrations ADD COLUMN IF NOT EXISTS models_generated INTEGER DEFAULT 0",
+
 		// Add organization_id to database_connections table
 		"ALTER TABLE database_connections ADD COLUMN IF NOT EXISTS organization_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE",
+
+		// Add use_windows_auth column to database_connections table
+		"ALTER TABLE database_connections ADD COLUMN IF NOT EXISTS use_windows_auth BOOLEAN DEFAULT FALSE",
+
+		// Make username and password nullable for Windows Auth
+		"ALTER TABLE database_connections ALTER COLUMN username DROP NOT NULL",
+		"ALTER TABLE database_connections ALTER COLUMN password DROP NOT NULL",
+
+		// Add extra_config for warehouse-specific settings (Snowflake, BigQuery, Databricks)
+		"ALTER TABLE database_connections ADD COLUMN IF NOT EXISTS extra_config JSONB",
 
 		// Create indexes for organization_id columns
 		"CREATE INDEX IF NOT EXISTS idx_users_organization_id ON users(organization_id)",
 		"CREATE INDEX IF NOT EXISTS idx_migrations_organization_id ON migrations(organization_id)",
 		"CREATE INDEX IF NOT EXISTS idx_database_connections_organization_id ON database_connections(organization_id)",
+		"CREATE INDEX IF NOT EXISTS idx_warehouse_deployments_migration_id ON warehouse_deployments(migration_id)",
 	}
 
 	for _, stmt := range alterStatements {

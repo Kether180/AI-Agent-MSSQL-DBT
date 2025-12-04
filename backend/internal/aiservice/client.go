@@ -150,3 +150,90 @@ func (c *Client) HealthCheck() error {
 
 	return nil
 }
+
+// DBTFile represents a file in the generated dbt project
+type DBTFile struct {
+	Path string `json:"path"`
+	Name string `json:"name"`
+	Size int64  `json:"size"`
+	Type string `json:"type"`
+}
+
+// DBTFilesResponse represents the list of files response
+type DBTFilesResponse struct {
+	MigrationID int64     `json:"migration_id"`
+	ProjectPath string    `json:"project_path"`
+	Files       []DBTFile `json:"files"`
+}
+
+// DBTFileContent represents file content response
+type DBTFileContent struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+	Size    int    `json:"size"`
+}
+
+// GetMigrationFiles gets the list of generated dbt files
+func (c *Client) GetMigrationFiles(migrationID int64) (*DBTFilesResponse, error) {
+	resp, err := c.httpClient.Get(
+		fmt.Sprintf("%s/migrations/%d/files", c.baseURL, migrationID),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call AI service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("migration not found in AI service")
+	}
+
+	if resp.StatusCode == http.StatusBadRequest {
+		var errResp struct {
+			Detail string `json:"detail"`
+		}
+		json.NewDecoder(resp.Body).Decode(&errResp)
+		return nil, fmt.Errorf(errResp.Detail)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("AI service error (status %d)", resp.StatusCode)
+	}
+
+	var result DBTFilesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// GetMigrationFileContent gets the content of a specific dbt file
+func (c *Client) GetMigrationFileContent(migrationID int64, filePath string) (*DBTFileContent, error) {
+	resp, err := c.httpClient.Get(
+		fmt.Sprintf("%s/migrations/%d/files/%s", c.baseURL, migrationID, filePath),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call AI service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("file not found")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("AI service error (status %d)", resp.StatusCode)
+	}
+
+	var result DBTFileContent
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// GetMigrationDownloadURL returns the URL to download the dbt project
+func (c *Client) GetMigrationDownloadURL(migrationID int64) string {
+	return fmt.Sprintf("%s/migrations/%d/download", c.baseURL, migrationID)
+}

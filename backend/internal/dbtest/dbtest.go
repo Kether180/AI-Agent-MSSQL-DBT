@@ -12,12 +12,13 @@ import (
 
 // ConnectionParams holds the parameters for testing a database connection
 type ConnectionParams struct {
-	DBType   string
-	Host     string
-	Port     int
-	Database string
-	Username string
-	Password string
+	DBType         string
+	Host           string
+	Port           int
+	Database       string
+	Username       string
+	Password       string
+	UseWindowsAuth bool
 }
 
 // TestResult holds the result of a connection test
@@ -40,10 +41,19 @@ func TestConnection(params ConnectionParams) TestResult {
 	switch params.DBType {
 	case "mssql", "sqlserver":
 		driver = "sqlserver"
-		dsn = fmt.Sprintf(
-			"server=%s;port=%d;database=%s;user id=%s;password=%s;connection timeout=10",
-			params.Host, params.Port, params.Database, params.Username, params.Password,
-		)
+		if params.UseWindowsAuth {
+			// Windows Authentication (Trusted Connection)
+			dsn = fmt.Sprintf(
+				"server=%s;port=%d;database=%s;trusted_connection=yes;connection timeout=10",
+				params.Host, params.Port, params.Database,
+			)
+		} else {
+			// SQL Server Authentication
+			dsn = fmt.Sprintf(
+				"server=%s;port=%d;database=%s;user id=%s;password=%s;connection timeout=10",
+				params.Host, params.Port, params.Database, params.Username, params.Password,
+			)
+		}
 	case "postgresql", "postgres":
 		driver = "postgres"
 		dsn = fmt.Sprintf(
@@ -123,4 +133,182 @@ func TestConnection(params ConnectionParams) TestResult {
 		ServerInfo: serverInfo,
 		TableCount: tableCount,
 	}
+}
+
+// TableInfo holds information about a database table
+type TableInfo struct {
+	Name     string `json:"name"`
+	Schema   string `json:"schema"`
+	RowCount int64  `json:"row_count"`
+}
+
+// ColumnInfo holds information about a column
+type ColumnInfo struct {
+	Name       string `json:"name"`
+	DataType   string `json:"data_type"`
+	IsNullable bool   `json:"is_nullable"`
+	MaxLength  int    `json:"max_length,omitempty"`
+}
+
+// ViewInfo holds information about a database view
+type ViewInfo struct {
+	Name   string `json:"name"`
+	Schema string `json:"schema"`
+}
+
+// MetadataResult holds all extracted metadata from a database
+type MetadataResult struct {
+	Database string      `json:"database"`
+	Tables   []TableInfo `json:"tables"`
+	Views    []ViewInfo  `json:"views"`
+	Success  bool        `json:"success"`
+	Error    string      `json:"error,omitempty"`
+}
+
+// ExtractMetadata extracts tables, views, and columns from a database
+func ExtractMetadata(params ConnectionParams) MetadataResult {
+	result := MetadataResult{
+		Database: params.Database,
+		Tables:   []TableInfo{},
+		Views:    []ViewInfo{},
+		Success:  false,
+	}
+
+	// Build connection string based on database type
+	var dsn string
+	var driver string
+
+	switch params.DBType {
+	case "mssql", "sqlserver":
+		driver = "sqlserver"
+		if params.UseWindowsAuth {
+			// Windows Authentication (Trusted Connection)
+			dsn = fmt.Sprintf(
+				"server=%s;port=%d;database=%s;trusted_connection=yes;connection timeout=30",
+				params.Host, params.Port, params.Database,
+			)
+		} else {
+			// SQL Server Authentication
+			dsn = fmt.Sprintf(
+				"server=%s;port=%d;database=%s;user id=%s;password=%s;connection timeout=30",
+				params.Host, params.Port, params.Database, params.Username, params.Password,
+			)
+		}
+	case "postgresql", "postgres":
+		driver = "postgres"
+		dsn = fmt.Sprintf(
+			"host=%s port=%d dbname=%s user=%s password=%s sslmode=disable connect_timeout=30",
+			params.Host, params.Port, params.Database, params.Username, params.Password,
+		)
+	default:
+		result.Error = fmt.Sprintf("Unsupported database type: %s", params.DBType)
+		return result
+	}
+
+	// Open connection
+	db, err := sql.Open(driver, dsn)
+	if err != nil {
+		result.Error = fmt.Sprintf("Failed to create connection: %v", err)
+		return result
+	}
+	defer db.Close()
+
+	// Set connection pool settings
+	db.SetMaxOpenConns(5)
+	db.SetMaxIdleConns(2)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	// Create context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	// Ping the database
+	if err := db.PingContext(ctx); err != nil {
+		result.Error = fmt.Sprintf("Connection failed: %v", err)
+		return result
+	}
+
+	// Extract tables and views based on database type
+	switch params.DBType {
+	case "mssql", "sqlserver":
+		// Get tables with row counts
+		rows, err := db.QueryContext(ctx, `
+			SELECT
+				t.TABLE_SCHEMA,
+				t.TABLE_NAME,
+				ISNULL(p.rows, 0) as row_count
+			FROM INFORMATION_SCHEMA.TABLES t
+			LEFT JOIN sys.tables st ON st.name = t.TABLE_NAME
+			LEFT JOIN sys.partitions p ON st.object_id = p.object_id AND p.index_id IN (0, 1)
+			WHERE t.TABLE_TYPE = 'BASE TABLE'
+			AND t.TABLE_CATALOG = @p1
+			ORDER BY t.TABLE_SCHEMA, t.TABLE_NAME
+		`, params.Database)
+		if err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var table TableInfo
+				if err := rows.Scan(&table.Schema, &table.Name, &table.RowCount); err == nil {
+					result.Tables = append(result.Tables, table)
+				}
+			}
+		}
+
+		// Get views
+		viewRows, err := db.QueryContext(ctx, `
+			SELECT TABLE_SCHEMA, TABLE_NAME
+			FROM INFORMATION_SCHEMA.VIEWS
+			WHERE TABLE_CATALOG = @p1
+			ORDER BY TABLE_SCHEMA, TABLE_NAME
+		`, params.Database)
+		if err == nil {
+			defer viewRows.Close()
+			for viewRows.Next() {
+				var view ViewInfo
+				if err := viewRows.Scan(&view.Schema, &view.Name); err == nil {
+					result.Views = append(result.Views, view)
+				}
+			}
+		}
+
+	case "postgresql", "postgres":
+		// Get tables with row counts (estimated)
+		rows, err := db.QueryContext(ctx, `
+			SELECT
+				schemaname,
+				tablename,
+				COALESCE(n_live_tup, 0) as row_count
+			FROM pg_stat_user_tables
+			ORDER BY schemaname, tablename
+		`)
+		if err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var table TableInfo
+				if err := rows.Scan(&table.Schema, &table.Name, &table.RowCount); err == nil {
+					result.Tables = append(result.Tables, table)
+				}
+			}
+		}
+
+		// Get views
+		viewRows, err := db.QueryContext(ctx, `
+			SELECT table_schema, table_name
+			FROM information_schema.views
+			WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+			ORDER BY table_schema, table_name
+		`)
+		if err == nil {
+			defer viewRows.Close()
+			for viewRows.Next() {
+				var view ViewInfo
+				if err := viewRows.Scan(&view.Schema, &view.Name); err == nil {
+					result.Views = append(result.Views, view)
+				}
+			}
+		}
+	}
+
+	result.Success = true
+	return result
 }

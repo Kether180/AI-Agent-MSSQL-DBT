@@ -15,6 +15,7 @@
         </div>
         <div class="hidden md:flex items-center space-x-8">
           <a href="#features" class="text-slate-300 hover:text-white transition-colors">Features</a>
+          <a href="#agents" class="text-slate-300 hover:text-white transition-colors">AI Agents</a>
           <a href="#how-it-works" class="text-slate-300 hover:text-white transition-colors">How It Works</a>
           <a href="#security" class="text-slate-300 hover:text-white transition-colors">Security</a>
           <router-link to="/login" class="text-slate-300 hover:text-white transition-colors">Sign In</router-link>
@@ -42,21 +43,38 @@
       <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzAgMzBtLTEgMGExIDEgMCAxIDAgMiAwYTEgMSAwIDEgMCAtMiAwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiLz48L2c+PC9zdmc+')] opacity-40"></div>
 
       <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+        <!-- Animated Logo -->
+        <div class="mb-8 flex justify-center">
+          <div class="relative">
+            <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl shadow-purple-500/40 animate-float">
+              <svg class="w-12 h-12 md:w-14 md:h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+              </svg>
+            </div>
+            <!-- Glow rings -->
+            <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 blur-xl opacity-40 animate-pulse"></div>
+          </div>
+        </div>
+
         <div class="inline-flex items-center px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 mb-8 backdrop-blur-sm">
           <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
-          <span class="text-slate-300 text-sm">Powered by Claude AI</span>
+          <span class="text-slate-300 text-sm">8 Specialized AI Agents Working for You</span>
         </div>
 
         <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-          <span class="text-white">Database Migrations</span><br>
           <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Reimagined with AI
+            AI Agents
+          </span>
+          <span class="text-white"> That Migrate</span><br>
+          <span class="text-white">Your Data </span>
+          <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+            Autonomously
           </span>
         </h1>
 
         <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-          Transform your legacy databases to modern data warehouses with AI-powered schema mapping,
-          automated DBT transformations, and intelligent data quality analysis.
+          Meet your new data engineering team: intelligent AI agents that extract, transform, validate,
+          and document your database migrations with enterprise-grade precision.
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -103,6 +121,199 @@
         <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
+      </div>
+    </section>
+
+    <!-- Integrations / Data Warehouses Section -->
+    <section class="py-20 bg-gradient-to-b from-slate-900 via-slate-800/50 to-slate-900 relative overflow-hidden">
+      <!-- Background decorations -->
+      <div class="absolute inset-0 opacity-30">
+        <div class="absolute top-0 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full filter blur-3xl"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <!-- Section Header -->
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/30 mb-4">
+            <svg class="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span class="text-blue-300 text-sm font-medium">Seamless Integrations</span>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">
+            Connect to <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Any Platform</span>
+          </h2>
+          <p class="text-slate-400 max-w-2xl mx-auto">
+            Migrate to modern cloud data warehouses with native connectors and optimized data pipelines
+          </p>
+        </div>
+
+        <!-- Target Data Warehouses -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-16">
+          <!-- Snowflake -->
+          <div class="group relative">
+            <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1">
+              <div class="flex flex-col items-center">
+                <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-blue-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-3xl">❄️</span>
+                </div>
+                <span class="text-white text-sm font-semibold">Snowflake</span>
+                <span class="text-blue-400 text-xs mt-1">Cloud DW</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Google BigQuery -->
+          <div class="group relative">
+            <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/10 hover:-translate-y-1">
+              <div class="flex flex-col items-center">
+                <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-yellow-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-3xl">🔷</span>
+                </div>
+                <span class="text-white text-sm font-semibold">BigQuery</span>
+                <span class="text-yellow-400 text-xs mt-1">Google Cloud</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Databricks -->
+          <div class="group relative">
+            <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-red-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 hover:-translate-y-1">
+              <div class="flex flex-col items-center">
+                <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-red-400/20 to-orange-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-3xl">🧱</span>
+                </div>
+                <span class="text-white text-sm font-semibold">Databricks</span>
+                <span class="text-red-400 text-xs mt-1">Lakehouse</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Amazon Redshift -->
+          <div class="group relative">
+            <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-orange-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-1">
+              <div class="flex flex-col items-center">
+                <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-orange-400/20 to-red-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-3xl">🔶</span>
+                </div>
+                <span class="text-white text-sm font-semibold">Redshift</span>
+                <span class="text-orange-400 text-xs mt-1">AWS</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Azure Synapse -->
+          <div class="group relative">
+            <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-cyan-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-1">
+              <div class="flex flex-col items-center">
+                <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-cyan-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-3xl">🔹</span>
+                </div>
+                <span class="text-white text-sm font-semibold">Synapse</span>
+                <span class="text-cyan-400 text-xs mt-1">Azure</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- dbt -->
+          <div class="group relative">
+            <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-1">
+              <div class="flex flex-col items-center">
+                <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-orange-400/20 to-orange-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-3xl">⚡</span>
+                </div>
+                <span class="text-white text-sm font-semibold">dbt</span>
+                <span class="text-orange-500 text-xs mt-1">Transform</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apache Spark -->
+          <div class="group relative">
+            <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-orange-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-1">
+              <div class="flex flex-col items-center">
+                <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-orange-500/20 to-yellow-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-3xl">🔥</span>
+                </div>
+                <span class="text-white text-sm font-semibold">Spark</span>
+                <span class="text-orange-600 text-xs mt-1">Apache</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Animated Connection Line -->
+        <div class="flex items-center justify-center mb-12">
+          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+          <div class="px-6 py-3 bg-slate-800/80 rounded-full border border-slate-700/50 mx-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span class="text-slate-300 text-sm font-medium">AI-Powered Migration Pipeline</span>
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </div>
+          </div>
+          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+        </div>
+
+        <!-- Source Databases -->
+        <div class="text-center mb-8">
+          <h3 class="text-xl font-semibold text-white mb-2">Extract from Legacy Systems</h3>
+          <p class="text-slate-500 text-sm">Connect to your existing databases with secure, read-only access</p>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-3">
+          <div class="group px-5 py-3 bg-gradient-to-r from-blue-900/40 to-slate-800/40 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all hover:shadow-lg hover:shadow-blue-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">🗄️</span>
+              <span class="text-white font-medium">MSSQL Server</span>
+            </div>
+          </div>
+          <div class="group px-5 py-3 bg-gradient-to-r from-blue-900/40 to-slate-800/40 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all hover:shadow-lg hover:shadow-blue-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">🐘</span>
+              <span class="text-white font-medium">PostgreSQL</span>
+            </div>
+          </div>
+          <div class="group px-5 py-3 bg-gradient-to-r from-orange-900/40 to-slate-800/40 rounded-xl border border-orange-500/30 hover:border-orange-400/50 transition-all hover:shadow-lg hover:shadow-orange-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">🐬</span>
+              <span class="text-white font-medium">MySQL</span>
+            </div>
+          </div>
+          <div class="group px-5 py-3 bg-gradient-to-r from-red-900/40 to-slate-800/40 rounded-xl border border-red-500/30 hover:border-red-400/50 transition-all hover:shadow-lg hover:shadow-red-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">🔴</span>
+              <span class="text-white font-medium">Oracle</span>
+            </div>
+          </div>
+          <div class="group px-5 py-3 bg-gradient-to-r from-purple-900/40 to-slate-800/40 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all hover:shadow-lg hover:shadow-purple-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">💾</span>
+              <span class="text-white font-medium">IBM DB2</span>
+            </div>
+          </div>
+          <div class="group px-5 py-3 bg-gradient-to-r from-green-900/40 to-slate-800/40 rounded-xl border border-green-500/30 hover:border-green-400/50 transition-all hover:shadow-lg hover:shadow-green-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">🍃</span>
+              <span class="text-white font-medium">MongoDB</span>
+            </div>
+          </div>
+          <div class="group px-5 py-3 bg-gradient-to-r from-cyan-900/40 to-slate-800/40 rounded-xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all hover:shadow-lg hover:shadow-cyan-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">📊</span>
+              <span class="text-white font-medium">SAP HANA</span>
+            </div>
+          </div>
+          <div class="group px-5 py-3 bg-gradient-to-r from-slate-700/40 to-slate-800/40 rounded-xl border border-slate-500/30 hover:border-slate-400/50 transition-all hover:shadow-lg hover:shadow-slate-500/10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">📁</span>
+              <span class="text-white font-medium">CSV / Excel</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -188,8 +399,163 @@
       </div>
     </section>
 
+    <!-- AI Agents Section -->
+    <section id="agents" class="py-24 bg-gradient-to-b from-slate-900 to-slate-800 relative overflow-hidden">
+      <div class="absolute inset-0 opacity-20">
+        <div class="absolute top-1/3 left-1/4 w-72 h-72 bg-cyan-500/30 rounded-full filter blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-1/3 right-1/4 w-72 h-72 bg-purple-500/30 rounded-full filter blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 mb-6">
+            <svg class="w-5 h-5 text-cyan-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span class="text-cyan-300 text-sm font-medium">Autonomous AI Agents</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+            Meet Your AI <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Data Team</span>
+          </h2>
+          <p class="text-xl text-slate-400 max-w-2xl mx-auto">
+            Eight specialized AI agents work together to handle every aspect of your database migration
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Agent 1: MSSQL Extractor -->
+          <div class="group p-6 bg-gradient-to-br from-blue-900/40 to-slate-800/40 rounded-2xl border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">MSSQL Extractor Agent</h3>
+                <span class="text-xs text-blue-400 font-medium">Schema Analysis</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">Connects to your MSSQL databases, extracts schemas, relationships, and metadata with zero manual configuration.</p>
+          </div>
+
+          <!-- Agent 2: Data Prep Agent -->
+          <div class="group p-6 bg-gradient-to-br from-purple-900/40 to-slate-800/40 rounded-2xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Data Prep Agent</h3>
+                <span class="text-xs text-purple-400 font-medium">Transformation</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">Cleans, normalizes, and prepares your data with intelligent type conversions and null handling strategies.</p>
+          </div>
+
+          <!-- Agent 3: DBT Generator Agent -->
+          <div class="group p-6 bg-gradient-to-br from-orange-900/40 to-slate-800/40 rounded-2xl border border-orange-500/30 hover:border-orange-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">DBT Generator Agent</h3>
+                <span class="text-xs text-orange-400 font-medium">Code Generation</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">Auto-generates production-ready DBT models, staging layers, and tests following best practices.</p>
+          </div>
+
+          <!-- Agent 4: Data Quality Agent -->
+          <div class="group p-6 bg-gradient-to-br from-green-900/40 to-slate-800/40 rounded-2xl border border-green-500/30 hover:border-green-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Data Quality Agent</h3>
+                <span class="text-xs text-green-400 font-medium">Validation</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">ML-powered anomaly detection, pattern validation, and continuous data quality monitoring.</p>
+          </div>
+
+          <!-- Agent 5: Documentation Agent -->
+          <div class="group p-6 bg-gradient-to-br from-cyan-900/40 to-slate-800/40 rounded-2xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Documentation Agent</h3>
+                <span class="text-xs text-cyan-400 font-medium">Auto-Docs</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">Generates comprehensive data dictionaries, lineage diagrams, and technical documentation automatically.</p>
+          </div>
+
+          <!-- Agent 6: ML Fine-tuning Agent -->
+          <div class="group p-6 bg-gradient-to-br from-pink-900/40 to-slate-800/40 rounded-2xl border border-pink-500/30 hover:border-pink-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">ML Fine-tuning Agent</h3>
+                <span class="text-xs text-pink-400 font-medium">Learning</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">Learns from your data patterns to continuously improve mapping accuracy and transformation quality.</p>
+          </div>
+
+          <!-- Agent 7: BI Analytics Agent -->
+          <div class="group p-6 bg-gradient-to-br from-indigo-900/40 to-slate-800/40 rounded-2xl border border-indigo-500/30 hover:border-indigo-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">BI Analytics Agent</h3>
+                <span class="text-xs text-indigo-400 font-medium">Insights</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">Connects BI tools, optimizes queries, and provides AI-assisted analytics for better business insights.</p>
+          </div>
+
+          <!-- Agent 8: Validation Agent -->
+          <div class="group p-6 bg-gradient-to-br from-amber-900/40 to-slate-800/40 rounded-2xl border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Validation Agent</h3>
+                <span class="text-xs text-amber-400 font-medium">Testing</span>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm">Runs comprehensive validation tests, compares source-target data, and ensures migration completeness.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- How It Works Section -->
-    <section id="how-it-works" class="py-24 bg-gradient-to-b from-slate-900 to-slate-800 relative">
+    <section id="how-it-works" class="py-24 bg-slate-800 relative">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
           <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -413,8 +779,11 @@
               </div>
               <span class="text-xl font-bold text-white">DataMigrate AI</span>
             </div>
-            <p class="text-slate-400 text-sm">
+            <p class="text-slate-400 text-sm mb-2">
               AI-powered database migrations for the modern data stack.
+            </p>
+            <p class="text-slate-500 text-xs">
+              A product by <span class="text-slate-400 font-medium">Okoinvestments ApS</span>
             </p>
           </div>
 
@@ -422,6 +791,7 @@
             <h4 class="text-white font-semibold mb-4">Product</h4>
             <ul class="space-y-2 text-slate-400 text-sm">
               <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+              <li><a href="#agents" class="hover:text-white transition-colors">AI Agents</a></li>
               <li><a href="#security" class="hover:text-white transition-colors">Security</a></li>
               <li><router-link to="/docs" class="hover:text-white transition-colors">Documentation</router-link></li>
             </ul>
@@ -430,9 +800,10 @@
           <div>
             <h4 class="text-white font-semibold mb-4">Company</h4>
             <ul class="space-y-2 text-slate-400 text-sm">
-              <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">About Okoinvestments</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
-              <li><a href="mailto:contact@datamigrate.ai" class="hover:text-white transition-colors">Contact</a></li>
+              <li><a href="mailto:contact@okoinvestments.com" class="hover:text-white transition-colors">Contact</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
             </ul>
           </div>
 
@@ -442,23 +813,36 @@
               <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
               <li><a href="#" class="hover:text-white transition-colors">GDPR</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Data Processing</a></li>
             </ul>
           </div>
         </div>
 
         <div class="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center">
-          <p class="text-slate-500 text-sm">
-            &copy; 2024 DataMigrate AI. All rights reserved.
-          </p>
-          <div class="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" class="text-slate-500 hover:text-white transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+          <div class="text-center md:text-left mb-4 md:mb-0">
+            <p class="text-slate-500 text-sm">
+              &copy; 2025 DataMigrate AI. All rights reserved.
+            </p>
+            <p class="text-slate-600 text-xs mt-1">
+              Okoinvestments ApS - Denmark
+            </p>
+          </div>
+          <div class="flex space-x-5">
+            <!-- LinkedIn -->
+            <a href="https://linkedin.com/company/okoinvestments" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-blue-400 transition-colors" title="LinkedIn">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
             </a>
-            <a href="#" class="text-slate-500 hover:text-white transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <!-- Instagram -->
+            <a href="https://instagram.com/okoinvestments" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-pink-400 transition-colors" title="Instagram">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
             </a>
-            <a href="#" class="text-slate-500 hover:text-white transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            <!-- YouTube -->
+            <a href="https://youtube.com/@okoinvestments" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-red-500 transition-colors" title="YouTube">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+            <!-- GitHub -->
+            <a href="https://github.com/okoinvestments" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-white transition-colors" title="GitHub">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
             </a>
           </div>
         </div>
@@ -485,5 +869,19 @@
 
 .delay-1000 {
   animation-delay: 1000ms;
+}
+
+/* Floating animation for logo */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 </style>

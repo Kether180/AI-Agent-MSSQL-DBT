@@ -453,6 +453,177 @@ class AIServiceApi {
       `/migrations/${migrationId}/files/${filepath}`
     )
   }
+
+  // Warehouse Deployment endpoints
+  async deployToWarehouse(
+    migrationId: number,
+    connection: {
+      warehouse_type: 'snowflake' | 'bigquery' | 'databricks' | 'redshift' | 'fabric' | 'spark'
+      // Snowflake
+      account?: string
+      warehouse?: string
+      database?: string
+      schema_name?: string
+      username?: string
+      password?: string
+      role?: string
+      // BigQuery
+      project?: string
+      dataset?: string
+      keyfile?: string
+      location?: string
+      // Databricks
+      host?: string
+      http_path?: string
+      token?: string
+      catalog?: string
+      // Redshift
+      redshift_host?: string
+      redshift_port?: number
+      redshift_database?: string
+      redshift_schema?: string
+      redshift_username?: string
+      redshift_password?: string
+      // Microsoft Fabric
+      fabric_server?: string
+      fabric_port?: number
+      fabric_database?: string
+      fabric_schema?: string
+      fabric_authentication?: 'sql' | 'serviceprincipal'
+      fabric_username?: string
+      fabric_password?: string
+      fabric_tenant_id?: string
+      fabric_client_id?: string
+      fabric_client_secret?: string
+      // Apache Spark
+      spark_host?: string
+      spark_port?: number
+      spark_method?: 'thrift' | 'http' | 'session'
+      spark_cluster?: string
+      spark_token?: string
+      spark_schema?: string
+    },
+    options: { run_tests?: boolean; full_refresh?: boolean } = {}
+  ) {
+    return this.request<{
+      deployment_id: number
+      status: string
+      started_at: string
+    }>(`/migrations/${migrationId}/deploy`, {
+      method: 'POST',
+      body: {
+        connection,
+        run_tests: options.run_tests ?? true,
+        full_refresh: options.full_refresh ?? false
+      }
+    })
+  }
+
+  async getDeploymentStatus(migrationId: number, deploymentId: number) {
+    return this.request<{
+      deployment_id: number
+      status: string
+      dbt_run?: {
+        success: boolean
+        tables_created: number
+        models_succeeded: number
+        models_failed: number
+        run_time_seconds: number
+        error?: string
+      }
+      dbt_test?: {
+        success: boolean
+        tests_passed: number
+        tests_failed: number
+        tests_warned: number
+        failed_tests: { test_name: string; location: string }[]
+        error?: string
+      }
+      error?: string
+      started_at: string
+      completed_at?: string
+    }>(`/migrations/${migrationId}/deployments/${deploymentId}`)
+  }
+
+  async listDeployments(migrationId: number) {
+    return this.request<{
+      migration_id: number
+      deployments: Array<{
+        deployment_id: number
+        status: string
+        started_at: string
+        completed_at?: string
+      }>
+    }>(`/migrations/${migrationId}/deployments`)
+  }
+
+  // Data Quality Scanning
+  async scanDataQuality(connection: {
+    host: string
+    port?: number
+    database: string
+    username?: string
+    password?: string
+    use_windows_auth?: boolean
+    tables?: string[]
+    sample_size?: number
+  }) {
+    return this.request<{
+      database_name: string
+      server: string
+      tables_scanned: number
+      total_rows_scanned: number
+      total_issues: number
+      critical_issues: number
+      error_issues: number
+      warning_issues: number
+      info_issues: number
+      overall_score: number
+      scan_started_at: string
+      scan_completed_at: string
+      issues_by_severity: {
+        critical: Array<{
+          table_name: string
+          column_name?: string
+          category: string
+          severity: string
+          issue_type: string
+          description: string
+          affected_rows: number
+          affected_percentage: number
+          recommendation: string
+        }>
+        error: Array<any>
+        warning: Array<any>
+        info: Array<any>
+      }
+      tables: Array<{
+        table_name: string
+        schema_name: string
+        row_count: number
+        column_count: number
+        columns: Array<{
+          column_name: string
+          data_type: string
+          null_percentage: number
+          distinct_count: number
+        }>
+        issues: Array<any>
+      }>
+    }>('/data-quality/scan', {
+      method: 'POST',
+      body: {
+        host: connection.host,
+        port: connection.port ?? 1433,
+        database: connection.database,
+        username: connection.username ?? '',
+        password: connection.password ?? '',
+        use_windows_auth: connection.use_windows_auth ?? false,
+        tables: connection.tables,
+        sample_size: connection.sample_size ?? 10000
+      }
+    })
+  }
 }
 
 export const aiService = new AIServiceApi(AI_SERVICE_URL)

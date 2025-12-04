@@ -8,8 +8,8 @@ const docSections = [
     title: 'Getting Started',
     description: 'Learn how to set up and configure DataMigrate AI for your first migration.',
     icon: 'M13 10V3L4 14h7v7l9-11h-7z',
-    gradient: 'from-indigo-500 to-purple-600',
-    bgGradient: 'from-white to-indigo-50',
+    gradient: 'from-cyan-500 to-teal-600',
+    bgGradient: 'from-white to-cyan-50',
     topics: ['Quick Start Guide', 'Installation', 'First Migration', 'Configuration']
   },
   {
@@ -32,8 +32,8 @@ const docSections = [
     title: 'API Reference',
     description: 'Complete API documentation for integrating with DataMigrate AI.',
     icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
-    gradient: 'from-purple-500 to-pink-600',
-    bgGradient: 'from-white to-purple-50',
+    gradient: 'from-slate-500 to-slate-700',
+    bgGradient: 'from-white to-slate-50',
     topics: ['Authentication', 'Endpoints', 'Rate Limits', 'Webhooks']
   },
   {
@@ -56,13 +56,13 @@ const docSections = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-indigo-50">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-cyan-50">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 shadow-lg">
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl">
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-8">
           <h1 class="text-3xl font-bold text-white">Documentation</h1>
-          <p class="mt-2 text-indigo-100">
+          <p class="mt-2 text-slate-300">
             Everything you need to know about DataMigrate AI
           </p>
         </div>
@@ -82,7 +82,7 @@ const docSections = [
             v-model="searchQuery"
             type="text"
             placeholder="Search documentation..."
-            class="block w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl leading-5 bg-white placeholder-gray-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base transition-all duration-200"
+            class="block w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl leading-5 bg-white placeholder-gray-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-base transition-all duration-200"
           />
         </div>
       </div>
@@ -108,7 +108,7 @@ const docSections = [
                 </svg>
               </div>
               <div class="ml-4 flex-1">
-                <h2 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                <h2 class="text-lg font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">
                   {{ section.title }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
@@ -122,7 +122,7 @@ const docSections = [
               <span
                 v-for="topic in section.topics"
                 :key="topic"
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors cursor-pointer"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-colors cursor-pointer"
               >
                 {{ topic }}
               </span>
@@ -130,7 +130,7 @@ const docSections = [
 
             <!-- Read More Link -->
             <div class="mt-4 pt-4 border-t border-gray-100">
-              <button class="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+              <button class="inline-flex items-center text-sm font-semibold text-cyan-600 hover:text-cyan-800 transition-colors">
                 Read Documentation
                 <svg class="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -145,23 +145,6 @@ const docSections = [
         </div>
       </div>
 
-      <!-- Help Section -->
-      <div class="mt-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-xl overflow-hidden">
-        <div class="px-8 py-10 sm:px-12 flex flex-col sm:flex-row items-center justify-between">
-          <div class="text-center sm:text-left mb-6 sm:mb-0">
-            <h3 class="text-2xl font-bold text-white">Need more help?</h3>
-            <p class="mt-2 text-indigo-100">Our support team is here to assist you with any questions.</p>
-          </div>
-          <div class="flex gap-4">
-            <button class="inline-flex items-center px-6 py-3 border-2 border-white text-white font-semibold rounded-xl hover:bg-white hover:text-indigo-600 transition-all duration-200">
-              <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-              </svg>
-              Contact Support
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -178,7 +161,7 @@ const docSections = [
   inset: 0;
   border-radius: 0.75rem;
   padding: 1px;
-  background: linear-gradient(135deg, transparent 0%, rgba(99, 102, 241, 0.1) 100%);
+  background: linear-gradient(135deg, transparent 0%, rgba(6, 182, 212, 0.1) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;

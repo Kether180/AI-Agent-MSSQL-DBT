@@ -76,27 +76,32 @@ const deleteMigration = async (id: number) => {
   }
 }
 
-const getStatusBadge = (status: string): { class: string; text: string; icon: string } => {
-  const badges: Record<string, { class: string; text: string; icon: string }> = {
+const getStatusBadge = (status: string): { class: string; text: string; icon: string; gradient: string; pulse?: boolean } => {
+  const badges: Record<string, { class: string; text: string; icon: string; gradient: string; pulse?: boolean }> = {
     completed: {
-      class: 'bg-green-100 text-green-800',
+      class: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border border-emerald-200',
       text: 'Completed',
-      icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+      icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+      gradient: 'from-emerald-500 to-green-500'
     },
     running: {
-      class: 'bg-blue-100 text-blue-800',
+      class: 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200',
       text: 'Running',
-      icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
+      icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+      gradient: 'from-blue-500 to-cyan-500',
+      pulse: true
     },
     failed: {
-      class: 'bg-red-100 text-red-800',
+      class: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200',
       text: 'Failed',
-      icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+      icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
+      gradient: 'from-red-500 to-rose-500'
     },
     pending: {
-      class: 'bg-yellow-100 text-yellow-800',
+      class: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border border-amber-200',
       text: 'Pending',
-      icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+      icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+      gradient: 'from-amber-400 to-yellow-500'
     }
   }
   return badges[status] ?? badges.pending!
@@ -145,20 +150,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-indigo-50">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-cyan-50">
     <!-- Header with gradient -->
-    <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 shadow-lg">
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl">
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-8 flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold text-white">Migrations</h1>
-            <p class="mt-2 text-indigo-100">
+            <p class="mt-2 text-slate-300">
               Manage your MSSQL to dbt migrations
             </p>
           </div>
           <button
             @click="createNewMigration"
-            class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-lg text-sm font-medium rounded-xl text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200 hover:shadow-xl hover:scale-105"
+            class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-lg text-sm font-medium rounded-xl text-white bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-200 hover:shadow-xl hover:scale-105"
           >
             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -189,7 +194,7 @@ onMounted(() => {
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search by name..."
-                class="block w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200"
+                class="block w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm transition-all duration-200"
               />
             </div>
           </div>
@@ -202,7 +207,7 @@ onMounted(() => {
             <select
               id="status"
               v-model="filterStatus"
-              class="block w-full pl-4 pr-10 py-2.5 text-base border border-gray-200 bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-xl transition-all duration-200"
+              class="block w-full pl-4 pr-10 py-2.5 text-base border border-gray-200 bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm rounded-xl transition-all duration-200"
             >
               <option value="all">All ({{ statusCounts.all }})</option>
               <option value="pending">Pending ({{ statusCounts.pending }})</option>
@@ -218,9 +223,9 @@ onMounted(() => {
       <div v-if="isLoading" class="bg-white shadow-lg rounded-xl border border-gray-100 p-16 text-center">
         <div class="relative">
           <div class="absolute inset-0 flex items-center justify-center">
-            <div class="h-16 w-16 rounded-full border-4 border-indigo-100"></div>
+            <div class="h-16 w-16 rounded-full border-4 border-cyan-100"></div>
           </div>
-          <svg class="animate-spin h-16 w-16 mx-auto text-indigo-600" fill="none" viewBox="0 0 24 24">
+          <svg class="animate-spin h-16 w-16 mx-auto text-cyan-600" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
           </svg>
@@ -230,8 +235,8 @@ onMounted(() => {
 
       <!-- Empty State -->
       <div v-else-if="filteredMigrations.length === 0" class="bg-white shadow-lg rounded-xl border border-gray-100 p-16 text-center">
-        <div class="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-          <svg class="h-12 w-12 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 flex items-center justify-center">
+          <svg class="h-12 w-12 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
           </svg>
         </div>
@@ -242,7 +247,7 @@ onMounted(() => {
         <div class="mt-8">
           <button
             @click="createNewMigration"
-            class="inline-flex items-center px-6 py-3 border border-transparent shadow-lg text-sm font-medium rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 hover:shadow-xl hover:scale-105"
+            class="inline-flex items-center px-6 py-3 border border-transparent shadow-lg text-sm font-medium rounded-xl text-white bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 transition-all duration-200 hover:shadow-xl hover:scale-105"
           >
             <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -260,23 +265,41 @@ onMounted(() => {
           class="migration-card bg-white overflow-hidden shadow-md rounded-xl border border-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group"
           @click="viewMigration(migration)"
         >
+          <!-- Status gradient bar at top -->
+          <div :class="['h-1.5 bg-gradient-to-r', getStatusBadge(migration.status).gradient]"></div>
+
           <div class="p-6">
             <!-- Header -->
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 truncate transition-colors">
+              <h3 class="text-lg font-semibold text-gray-900 group-hover:text-cyan-600 truncate transition-colors">
                 {{ migration.name }}
               </h3>
               <span
                 :class="[
-                  'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm',
+                  'inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm',
                   getStatusBadge(migration.status).class
                 ]"
               >
-                <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg :class="['w-3.5 h-3.5 mr-1.5', getStatusBadge(migration.status).pulse ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getStatusBadge(migration.status).icon"/>
                 </svg>
                 {{ getStatusBadge(migration.status).text }}
               </span>
+            </div>
+
+            <!-- Pending State Call-to-Action -->
+            <div v-if="migration.status === 'pending'" class="mb-4 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-amber-800">Ready to Start</p>
+                  <p class="text-xs text-amber-600">Click to view details and start migration</p>
+                </div>
+              </div>
             </div>
 
             <!-- Progress (if running) -->
@@ -285,11 +308,36 @@ onMounted(() => {
                 <span class="text-sm font-semibold text-blue-600">In Progress</span>
                 <span class="text-sm font-bold text-blue-600">{{ migration.progress || 0 }}%</span>
               </div>
-              <div class="w-full bg-blue-100 rounded-full h-2.5 overflow-hidden">
+              <div class="w-full bg-blue-100 rounded-full h-3 overflow-hidden shadow-inner">
                 <div
-                  class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+                  class="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-500 ease-out animate-pulse"
                   :style="{ width: `${migration.progress || 0}%` }"
                 />
+              </div>
+            </div>
+
+            <!-- Failed State -->
+            <div v-if="migration.status === 'failed' && migration.error" class="mb-4 p-3 bg-gradient-to-r from-red-50 to-rose-50 rounded-lg border border-red-200">
+              <div class="flex items-start">
+                <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-sm text-red-700">{{ migration.error.substring(0, 80) }}{{ migration.error.length > 80 ? '...' : '' }}</p>
+              </div>
+            </div>
+
+            <!-- Completed State -->
+            <div v-if="migration.status === 'completed'" class="mb-4 p-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg border border-emerald-200">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-emerald-800">Migration Complete</p>
+                  <p class="text-xs text-emerald-600">dbt project ready to download</p>
+                </div>
               </div>
             </div>
 
@@ -302,18 +350,11 @@ onMounted(() => {
                 Created {{ getTimeSince(migration.created_at) }}
               </div>
 
-              <div v-if="migration.completed_at" class="flex items-center text-green-600">
+              <div v-if="migration.completed_at" class="flex items-center text-emerald-600">
                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 Completed {{ getTimeSince(migration.completed_at) }}
-              </div>
-
-              <div v-if="migration.error" class="flex items-center text-red-600">
-                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                {{ migration.error.substring(0, 50) }}...
               </div>
             </div>
 
@@ -321,7 +362,7 @@ onMounted(() => {
             <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
               <button
                 @click.stop="viewMigration(migration)"
-                class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-semibold transition-colors"
+                class="inline-flex items-center text-sm text-cyan-600 hover:text-cyan-800 font-semibold transition-colors"
               >
                 View Details
                 <svg class="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,7 +381,6 @@ onMounted(() => {
               </button>
             </div>
           </div>
-          <div class="h-1 bg-gradient-to-r from-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
         </div>
       </div>
     </div>
@@ -348,7 +388,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Migration card styles */
+/* Migration card hover effect */
 .migration-card {
   position: relative;
 }
@@ -359,10 +399,16 @@ onMounted(() => {
   inset: 0;
   border-radius: 0.75rem;
   padding: 1px;
-  background: linear-gradient(135deg, transparent 0%, rgba(99, 102, 241, 0.1) 100%);
+  background: linear-gradient(135deg, transparent 0%, rgba(6, 182, 212, 0.15) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.migration-card:hover::before {
+  opacity: 1;
 }
 </style>

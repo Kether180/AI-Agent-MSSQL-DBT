@@ -61,14 +61,44 @@ export interface MigrationConfig {
   tables?: string[]
 }
 
+// Database Connection types
+export interface DatabaseConnection {
+  id: number
+  name: string
+  db_type: string
+  host: string
+  port: number
+  database_name: string
+  username: string
+  is_source: boolean
+  user_id: number
+  created_at: string
+  updated_at: string
+  // Local UI state
+  status?: 'connected' | 'disconnected' | 'testing' | 'error'
+}
+
+export interface CreateConnectionRequest {
+  name: string
+  db_type: string
+  host: string
+  port: number
+  database_name: string
+  username: string
+  password: string
+  use_windows_auth?: boolean
+  is_source?: boolean
+}
+
 // API Key types
 export interface APIKey {
   id: number
   name: string
-  key: string
+  key?: string
   is_active: boolean
   rate_limit: number
   created_at: string
+  last_used_at?: string
 }
 
 // Stats types

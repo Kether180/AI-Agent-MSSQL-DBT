@@ -77,6 +77,81 @@ const validationOptions = ref({
   generateDbtTests: true
 })
 
+// Deployment state
+const deploying = ref(false)
+const deploymentResult = ref<{
+  deployment_id?: number
+  status: string
+  dbt_run?: {
+    success: boolean
+    tables_created: number
+    models_succeeded: number
+    models_failed: number
+  }
+  dbt_test?: {
+    success: boolean
+    tests_passed: number
+    tests_failed: number
+    tests_warned: number
+  }
+  error?: string
+} | null>(null)
+
+const deployConfig = ref({
+  warehouseType: '' as 'snowflake' | 'bigquery' | 'databricks' | 'redshift' | 'fabric' | 'spark' | '',
+  runTests: true,
+  fullRefresh: false,
+  snowflake: {
+    account: '',
+    warehouse: '',
+    database: '',
+    schema: '',
+    username: '',
+    password: '',
+    role: ''
+  },
+  bigquery: {
+    project: '',
+    dataset: '',
+    location: '',
+    keyfile: ''
+  },
+  databricks: {
+    host: '',
+    httpPath: '',
+    token: '',
+    catalog: ''
+  },
+  redshift: {
+    host: '',
+    port: 5439,
+    database: '',
+    schema: '',
+    username: '',
+    password: ''
+  },
+  fabric: {
+    server: '',
+    port: 1433,
+    database: '',
+    schema: '',
+    authentication: 'sql' as 'sql' | 'serviceprincipal',
+    username: '',
+    password: '',
+    tenantId: '',
+    clientId: '',
+    clientSecret: ''
+  },
+  spark: {
+    host: '',
+    port: 10000,
+    method: 'thrift' as 'thrift' | 'http' | 'session',
+    cluster: '',
+    token: '',
+    schema: ''
+  }
+})
+
 const migrationId = computed(() => Number(route.params.id))
 const migration = computed(() => store.currentMigration)
 const loading = computed(() => store.loading)
@@ -298,6 +373,138 @@ function getStatusBg(status: string): string {
     case 'warning': return 'bg-amber-50 border-amber-200'
     case 'failed': return 'bg-red-50 border-red-200'
     default: return 'bg-slate-50 border-slate-200'
+  }
+}
+
+async function startDeployment() {
+  if (!deployConfig.value.warehouseType) return
+
+  deploying.value = true
+  deploymentResult.value = null
+
+  try {
+    // Build connection config based on warehouse type
+    let connection: any = {
+      warehouse_type: deployConfig.value.warehouseType
+    }
+
+    if (deployConfig.value.warehouseType === 'snowflake') {
+      connection = {
+        ...connection,
+        account: deployConfig.value.snowflake.account,
+        warehouse: deployConfig.value.snowflake.warehouse,
+        database: deployConfig.value.snowflake.database,
+        schema_name: deployConfig.value.snowflake.schema,
+        username: deployConfig.value.snowflake.username,
+        password: deployConfig.value.snowflake.password,
+        role: deployConfig.value.snowflake.role
+      }
+    } else if (deployConfig.value.warehouseType === 'bigquery') {
+      connection = {
+        ...connection,
+        project: deployConfig.value.bigquery.project,
+        dataset: deployConfig.value.bigquery.dataset,
+        location: deployConfig.value.bigquery.location,
+        keyfile: deployConfig.value.bigquery.keyfile
+      }
+    } else if (deployConfig.value.warehouseType === 'databricks') {
+      connection = {
+        ...connection,
+        host: deployConfig.value.databricks.host,
+        http_path: deployConfig.value.databricks.httpPath,
+        token: deployConfig.value.databricks.token,
+        catalog: deployConfig.value.databricks.catalog
+      }
+    } else if (deployConfig.value.warehouseType === 'redshift') {
+      connection = {
+        ...connection,
+        redshift_host: deployConfig.value.redshift.host,
+        redshift_port: deployConfig.value.redshift.port,
+        redshift_database: deployConfig.value.redshift.database,
+        redshift_schema: deployConfig.value.redshift.schema,
+        redshift_username: deployConfig.value.redshift.username,
+        redshift_password: deployConfig.value.redshift.password
+      }
+    } else if (deployConfig.value.warehouseType === 'fabric') {
+      connection = {
+        ...connection,
+        fabric_server: deployConfig.value.fabric.server,
+        fabric_port: deployConfig.value.fabric.port,
+        fabric_database: deployConfig.value.fabric.database,
+        fabric_schema: deployConfig.value.fabric.schema,
+        fabric_authentication: deployConfig.value.fabric.authentication,
+        fabric_username: deployConfig.value.fabric.username,
+        fabric_password: deployConfig.value.fabric.password,
+        fabric_tenant_id: deployConfig.value.fabric.tenantId,
+        fabric_client_id: deployConfig.value.fabric.clientId,
+        fabric_client_secret: deployConfig.value.fabric.clientSecret
+      }
+    } else if (deployConfig.value.warehouseType === 'spark') {
+      connection = {
+        ...connection,
+        spark_host: deployConfig.value.spark.host,
+        spark_port: deployConfig.value.spark.port,
+        spark_method: deployConfig.value.spark.method,
+        spark_cluster: deployConfig.value.spark.cluster,
+        spark_token: deployConfig.value.spark.token,
+        spark_schema: deployConfig.value.spark.schema
+      }
+    }
+
+    // Start deployment
+    const response = await aiService.deployToWarehouse(
+      migrationId.value,
+      connection,
+      {
+        run_tests: deployConfig.value.runTests,
+        full_refresh: deployConfig.value.fullRefresh
+      }
+    )
+
+    // Set initial result (running)
+    deploymentResult.value = {
+      deployment_id: response.deployment_id,
+      status: 'running'
+    }
+
+    // Poll for deployment status
+    const pollStatus = async () => {
+      try {
+        const status = await aiService.getDeploymentStatus(
+          migrationId.value,
+          response.deployment_id
+        )
+
+        deploymentResult.value = {
+          deployment_id: status.deployment_id,
+          status: status.status,
+          dbt_run: status.dbt_run,
+          dbt_test: status.dbt_test,
+          error: status.error
+        }
+
+        // Continue polling if still running
+        if (status.status === 'running') {
+          setTimeout(pollStatus, 2000)
+        } else {
+          deploying.value = false
+        }
+      } catch (err) {
+        console.error('Error polling deployment status:', err)
+        deploying.value = false
+      }
+    }
+
+    // Start polling
+    setTimeout(pollStatus, 2000)
+
+  } catch (err: any) {
+    console.error('Deployment failed:', err)
+    deploymentResult.value = {
+      status: 'failed',
+      error: err.message || 'Deployment failed'
+    }
+    deploying.value = false
   }
 }
 
@@ -820,11 +1027,6 @@ onUnmounted(() => {
                   <input type="checkbox" v-model="validationOptions.generateDbtTests" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" />
                   <span class="text-slate-700">Generate dbt Tests</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer hover:bg-white/50 px-3 py-1.5 rounded-lg transition-colors">
-                  <input type="checkbox" v-model="validationOptions.runDbtCompile" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" />
-                  <span class="text-slate-700">dbt Compile</span>
-                  <span class="text-xs text-slate-400">(requires dbt)</span>
-                </label>
               </div>
             </div>
 
@@ -875,7 +1077,7 @@ onUnmounted(() => {
               </div>
 
               <!-- Summary Cards Row 2: Checks & Tests -->
-              <div class="grid grid-cols-4 gap-4 mb-6">
+              <div class="grid grid-cols-3 gap-4 mb-6">
                 <div class="bg-indigo-50 rounded-xl p-4 text-center">
                   <p class="text-sm text-indigo-600 mb-1">Total Checks</p>
                   <p class="text-2xl font-bold text-indigo-600">{{ validationResult.summary.total_checks || 0 }}</p>
@@ -885,26 +1087,8 @@ onUnmounted(() => {
                   <p class="text-2xl font-bold text-violet-600">{{ validationResult.dbt_tests_generated || 0 }}</p>
                 </div>
                 <div class="bg-cyan-50 rounded-xl p-4 text-center">
-                  <div class="flex items-center justify-center gap-2">
-                    <svg v-if="validationResult.syntax_validated" class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <svg v-else class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p class="text-sm" :class="validationResult.syntax_validated ? 'text-cyan-600' : 'text-slate-500'">Syntax Validated</p>
-                  </div>
-                </div>
-                <div class="bg-teal-50 rounded-xl p-4 text-center">
-                  <div class="flex items-center justify-center gap-2">
-                    <svg v-if="validationResult.row_count_validated" class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <svg v-else class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p class="text-sm" :class="validationResult.row_count_validated ? 'text-teal-600' : 'text-slate-500'">Row Counts</p>
-                  </div>
+                  <p class="text-sm text-cyan-600 mb-1">Passed Checks</p>
+                  <p class="text-2xl font-bold text-cyan-600">{{ validationResult.summary.passed_checks || 0 }}</p>
                 </div>
               </div>
 
@@ -1005,6 +1189,403 @@ onUnmounted(() => {
                 Click "Run Validation" to verify that your dbt models accurately represent the source MSSQL schema,
                 including columns, constraints, and relationships.
               </p>
+            </div>
+          </div>
+
+          <!-- Deploy to Warehouse Card (only show for completed migrations) -->
+          <div v-if="migration.status === 'completed'" class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-fuchsia-50">
+              <h3 class="text-xl font-bold text-slate-900 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                Deploy to Warehouse
+              </h3>
+              <p class="text-sm text-slate-600 mt-1">Execute dbt run and dbt test on your target data warehouse</p>
+            </div>
+
+            <div class="p-6">
+              <!-- Warehouse Selection -->
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Target Warehouse</label>
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+                  <button
+                    @click="deployConfig.warehouseType = 'snowflake'"
+                    :class="[
+                      'p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
+                      deployConfig.warehouseType === 'snowflake'
+                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                        : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    <svg class="w-7 h-7 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span class="font-medium text-slate-700 text-xs">Snowflake</span>
+                  </button>
+                  <button
+                    @click="deployConfig.warehouseType = 'bigquery'"
+                    :class="[
+                      'p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
+                      deployConfig.warehouseType === 'bigquery'
+                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                        : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    <svg class="w-7 h-7 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    <span class="font-medium text-slate-700 text-xs">BigQuery</span>
+                  </button>
+                  <button
+                    @click="deployConfig.warehouseType = 'databricks'"
+                    :class="[
+                      'p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
+                      deployConfig.warehouseType === 'databricks'
+                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                        : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    <svg class="w-7 h-7 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span class="font-medium text-slate-700 text-xs">Databricks</span>
+                  </button>
+                  <button
+                    @click="deployConfig.warehouseType = 'redshift'"
+                    :class="[
+                      'p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
+                      deployConfig.warehouseType === 'redshift'
+                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                        : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    <svg class="w-7 h-7 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                    </svg>
+                    <span class="font-medium text-slate-700 text-xs">Redshift</span>
+                  </button>
+                  <button
+                    @click="deployConfig.warehouseType = 'fabric'"
+                    :class="[
+                      'p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
+                      deployConfig.warehouseType === 'fabric'
+                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                        : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    <svg class="w-7 h-7 text-cyan-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm8-2h8v8h-8v-8zm2 2v4h4v-4h-4z"/>
+                    </svg>
+                    <span class="font-medium text-slate-700 text-xs">MS Fabric</span>
+                  </button>
+                  <button
+                    @click="deployConfig.warehouseType = 'spark'"
+                    :class="[
+                      'p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2',
+                      deployConfig.warehouseType === 'spark'
+                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                        : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    <svg class="w-7 h-7 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.5L17.5 8 12 11.5 6.5 8 12 4.5zM6 9.5l5 3v6l-5-3v-6zm12 0v6l-5 3v-6l5-3z"/>
+                    </svg>
+                    <span class="font-medium text-slate-700 text-xs">Apache Spark</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Connection Details (Snowflake) -->
+              <div v-if="deployConfig.warehouseType === 'snowflake'" class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Account</label>
+                  <input v-model="deployConfig.snowflake.account" type="text" placeholder="account.region" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Warehouse</label>
+                  <input v-model="deployConfig.snowflake.warehouse" type="text" placeholder="COMPUTE_WH" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Database</label>
+                  <input v-model="deployConfig.snowflake.database" type="text" placeholder="MY_DATABASE" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Schema</label>
+                  <input v-model="deployConfig.snowflake.schema" type="text" placeholder="PUBLIC" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                  <input v-model="deployConfig.snowflake.username" type="text" placeholder="username" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                  <input v-model="deployConfig.snowflake.password" type="password" placeholder="••••••••" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                  <input v-model="deployConfig.snowflake.role" type="text" placeholder="TRANSFORM" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+              </div>
+
+              <!-- Connection Details (BigQuery) -->
+              <div v-if="deployConfig.warehouseType === 'bigquery'" class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Project ID</label>
+                  <input v-model="deployConfig.bigquery.project" type="text" placeholder="my-gcp-project" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Dataset</label>
+                  <input v-model="deployConfig.bigquery.dataset" type="text" placeholder="staging" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Location</label>
+                  <input v-model="deployConfig.bigquery.location" type="text" placeholder="US" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Service Account Key (JSON path)</label>
+                  <input v-model="deployConfig.bigquery.keyfile" type="text" placeholder="/path/to/keyfile.json" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+              </div>
+
+              <!-- Connection Details (Databricks) -->
+              <div v-if="deployConfig.warehouseType === 'databricks'" class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Host</label>
+                  <input v-model="deployConfig.databricks.host" type="text" placeholder="adb-xxx.azuredatabricks.net" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">HTTP Path</label>
+                  <input v-model="deployConfig.databricks.httpPath" type="text" placeholder="/sql/1.0/warehouses/xxx" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Access Token</label>
+                  <input v-model="deployConfig.databricks.token" type="password" placeholder="dapi..." class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Catalog</label>
+                  <input v-model="deployConfig.databricks.catalog" type="text" placeholder="hive_metastore" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+              </div>
+
+              <!-- Connection Details (Redshift) -->
+              <div v-if="deployConfig.warehouseType === 'redshift'" class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Host</label>
+                  <input v-model="deployConfig.redshift.host" type="text" placeholder="cluster.region.redshift.amazonaws.com" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Port</label>
+                  <input v-model.number="deployConfig.redshift.port" type="number" placeholder="5439" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Database</label>
+                  <input v-model="deployConfig.redshift.database" type="text" placeholder="dev" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Schema</label>
+                  <input v-model="deployConfig.redshift.schema" type="text" placeholder="public" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                  <input v-model="deployConfig.redshift.username" type="text" placeholder="admin" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                  <input v-model="deployConfig.redshift.password" type="password" placeholder="••••••••" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+              </div>
+
+              <!-- Connection Details (Microsoft Fabric) -->
+              <div v-if="deployConfig.warehouseType === 'fabric'" class="space-y-4 mb-6">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Server</label>
+                    <input v-model="deployConfig.fabric.server" type="text" placeholder="server.database.fabric.microsoft.com" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Port</label>
+                    <input v-model.number="deployConfig.fabric.port" type="number" placeholder="1433" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Database</label>
+                    <input v-model="deployConfig.fabric.database" type="text" placeholder="my_warehouse" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Schema</label>
+                    <input v-model="deployConfig.fabric.schema" type="text" placeholder="dbo" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-xl">
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Authentication Method</label>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" v-model="deployConfig.fabric.authentication" value="sql" class="w-4 h-4 text-purple-600 border-slate-300 focus:ring-purple-500" />
+                      <span class="text-slate-700">SQL Auth</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" v-model="deployConfig.fabric.authentication" value="serviceprincipal" class="w-4 h-4 text-purple-600 border-slate-300 focus:ring-purple-500" />
+                      <span class="text-slate-700">Service Principal</span>
+                    </label>
+                  </div>
+                </div>
+                <!-- SQL Auth fields -->
+                <div v-if="deployConfig.fabric.authentication === 'sql'" class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                    <input v-model="deployConfig.fabric.username" type="text" placeholder="username" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input v-model="deployConfig.fabric.password" type="password" placeholder="••••••••" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                </div>
+                <!-- Service Principal fields -->
+                <div v-if="deployConfig.fabric.authentication === 'serviceprincipal'" class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Tenant ID</label>
+                    <input v-model="deployConfig.fabric.tenantId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Client ID</label>
+                    <input v-model="deployConfig.fabric.clientId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div class="col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Client Secret</label>
+                    <input v-model="deployConfig.fabric.clientSecret" type="password" placeholder="••••••••" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Connection Details (Apache Spark) -->
+              <div v-if="deployConfig.warehouseType === 'spark'" class="space-y-4 mb-6">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Host</label>
+                    <input v-model="deployConfig.spark.host" type="text" placeholder="spark-cluster.example.com" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Port</label>
+                    <input v-model.number="deployConfig.spark.port" type="number" placeholder="10000" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Schema</label>
+                    <input v-model="deployConfig.spark.schema" type="text" placeholder="default" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Connection Method</label>
+                    <select v-model="deployConfig.spark.method" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                      <option value="thrift">Thrift</option>
+                      <option value="http">HTTP</option>
+                      <option value="session">Session</option>
+                    </select>
+                  </div>
+                  <div v-if="deployConfig.spark.method === 'http'">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Cluster</label>
+                    <input v-model="deployConfig.spark.cluster" type="text" placeholder="cluster-id" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Token (Optional)</label>
+                    <input v-model="deployConfig.spark.token" type="password" placeholder="Authentication token" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deploy Options -->
+              <div class="flex items-center gap-6 mb-6 p-4 bg-slate-50 rounded-xl">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" v-model="deployConfig.runTests" class="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500" />
+                  <span class="text-slate-700">Run dbt Tests</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" v-model="deployConfig.fullRefresh" class="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500" />
+                  <span class="text-slate-700">Full Refresh</span>
+                </label>
+              </div>
+
+              <!-- Deploy Button -->
+              <button
+                @click="startDeployment"
+                :disabled="deploying || !deployConfig.warehouseType"
+                class="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white rounded-xl hover:from-purple-600 hover:to-fuchsia-700 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg v-if="deploying" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                {{ deploying ? 'Deploying...' : 'Deploy to Warehouse' }}
+              </button>
+
+              <!-- Deployment Result -->
+              <div v-if="deploymentResult" class="mt-6">
+                <div :class="[
+                  'p-4 rounded-xl border-2',
+                  deploymentResult.status === 'completed' ? 'bg-emerald-50 border-emerald-200' :
+                  deploymentResult.status === 'failed' ? 'bg-red-50 border-red-200' :
+                  'bg-blue-50 border-blue-200'
+                ]">
+                  <div class="flex items-center gap-2 mb-3">
+                    <svg v-if="deploymentResult.status === 'completed'" class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg v-else-if="deploymentResult.status === 'failed'" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg v-else class="w-5 h-5 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span :class="[
+                      'font-semibold',
+                      deploymentResult.status === 'completed' ? 'text-emerald-700' :
+                      deploymentResult.status === 'failed' ? 'text-red-700' : 'text-blue-700'
+                    ]">
+                      {{ deploymentResult.status === 'completed' ? 'Deployment Complete' :
+                         deploymentResult.status === 'failed' ? 'Deployment Failed' : 'Deployment In Progress' }}
+                    </span>
+                  </div>
+
+                  <!-- dbt run results -->
+                  <div v-if="deploymentResult.dbt_run" class="grid grid-cols-3 gap-3 mb-3">
+                    <div class="bg-white/60 rounded-lg p-3 text-center">
+                      <p class="text-xs text-slate-500">Tables Created</p>
+                      <p class="text-xl font-bold text-emerald-600">{{ deploymentResult.dbt_run.tables_created }}</p>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 text-center">
+                      <p class="text-xs text-slate-500">Models Succeeded</p>
+                      <p class="text-xl font-bold text-emerald-600">{{ deploymentResult.dbt_run.models_succeeded }}</p>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 text-center">
+                      <p class="text-xs text-slate-500">Models Failed</p>
+                      <p class="text-xl font-bold text-red-600">{{ deploymentResult.dbt_run.models_failed }}</p>
+                    </div>
+                  </div>
+
+                  <!-- dbt test results -->
+                  <div v-if="deploymentResult.dbt_test" class="grid grid-cols-3 gap-3">
+                    <div class="bg-white/60 rounded-lg p-3 text-center">
+                      <p class="text-xs text-slate-500">Tests Passed</p>
+                      <p class="text-xl font-bold text-emerald-600">{{ deploymentResult.dbt_test.tests_passed }}</p>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 text-center">
+                      <p class="text-xs text-slate-500">Tests Failed</p>
+                      <p class="text-xl font-bold text-red-600">{{ deploymentResult.dbt_test.tests_failed }}</p>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 text-center">
+                      <p class="text-xs text-slate-500">Warnings</p>
+                      <p class="text-xl font-bold text-amber-600">{{ deploymentResult.dbt_test.tests_warned }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Error message -->
+                  <div v-if="deploymentResult.error" class="mt-3 p-3 bg-red-100 rounded-lg text-red-700 text-sm">
+                    {{ deploymentResult.error }}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

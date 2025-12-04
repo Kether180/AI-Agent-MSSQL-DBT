@@ -58,7 +58,7 @@ const getUserInitials = () => {
 </script>
 
 <template>
-  <nav class="bg-white shadow-lg">
+  <nav class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl border-b border-slate-700/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <!-- Logo and Desktop Navigation -->
@@ -66,27 +66,29 @@ const getUserInitials = () => {
           <!-- Logo -->
           <div class="flex-shrink-0 flex items-center">
             <button @click="navigateTo('/dashboard')" class="flex items-center space-x-2">
-              <svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
-              </svg>
-              <span class="text-xl font-bold text-gray-900">DataMigrate AI</span>
+              <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                  <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                  </svg>
+                </div>
+              <span class="text-xl font-bold bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">DataMigrate AI</span>
             </button>
           </div>
 
           <!-- Desktop Navigation Links -->
-          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-1">
             <button
               v-for="item in navigation"
               :key="item.name"
               @click="navigateTo(item.path)"
               :class="[
                 isCurrentRoute(item.path)
-                  ? 'border-indigo-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors'
+                  ? 'bg-slate-700/50 text-cyan-400 border-cyan-400'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/30 border-transparent',
+                'inline-flex items-center px-4 py-2 rounded-lg border-b-2 text-sm font-medium transition-all duration-200'
               ]"
             >
-              <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon"/>
               </svg>
               {{ item.name }}
@@ -98,10 +100,10 @@ const getUserInitials = () => {
         <div class="hidden sm:ml-6 sm:flex sm:items-center">
           <!-- Notifications -->
           <button
-            class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200"
           >
             <span class="sr-only">View notifications</span>
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
             </svg>
           </button>
@@ -110,14 +112,14 @@ const getUserInitials = () => {
           <div class="ml-3 relative">
             <button
               @click="toggleProfileMenu"
-              class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="flex items-center text-sm rounded-lg px-3 py-2 hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200"
             >
               <span class="sr-only">Open user menu</span>
-              <div class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium">
+              <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
                 {{ getUserInitials() }}
               </div>
-              <span class="ml-2 text-sm font-medium text-gray-700">{{ user?.email }}</span>
-              <svg class="ml-1 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span class="ml-2 text-sm font-medium text-slate-300">{{ user?.email }}</span>
+              <svg class="ml-2 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
@@ -173,7 +175,7 @@ const getUserInitials = () => {
         <div class="-mr-2 flex items-center sm:hidden">
           <button
             @click="toggleMobileMenu"
-            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+            class="inline-flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500"
           >
             <span class="sr-only">Open main menu</span>
             <!-- Hamburger Icon -->
@@ -198,7 +200,7 @@ const getUserInitials = () => {
       leave-from-class="transform opacity-100 scale-100"
       leave-to-class="transform opacity-0 scale-95"
     >
-      <div v-if="isMobileMenuOpen" class="sm:hidden">
+      <div v-if="isMobileMenuOpen" class="sm:hidden bg-slate-800">
         <div class="pt-2 pb-3 space-y-1">
           <button
             v-for="item in navigation"
@@ -206,9 +208,9 @@ const getUserInitials = () => {
             @click="navigateTo(item.path)"
             :class="[
               isCurrentRoute(item.path)
-                ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700',
-              'block w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium'
+                ? 'bg-slate-700/50 border-cyan-400 text-cyan-400'
+                : 'border-transparent text-slate-300 hover:bg-slate-700/30 hover:border-slate-500 hover:text-white',
+              'block w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-all duration-200'
             ]"
           >
             <svg class="inline h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,34 +221,34 @@ const getUserInitials = () => {
         </div>
 
         <!-- Mobile User Menu -->
-        <div class="pt-4 pb-3 border-t border-gray-200">
+        <div class="pt-4 pb-3 border-t border-slate-700">
           <div class="flex items-center px-4">
             <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-medium shadow-lg">
                 {{ getUserInitials() }}
               </div>
             </div>
             <div class="ml-3">
-              <div class="text-base font-medium text-gray-800">{{ user?.email }}</div>
-              <div class="text-sm font-medium text-gray-500">View profile</div>
+              <div class="text-base font-medium text-white">{{ user?.email }}</div>
+              <div class="text-sm font-medium text-slate-400">View profile</div>
             </div>
           </div>
           <div class="mt-3 space-y-1">
             <button
               @click="navigateTo('/profile')"
-              class="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+              class="block w-full text-left px-4 py-2 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
             >
               Your Profile
             </button>
             <button
               @click="navigateTo('/settings')"
-              class="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+              class="block w-full text-left px-4 py-2 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
             >
               Settings
             </button>
             <button
               @click="handleLogout"
-              class="block w-full text-left px-4 py-2 text-base font-medium text-red-700 hover:text-red-900 hover:bg-red-50"
+              class="block w-full text-left px-4 py-2 text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-900/30 transition-colors"
             >
               Sign out
             </button>

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Navbar from '@/components/Navbar.vue'
+import CustomerSupportWidget from '@/components/CustomerSupportWidget.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -10,8 +11,14 @@ const authStore = useAuthStore()
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const showNavbar = computed(() => {
   // Don't show navbar on login page or 404 page
-  const noNavbarRoutes = ['Login', 'NotFound']
+  const noNavbarRoutes = ['Login', 'NotFound', 'ForgotPassword', 'ResetPassword']
   return isAuthenticated.value && !noNavbarRoutes.includes(route.name as string)
+})
+
+const showSupportWidget = computed(() => {
+  // Show support widget on all authenticated pages
+  const noWidgetRoutes = ['Login', 'NotFound', 'ForgotPassword', 'ResetPassword']
+  return isAuthenticated.value && !noWidgetRoutes.includes(route.name as string)
 })
 </script>
 
@@ -24,6 +31,9 @@ const showNavbar = computed(() => {
     <main>
       <RouterView />
     </main>
+
+    <!-- Global Customer Support Widget -->
+    <CustomerSupportWidget v-if="showSupportWidget" />
   </div>
 </template>
 

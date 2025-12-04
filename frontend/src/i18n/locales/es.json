@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "features": "Características",
+    "agents": "Agentes IA",
+    "benefits": "Beneficios",
+    "security": "Seguridad",
+    "pricing": "Precios",
+    "login": "Iniciar Sesión",
+    "getStarted": "Comenzar"
+  },
+  "hero": {
+    "badge": "8 Agentes IA Especializados Trabajando para Ti",
+    "title1": "Agentes IA",
+    "title2": "Que Migran",
+    "title3": "Tus Datos",
+    "title4": "Autónomamente",
+    "subtitle": "Transforma tus bases de datos MSSQL heredadas en modernos almacenes de datos en la nube con nuestros agentes IA inteligentes. Análisis de esquemas automatizado, generación de modelos dbt y migración sin tiempo de inactividad.",
+    "cta": "Iniciar Migración Gratis",
+    "demo": "Ver Demo",
+    "stats": {
+      "migrations": "Migraciones Completadas",
+      "uptime": "SLA de Disponibilidad",
+      "faster": "Más Rápido Que Manual"
+    }
+  },
+  "features": {
+    "title": "Características de Nivel Empresarial",
+    "subtitle": "Todo lo que necesitas para una migración de datos sin problemas",
+    "items": {
+      "schema": {
+        "title": "Análisis Inteligente de Esquemas",
+        "description": "Análisis impulsado por IA de la estructura de tu base de datos con recomendaciones de optimización automáticas"
+      },
+      "dbt": {
+        "title": "Generación de Modelos dbt",
+        "description": "Genera automáticamente modelos dbt listos para producción con pruebas y documentación"
+      },
+      "realtime": {
+        "title": "Sincronización en Tiempo Real",
+        "description": "Mantén tus datos sincronizados durante la migración con captura de datos de cambio"
+      },
+      "security": {
+        "title": "Seguridad Empresarial",
+        "description": "Cumplimiento SOC 2 con cifrado de extremo a extremo y registro de auditoría"
+      }
+    }
+  },
+  "agents": {
+    "title": "Conoce Nuestros Agentes IA",
+    "subtitle": "8 agentes especializados trabajando juntos para automatizar todo tu pipeline de migración de datos",
+    "items": {
+      "extractor": {
+        "title": "Extractor MSSQL",
+        "description": "Extrae inteligentemente esquemas, relaciones y metadatos de tus bases de datos MSSQL"
+      },
+      "dbt": {
+        "title": "Generador dbt",
+        "description": "Crea automáticamente modelos dbt listos para producción, pruebas y documentación"
+      },
+      "quality": {
+        "title": "Calidad de Datos",
+        "description": "Valida la integridad de datos con más de 50 verificaciones de calidad y detección de anomalías"
+      },
+      "dataprep": {
+        "title": "Preparación de Datos",
+        "description": "Limpia, transforma y prepara tus datos para el almacén de destino"
+      },
+      "docs": {
+        "title": "Documentación",
+        "description": "Genera automáticamente documentación completa y mapas de linaje de datos"
+      },
+      "rag": {
+        "title": "Servicio RAG",
+        "description": "Generación aumentada por recuperación para asistencia inteligente de consultas"
+      },
+      "bi": {
+        "title": "Analytics BI",
+        "description": "Genera insights, dashboards e informes de inteligencia de negocios"
+      },
+      "validation": {
+        "title": "Agente de Validación",
+        "description": "Asegura la precisión de la migración con conteos de filas, checksums y comparación de datos"
+      }
+    }
+  },
+  "benefits": {
+    "title": "¿Por Qué Elegir DataMigrate AI?",
+    "subtitle": "Transforma tu infraestructura de datos con impacto empresarial medible",
+    "items": {
+      "cost": {
+        "title": "Reduce Costos en un 70%",
+        "description": "Elimina costosos consultores de migración manual. Nuestros agentes IA trabajan 24/7 a una fracción del costo."
+      },
+      "time": {
+        "title": "Migración 10x Más Rápida",
+        "description": "Lo que toma meses manualmente, nuestra IA lo completa en días. Acelera tu transformación a la nube."
+      },
+      "errors": {
+        "title": "99.9% de Precisión",
+        "description": "La validación impulsada por IA garantiza cero pérdida de datos. Cada fila, cada relación verificada."
+      },
+      "downtime": {
+        "title": "Cero Tiempo de Inactividad",
+        "description": "La replicación continua mantiene los sistemas funcionando. Sin interrupción del negocio durante la migración."
+      },
+      "expertise": {
+        "title": "Sin Necesidad de Experiencia",
+        "description": "Nuestra IA maneja la complejidad. Tu equipo se enfoca en el valor del negocio, no en detalles técnicos."
+      },
+      "scalable": {
+        "title": "Infinitamente Escalable",
+        "description": "De gigabytes a petabytes. Nuestra plataforma escala con tus necesidades de datos."
+      }
+    }
+  },
+  "integrations": {
+    "title": "Integraciones Sin Problemas",
+    "subtitle": "Conecta tus bases de datos de origen con almacenes de datos modernos en la nube",
+    "target": "Almacenes de Datos Destino",
+    "source": "Bases de Datos de Origen",
+    "pipeline": "Pipeline de Migración Impulsado por IA"
+  },
+  "security": {
+    "title": "Seguridad de Nivel Empresarial",
+    "subtitle": "Tus datos están protegidos con medidas de seguridad líderes en la industria",
+    "items": {
+      "encryption": "Cifrado AES-256 de extremo a extremo",
+      "soc2": "Certificado SOC 2 Tipo II",
+      "gdpr": "Cumplimiento GDPR",
+      "audit": "Registro de auditoría completo",
+      "rbac": "Control de acceso basado en roles",
+      "mfa": "Autenticación multifactor"
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Modernizar tus Datos?",
+    "subtitle": "Únete a cientos de empresas que han migrado exitosamente con DataMigrate AI",
+    "button": "Iniciar Prueba Gratis",
+    "note": "No se requiere tarjeta de crédito"
+  },
+  "footer": {
+    "product": "Producto",
+    "company": "Empresa",
+    "resources": "Recursos",
+    "legal": "Legal",
+    "copyright": "Todos los derechos reservados.",
+    "madeBy": "Un producto de"
+  }
+}

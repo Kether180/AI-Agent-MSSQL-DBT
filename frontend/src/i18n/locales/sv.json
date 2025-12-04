@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "features": "Funktioner",
+    "agents": "AI Agenter",
+    "benefits": "Fördelar",
+    "security": "Säkerhet",
+    "pricing": "Priser",
+    "login": "Logga in",
+    "getStarted": "Kom igång"
+  },
+  "hero": {
+    "badge": "8 Specialiserade AI Agenter Arbetar för Dig",
+    "title1": "AI Agenter",
+    "title2": "Som Migrerar",
+    "title3": "Din Data",
+    "title4": "Autonomt",
+    "subtitle": "Omvandla dina äldre MSSQL-databaser till moderna molnbaserade data warehouses med våra intelligenta AI agenter. Automatiserad schemaanalys, dbt modellgenerering och migrering utan driftstopp.",
+    "cta": "Starta Gratis Migrering",
+    "demo": "Se Demo",
+    "stats": {
+      "migrations": "Migreringar Slutförda",
+      "uptime": "Drifttids SLA",
+      "faster": "Snabbare Än Manuellt"
+    }
+  },
+  "features": {
+    "title": "Företagsklassade Funktioner",
+    "subtitle": "Allt du behöver för sömlös datamigrering",
+    "items": {
+      "schema": {
+        "title": "Smart Schemaanalys",
+        "description": "AI-driven analys av din databasstruktur med automatiska optimeringsrekommendationer"
+      },
+      "dbt": {
+        "title": "dbt Modellgenerering",
+        "description": "Genererar automatiskt produktionsklara dbt-modeller med tester och dokumentation"
+      },
+      "realtime": {
+        "title": "Realtidssynkronisering",
+        "description": "Håll din data synkroniserad under migrering med ändringsdatafångst"
+      },
+      "security": {
+        "title": "Företagssäkerhet",
+        "description": "SOC 2 kompatibel med end-to-end kryptering och revisionsloggning"
+      }
+    }
+  },
+  "agents": {
+    "title": "Möt Våra AI Agenter",
+    "subtitle": "8 specialiserade agenter som arbetar tillsammans för att automatisera hela din datamigreringskedja",
+    "items": {
+      "extractor": {
+        "title": "MSSQL Extraktor",
+        "description": "Extraherar intelligent scheman, relationer och metadata från dina MSSQL-databaser"
+      },
+      "dbt": {
+        "title": "dbt Generator",
+        "description": "Skapar automatiskt produktionsklara dbt-modeller, tester och dokumentation"
+      },
+      "quality": {
+        "title": "Datakvalitet",
+        "description": "Validerar dataintegritet med 50+ kvalitetskontroller och anomalidetektering"
+      },
+      "dataprep": {
+        "title": "Dataförberedelse",
+        "description": "Rengör, transformerar och förbereder din data för mål-warehouse"
+      },
+      "docs": {
+        "title": "Dokumentation",
+        "description": "Auto-genererar omfattande dokumentation och datalinjekarta"
+      },
+      "rag": {
+        "title": "RAG Tjänst",
+        "description": "Hämtningsförstärkt generering för intelligent frågeassistans"
+      },
+      "bi": {
+        "title": "BI Analytics",
+        "description": "Genererar insikter, dashboards och affärsintelligensrapporter"
+      },
+      "validation": {
+        "title": "Valideringsagent",
+        "description": "Säkerställer migrationsnoggrannhet med radräkningar, checksummor och datajämförelse"
+      }
+    }
+  },
+  "benefits": {
+    "title": "Varför Välja DataMigrate AI?",
+    "subtitle": "Transformera din datainfrastruktur med mätbar affärsnytta",
+    "items": {
+      "cost": {
+        "title": "Minska Kostnader med 70%",
+        "description": "Eliminera dyra manuella migreringskonsulter. Våra AI agenter arbetar 24/7 till en bråkdel av kostnaden."
+      },
+      "time": {
+        "title": "10x Snabbare Migrering",
+        "description": "Det som tar månader manuellt slutför vår AI på dagar. Accelerera din molntransformation."
+      },
+      "errors": {
+        "title": "99.9% Noggrannhet",
+        "description": "AI-driven validering säkerställer noll dataförlust. Varje rad, varje relation verifierad."
+      },
+      "downtime": {
+        "title": "Noll Driftstopp",
+        "description": "Kontinuerlig replikering håller systemen igång. Ingen affärsavbrott under migrering."
+      },
+      "expertise": {
+        "title": "Ingen Expertis Krävs",
+        "description": "Vår AI hanterar komplexiteten. Ditt team fokuserar på affärsvärde, inte tekniska detaljer."
+      },
+      "scalable": {
+        "title": "Oändligt Skalbar",
+        "description": "Från gigabyte till petabyte. Vår plattform skalas med dina databehov."
+      }
+    }
+  },
+  "integrations": {
+    "title": "Sömlösa Integrationer",
+    "subtitle": "Anslut dina källdatabaser till moderna molnbaserade data warehouses",
+    "target": "Mål Data Warehouses",
+    "source": "Källdatabaser",
+    "pipeline": "AI-Driven Migreringskedja"
+  },
+  "security": {
+    "title": "Företagsklassad Säkerhet",
+    "subtitle": "Din data skyddas med branschledande säkerhetsåtgärder",
+    "items": {
+      "encryption": "End-to-end AES-256 kryptering",
+      "soc2": "SOC 2 Typ II certifierad",
+      "gdpr": "GDPR kompatibel",
+      "audit": "Komplett revisionsloggning",
+      "rbac": "Rollbaserad åtkomstkontroll",
+      "mfa": "Multifaktorautentisering"
+    }
+  },
+  "cta": {
+    "title": "Redo att Modernisera Din Data?",
+    "subtitle": "Gå med hundratals företag som framgångsrikt har migrerat med DataMigrate AI",
+    "button": "Starta Gratis Provperiod",
+    "note": "Inget kreditkort krävs"
+  },
+  "footer": {
+    "product": "Produkt",
+    "company": "Företag",
+    "resources": "Resurser",
+    "legal": "Juridiskt",
+    "copyright": "Alla rättigheter förbehållna.",
+    "madeBy": "En produkt av"
+  }
+}

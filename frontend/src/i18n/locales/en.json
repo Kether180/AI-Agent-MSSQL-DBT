@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "features": "Features",
+    "agents": "AI Agents",
+    "benefits": "Benefits",
+    "security": "Security",
+    "pricing": "Pricing",
+    "login": "Login",
+    "getStarted": "Get Started"
+  },
+  "hero": {
+    "badge": "8 Specialized AI Agents Working for You",
+    "title1": "AI Agents",
+    "title2": "That Migrate",
+    "title3": "Your Data",
+    "title4": "Autonomously",
+    "subtitle": "Transform your legacy MSSQL databases into modern cloud data warehouses with our intelligent AI agents. Automated schema analysis, dbt model generation, and zero-downtime migration.",
+    "cta": "Start Free Migration",
+    "demo": "Watch Demo",
+    "stats": {
+      "migrations": "Migrations Completed",
+      "uptime": "Uptime SLA",
+      "faster": "Faster Than Manual"
+    }
+  },
+  "features": {
+    "title": "Enterprise-Grade Features",
+    "subtitle": "Everything you need for seamless data migration",
+    "items": {
+      "schema": {
+        "title": "Smart Schema Analysis",
+        "description": "AI-powered analysis of your database structure with automatic optimization recommendations"
+      },
+      "dbt": {
+        "title": "dbt Model Generation",
+        "description": "Automatically generate production-ready dbt models with tests and documentation"
+      },
+      "realtime": {
+        "title": "Real-time Sync",
+        "description": "Keep your data synchronized during migration with change data capture"
+      },
+      "security": {
+        "title": "Enterprise Security",
+        "description": "SOC 2 compliant with end-to-end encryption and audit logging"
+      }
+    }
+  },
+  "agents": {
+    "title": "Meet Our AI Agents",
+    "subtitle": "8 specialized agents working together to automate your entire data migration pipeline",
+    "items": {
+      "extractor": {
+        "title": "MSSQL Extractor",
+        "description": "Intelligently extracts schemas, relationships, and metadata from your MSSQL databases"
+      },
+      "dbt": {
+        "title": "dbt Generator",
+        "description": "Automatically creates production-ready dbt models, tests, and documentation"
+      },
+      "quality": {
+        "title": "Data Quality",
+        "description": "Validates data integrity with 50+ quality checks and anomaly detection"
+      },
+      "dataprep": {
+        "title": "Data Prep",
+        "description": "Cleans, transforms, and prepares your data for the target warehouse"
+      },
+      "docs": {
+        "title": "Documentation",
+        "description": "Auto-generates comprehensive documentation and data lineage maps"
+      },
+      "rag": {
+        "title": "RAG Service",
+        "description": "Retrieval-augmented generation for intelligent query assistance"
+      },
+      "bi": {
+        "title": "BI Analytics",
+        "description": "Generates insights, dashboards, and business intelligence reports"
+      },
+      "validation": {
+        "title": "Validation Agent",
+        "description": "Ensures migration accuracy with row counts, checksums, and data comparison"
+      }
+    }
+  },
+  "benefits": {
+    "title": "Why Choose DataMigrate AI?",
+    "subtitle": "Transform your data infrastructure with measurable business impact",
+    "items": {
+      "cost": {
+        "title": "Reduce Costs by 70%",
+        "description": "Eliminate expensive manual migration consultants. Our AI agents work 24/7 at a fraction of the cost."
+      },
+      "time": {
+        "title": "10x Faster Migration",
+        "description": "What takes months manually, our AI completes in days. Accelerate your cloud transformation."
+      },
+      "errors": {
+        "title": "99.9% Accuracy",
+        "description": "AI-powered validation ensures zero data loss. Every row, every relationship verified."
+      },
+      "downtime": {
+        "title": "Zero Downtime",
+        "description": "Continuous replication keeps systems running. No business interruption during migration."
+      },
+      "expertise": {
+        "title": "No Expertise Required",
+        "description": "Our AI handles the complexity. Your team focuses on business value, not technical details."
+      },
+      "scalable": {
+        "title": "Infinitely Scalable",
+        "description": "From gigabytes to petabytes. Our platform scales with your data needs."
+      }
+    }
+  },
+  "integrations": {
+    "title": "Seamless Integrations",
+    "subtitle": "Connect your source databases to modern cloud data warehouses",
+    "target": "Target Data Warehouses",
+    "source": "Source Databases",
+    "pipeline": "AI-Powered Migration Pipeline"
+  },
+  "security": {
+    "title": "Enterprise-Grade Security",
+    "subtitle": "Your data is protected with industry-leading security measures",
+    "items": {
+      "encryption": "End-to-end AES-256 encryption",
+      "soc2": "SOC 2 Type II certified",
+      "gdpr": "GDPR compliant",
+      "audit": "Complete audit logging",
+      "rbac": "Role-based access control",
+      "mfa": "Multi-factor authentication"
+    }
+  },
+  "cta": {
+    "title": "Ready to Modernize Your Data?",
+    "subtitle": "Join hundreds of companies that have successfully migrated with DataMigrate AI",
+    "button": "Start Free Trial",
+    "note": "No credit card required"
+  },
+  "footer": {
+    "product": "Product",
+    "company": "Company",
+    "resources": "Resources",
+    "legal": "Legal",
+    "copyright": "All rights reserved.",
+    "madeBy": "A product by"
+  }
+}

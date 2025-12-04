@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "features": "Funktionen",
+    "agents": "KI Agenten",
+    "benefits": "Vorteile",
+    "security": "Sicherheit",
+    "pricing": "Preise",
+    "login": "Anmelden",
+    "getStarted": "Loslegen"
+  },
+  "hero": {
+    "badge": "8 Spezialisierte KI Agenten Arbeiten für Sie",
+    "title1": "KI Agenten",
+    "title2": "Die Ihre Daten",
+    "title3": "Migrieren",
+    "title4": "Autonom",
+    "subtitle": "Transformieren Sie Ihre älteren MSSQL-Datenbanken in moderne Cloud Data Warehouses mit unseren intelligenten KI Agenten. Automatisierte Schemaanalyse, dbt Modellgenerierung und Migration ohne Ausfallzeit.",
+    "cta": "Kostenlose Migration Starten",
+    "demo": "Demo Ansehen",
+    "stats": {
+      "migrations": "Migrationen Abgeschlossen",
+      "uptime": "Verfügbarkeits-SLA",
+      "faster": "Schneller Als Manuell"
+    }
+  },
+  "features": {
+    "title": "Enterprise-Grade Funktionen",
+    "subtitle": "Alles was Sie für nahtlose Datenmigration benötigen",
+    "items": {
+      "schema": {
+        "title": "Intelligente Schemaanalyse",
+        "description": "KI-gesteuerte Analyse Ihrer Datenbankstruktur mit automatischen Optimierungsempfehlungen"
+      },
+      "dbt": {
+        "title": "dbt Modellgenerierung",
+        "description": "Generiert automatisch produktionsreife dbt-Modelle mit Tests und Dokumentation"
+      },
+      "realtime": {
+        "title": "Echtzeit-Synchronisation",
+        "description": "Halten Sie Ihre Daten während der Migration synchron mit Change Data Capture"
+      },
+      "security": {
+        "title": "Unternehmenssicherheit",
+        "description": "SOC 2 konform mit Ende-zu-Ende Verschlüsselung und Audit-Protokollierung"
+      }
+    }
+  },
+  "agents": {
+    "title": "Lernen Sie Unsere KI Agenten Kennen",
+    "subtitle": "8 spezialisierte Agenten arbeiten zusammen, um Ihre gesamte Datenmigrations-Pipeline zu automatisieren",
+    "items": {
+      "extractor": {
+        "title": "MSSQL Extraktor",
+        "description": "Extrahiert intelligent Schemas, Beziehungen und Metadaten aus Ihren MSSQL-Datenbanken"
+      },
+      "dbt": {
+        "title": "dbt Generator",
+        "description": "Erstellt automatisch produktionsreife dbt-Modelle, Tests und Dokumentation"
+      },
+      "quality": {
+        "title": "Datenqualität",
+        "description": "Validiert Datenintegrität mit 50+ Qualitätsprüfungen und Anomalieerkennung"
+      },
+      "dataprep": {
+        "title": "Datenvorbereitung",
+        "description": "Bereinigt, transformiert und bereitet Ihre Daten für das Ziel-Warehouse vor"
+      },
+      "docs": {
+        "title": "Dokumentation",
+        "description": "Generiert automatisch umfassende Dokumentation und Datenherkunftskarten"
+      },
+      "rag": {
+        "title": "RAG Service",
+        "description": "Abrufgestützte Generierung für intelligente Abfrageunterstützung"
+      },
+      "bi": {
+        "title": "BI Analytics",
+        "description": "Generiert Einblicke, Dashboards und Business Intelligence Berichte"
+      },
+      "validation": {
+        "title": "Validierungsagent",
+        "description": "Gewährleistet Migrationsgenauigkeit mit Zeilenzählungen, Prüfsummen und Datenvergleich"
+      }
+    }
+  },
+  "benefits": {
+    "title": "Warum DataMigrate AI Wählen?",
+    "subtitle": "Transformieren Sie Ihre Dateninfrastruktur mit messbarem Geschäftswert",
+    "items": {
+      "cost": {
+        "title": "Kosten um 70% Reduzieren",
+        "description": "Eliminieren Sie teure manuelle Migrationsberater. Unsere KI Agenten arbeiten 24/7 zu einem Bruchteil der Kosten."
+      },
+      "time": {
+        "title": "10x Schnellere Migration",
+        "description": "Was manuell Monate dauert, schließt unsere KI in Tagen ab. Beschleunigen Sie Ihre Cloud-Transformation."
+      },
+      "errors": {
+        "title": "99.9% Genauigkeit",
+        "description": "KI-gesteuerte Validierung gewährleistet null Datenverlust. Jede Zeile, jede Beziehung verifiziert."
+      },
+      "downtime": {
+        "title": "Null Ausfallzeit",
+        "description": "Kontinuierliche Replikation hält Systeme am Laufen. Keine Geschäftsunterbrechung während der Migration."
+      },
+      "expertise": {
+        "title": "Keine Expertise Erforderlich",
+        "description": "Unsere KI bewältigt die Komplexität. Ihr Team konzentriert sich auf Geschäftswert, nicht technische Details."
+      },
+      "scalable": {
+        "title": "Unendlich Skalierbar",
+        "description": "Von Gigabytes bis Petabytes. Unsere Plattform skaliert mit Ihren Datenanforderungen."
+      }
+    }
+  },
+  "integrations": {
+    "title": "Nahtlose Integrationen",
+    "subtitle": "Verbinden Sie Ihre Quelldatenbanken mit modernen Cloud Data Warehouses",
+    "target": "Ziel Data Warehouses",
+    "source": "Quelldatenbanken",
+    "pipeline": "KI-Gesteuerte Migrations-Pipeline"
+  },
+  "security": {
+    "title": "Enterprise-Grade Sicherheit",
+    "subtitle": "Ihre Daten sind mit branchenführenden Sicherheitsmaßnahmen geschützt",
+    "items": {
+      "encryption": "Ende-zu-Ende AES-256 Verschlüsselung",
+      "soc2": "SOC 2 Typ II zertifiziert",
+      "gdpr": "DSGVO konform",
+      "audit": "Vollständige Audit-Protokollierung",
+      "rbac": "Rollenbasierte Zugriffskontrolle",
+      "mfa": "Multi-Faktor-Authentifizierung"
+    }
+  },
+  "cta": {
+    "title": "Bereit Ihre Daten zu Modernisieren?",
+    "subtitle": "Schließen Sie sich Hunderten von Unternehmen an, die erfolgreich mit DataMigrate AI migriert haben",
+    "button": "Kostenlose Testversion Starten",
+    "note": "Keine Kreditkarte erforderlich"
+  },
+  "footer": {
+    "product": "Produkt",
+    "company": "Unternehmen",
+    "resources": "Ressourcen",
+    "legal": "Rechtliches",
+    "copyright": "Alle Rechte vorbehalten.",
+    "madeBy": "Ein Produkt von"
+  }
+}

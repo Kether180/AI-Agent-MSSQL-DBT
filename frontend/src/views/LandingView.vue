@@ -14,17 +14,22 @@
           </span>
         </div>
         <div class="hidden md:flex items-center space-x-8">
-          <a href="#features" class="text-slate-300 hover:text-white transition-colors">Features</a>
-          <a href="#agents" class="text-slate-300 hover:text-white transition-colors">AI Agents</a>
-          <a href="#how-it-works" class="text-slate-300 hover:text-white transition-colors">How It Works</a>
-          <a href="#security" class="text-slate-300 hover:text-white transition-colors">Security</a>
-          <router-link to="/login" class="text-slate-300 hover:text-white transition-colors">Sign In</router-link>
+          <a href="#features" class="text-slate-300 hover:text-white transition-colors">{{ $t('nav.features') }}</a>
+          <a href="#agents" class="text-slate-300 hover:text-white transition-colors">{{ $t('nav.agents') }}</a>
+          <a href="#benefits" class="text-slate-300 hover:text-white transition-colors">{{ $t('nav.benefits') }}</a>
+          <a href="#security" class="text-slate-300 hover:text-white transition-colors">{{ $t('nav.security') }}</a>
+          <LanguageSelector />
+          <router-link to="/login" class="text-slate-300 hover:text-white transition-colors">{{ $t('nav.login') }}</router-link>
           <router-link
             to="/register"
             class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-medium text-white transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25"
           >
-            Get Started Free
+            {{ $t('nav.getStarted') }}
           </router-link>
+        </div>
+        <!-- Mobile menu with language selector -->
+        <div class="md:hidden flex items-center space-x-3">
+          <LanguageSelector />
         </div>
       </div>
     </nav>
@@ -58,23 +63,22 @@
 
         <div class="inline-flex items-center px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 mb-8 backdrop-blur-sm">
           <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
-          <span class="text-slate-300 text-sm">8 Specialized AI Agents Working for You</span>
+          <span class="text-slate-300 text-sm">{{ $t('hero.badge') }}</span>
         </div>
 
         <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
           <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            AI Agents
+            {{ $t('hero.title1') }}
           </span>
-          <span class="text-white"> That Migrate</span><br>
-          <span class="text-white">Your Data </span>
+          <span class="text-white"> {{ $t('hero.title2') }}</span><br>
+          <span class="text-white">{{ $t('hero.title3') }} </span>
           <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-            Autonomously
+            {{ $t('hero.title4') }}
           </span>
         </h1>
 
         <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-          Meet your new data engineering team: intelligent AI agents that extract, transform, validate,
-          and document your database migrations with enterprise-grade precision.
+          {{ $t('hero.subtitle') }}
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -82,7 +86,7 @@
             to="/register"
             class="group px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl font-semibold text-lg text-white transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/30 flex items-center space-x-2"
           >
-            <span>Start Free Trial</span>
+            <span>{{ $t('hero.cta') }}</span>
             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
@@ -91,19 +95,19 @@
             to="/login"
             class="px-8 py-4 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-600 hover:border-slate-500 rounded-xl font-semibold text-lg text-white transition-all backdrop-blur-sm"
           >
-            View Demo
+            {{ $t('hero.demo') }}
           </router-link>
         </div>
 
-        <!-- Floating Stats -->
-        <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <!-- Floating Stats - Fixed spacing with mb-16 -->
+        <div class="mt-20 mb-16 grid grid-cols-2 md:grid-cols-4 gap-6">
           <div class="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 backdrop-blur-sm">
             <div class="text-3xl font-bold text-white">10x</div>
-            <div class="text-slate-400 text-sm">Faster Migrations</div>
+            <div class="text-slate-400 text-sm">{{ $t('hero.stats.faster') }}</div>
           </div>
           <div class="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 backdrop-blur-sm">
             <div class="text-3xl font-bold text-white">99.9%</div>
-            <div class="text-slate-400 text-sm">Data Accuracy</div>
+            <div class="text-slate-400 text-sm">{{ $t('benefits.items.errors.title').split(' ').slice(-1)[0] || 'Accuracy' }}</div>
           </div>
           <div class="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 backdrop-blur-sm">
             <div class="text-3xl font-bold text-white">50+</div>
@@ -124,8 +128,101 @@
       </div>
     </section>
 
+    <!-- Benefits Section - NEW -->
+    <section id="benefits" class="py-24 bg-gradient-to-b from-slate-900 via-slate-800/80 to-slate-900 relative overflow-hidden">
+      <div class="absolute inset-0 opacity-20">
+        <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-emerald-500/30 rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full filter blur-3xl"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/20 to-blue-500/20 border border-emerald-500/30 mb-6">
+            <svg class="w-5 h-5 text-emerald-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <span class="text-emerald-300 text-sm font-medium">ROI & Business Impact</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+            {{ $t('benefits.title') }}
+          </h2>
+          <p class="text-xl text-slate-400 max-w-2xl mx-auto">
+            {{ $t('benefits.subtitle') }}
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Benefit 1: Cost Reduction -->
+          <div class="group p-8 bg-gradient-to-br from-emerald-900/40 to-slate-800/40 rounded-2xl border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300 hover:-translate-y-1">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">{{ $t('benefits.items.cost.title') }}</h3>
+            <p class="text-slate-400">{{ $t('benefits.items.cost.description') }}</p>
+          </div>
+
+          <!-- Benefit 2: Time Savings -->
+          <div class="group p-8 bg-gradient-to-br from-blue-900/40 to-slate-800/40 rounded-2xl border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 hover:-translate-y-1">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">{{ $t('benefits.items.time.title') }}</h3>
+            <p class="text-slate-400">{{ $t('benefits.items.time.description') }}</p>
+          </div>
+
+          <!-- Benefit 3: Accuracy -->
+          <div class="group p-8 bg-gradient-to-br from-purple-900/40 to-slate-800/40 rounded-2xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 hover:-translate-y-1">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">{{ $t('benefits.items.errors.title') }}</h3>
+            <p class="text-slate-400">{{ $t('benefits.items.errors.description') }}</p>
+          </div>
+
+          <!-- Benefit 4: Zero Downtime -->
+          <div class="group p-8 bg-gradient-to-br from-cyan-900/40 to-slate-800/40 rounded-2xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 hover:-translate-y-1">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">{{ $t('benefits.items.downtime.title') }}</h3>
+            <p class="text-slate-400">{{ $t('benefits.items.downtime.description') }}</p>
+          </div>
+
+          <!-- Benefit 5: No Expertise Required -->
+          <div class="group p-8 bg-gradient-to-br from-orange-900/40 to-slate-800/40 rounded-2xl border border-orange-500/30 hover:border-orange-400/50 transition-all duration-300 hover:-translate-y-1">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">{{ $t('benefits.items.expertise.title') }}</h3>
+            <p class="text-slate-400">{{ $t('benefits.items.expertise.description') }}</p>
+          </div>
+
+          <!-- Benefit 6: Scalable -->
+          <div class="group p-8 bg-gradient-to-br from-pink-900/40 to-slate-800/40 rounded-2xl border border-pink-500/30 hover:border-pink-400/50 transition-all duration-300 hover:-translate-y-1">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">{{ $t('benefits.items.scalable.title') }}</h3>
+            <p class="text-slate-400">{{ $t('benefits.items.scalable.description') }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Integrations / Data Warehouses Section -->
-    <section class="py-20 bg-gradient-to-b from-slate-900 via-slate-800/50 to-slate-900 relative overflow-hidden">
+    <section class="py-24 bg-gradient-to-b from-slate-900 via-slate-800/50 to-slate-900 relative overflow-hidden">
       <!-- Background decorations -->
       <div class="absolute inset-0 opacity-30">
         <div class="absolute top-0 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full filter blur-3xl"></div>
@@ -139,13 +236,13 @@
             <svg class="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span class="text-blue-300 text-sm font-medium">Seamless Integrations</span>
+            <span class="text-blue-300 text-sm font-medium">{{ $t('integrations.title') }}</span>
           </div>
           <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">
             Connect to <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Any Platform</span>
           </h2>
           <p class="text-slate-400 max-w-2xl mx-auto">
-            Migrate to modern cloud data warehouses with native connectors and optimized data pipelines
+            {{ $t('integrations.subtitle') }}
           </p>
         </div>
 
@@ -156,7 +253,7 @@
             <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1">
               <div class="flex flex-col items-center">
                 <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-blue-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span class="text-3xl">❄️</span>
+                  <span class="text-3xl">&#10052;&#65039;</span>
                 </div>
                 <span class="text-white text-sm font-semibold">Snowflake</span>
                 <span class="text-blue-400 text-xs mt-1">Cloud DW</span>
@@ -169,7 +266,7 @@
             <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/10 hover:-translate-y-1">
               <div class="flex flex-col items-center">
                 <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-yellow-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span class="text-3xl">🔷</span>
+                  <span class="text-3xl">&#128311;</span>
                 </div>
                 <span class="text-white text-sm font-semibold">BigQuery</span>
                 <span class="text-yellow-400 text-xs mt-1">Google Cloud</span>
@@ -182,7 +279,7 @@
             <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-red-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 hover:-translate-y-1">
               <div class="flex flex-col items-center">
                 <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-red-400/20 to-orange-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span class="text-3xl">🧱</span>
+                  <span class="text-3xl">&#129521;</span>
                 </div>
                 <span class="text-white text-sm font-semibold">Databricks</span>
                 <span class="text-red-400 text-xs mt-1">Lakehouse</span>
@@ -195,7 +292,7 @@
             <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-orange-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-1">
               <div class="flex flex-col items-center">
                 <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-orange-400/20 to-red-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span class="text-3xl">🔶</span>
+                  <span class="text-3xl">&#128310;</span>
                 </div>
                 <span class="text-white text-sm font-semibold">Redshift</span>
                 <span class="text-orange-400 text-xs mt-1">AWS</span>
@@ -208,7 +305,7 @@
             <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-cyan-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-1">
               <div class="flex flex-col items-center">
                 <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-cyan-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span class="text-3xl">🔹</span>
+                  <span class="text-3xl">&#128313;</span>
                 </div>
                 <span class="text-white text-sm font-semibold">Synapse</span>
                 <span class="text-cyan-400 text-xs mt-1">Azure</span>
@@ -221,7 +318,7 @@
             <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-1">
               <div class="flex flex-col items-center">
                 <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-orange-400/20 to-orange-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span class="text-3xl">⚡</span>
+                  <span class="text-3xl">&#9889;</span>
                 </div>
                 <span class="text-white text-sm font-semibold">dbt</span>
                 <span class="text-orange-500 text-xs mt-1">Transform</span>
@@ -234,7 +331,7 @@
             <div class="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-slate-700/50 hover:border-orange-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-1">
               <div class="flex flex-col items-center">
                 <div class="w-14 h-14 mb-3 rounded-xl bg-gradient-to-br from-orange-500/20 to-yellow-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span class="text-3xl">🔥</span>
+                  <span class="text-3xl">&#128293;</span>
                 </div>
                 <span class="text-white text-sm font-semibold">Spark</span>
                 <span class="text-orange-600 text-xs mt-1">Apache</span>
@@ -249,7 +346,7 @@
           <div class="px-6 py-3 bg-slate-800/80 rounded-full border border-slate-700/50 mx-4">
             <div class="flex items-center space-x-3">
               <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span class="text-slate-300 text-sm font-medium">AI-Powered Migration Pipeline</span>
+              <span class="text-slate-300 text-sm font-medium">{{ $t('integrations.pipeline') }}</span>
               <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -260,56 +357,56 @@
 
         <!-- Source Databases -->
         <div class="text-center mb-8">
-          <h3 class="text-xl font-semibold text-white mb-2">Extract from Legacy Systems</h3>
+          <h3 class="text-xl font-semibold text-white mb-2">{{ $t('integrations.source') }}</h3>
           <p class="text-slate-500 text-sm">Connect to your existing databases with secure, read-only access</p>
         </div>
 
         <div class="flex flex-wrap justify-center gap-3">
           <div class="group px-5 py-3 bg-gradient-to-r from-blue-900/40 to-slate-800/40 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all hover:shadow-lg hover:shadow-blue-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">🗄️</span>
+              <span class="text-xl">&#128452;&#65039;</span>
               <span class="text-white font-medium">MSSQL Server</span>
             </div>
           </div>
           <div class="group px-5 py-3 bg-gradient-to-r from-blue-900/40 to-slate-800/40 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all hover:shadow-lg hover:shadow-blue-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">🐘</span>
+              <span class="text-xl">&#128024;</span>
               <span class="text-white font-medium">PostgreSQL</span>
             </div>
           </div>
           <div class="group px-5 py-3 bg-gradient-to-r from-orange-900/40 to-slate-800/40 rounded-xl border border-orange-500/30 hover:border-orange-400/50 transition-all hover:shadow-lg hover:shadow-orange-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">🐬</span>
+              <span class="text-xl">&#128044;</span>
               <span class="text-white font-medium">MySQL</span>
             </div>
           </div>
           <div class="group px-5 py-3 bg-gradient-to-r from-red-900/40 to-slate-800/40 rounded-xl border border-red-500/30 hover:border-red-400/50 transition-all hover:shadow-lg hover:shadow-red-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">🔴</span>
+              <span class="text-xl">&#128308;</span>
               <span class="text-white font-medium">Oracle</span>
             </div>
           </div>
           <div class="group px-5 py-3 bg-gradient-to-r from-purple-900/40 to-slate-800/40 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all hover:shadow-lg hover:shadow-purple-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">💾</span>
+              <span class="text-xl">&#128190;</span>
               <span class="text-white font-medium">IBM DB2</span>
             </div>
           </div>
           <div class="group px-5 py-3 bg-gradient-to-r from-green-900/40 to-slate-800/40 rounded-xl border border-green-500/30 hover:border-green-400/50 transition-all hover:shadow-lg hover:shadow-green-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">🍃</span>
+              <span class="text-xl">&#127811;</span>
               <span class="text-white font-medium">MongoDB</span>
             </div>
           </div>
           <div class="group px-5 py-3 bg-gradient-to-r from-cyan-900/40 to-slate-800/40 rounded-xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all hover:shadow-lg hover:shadow-cyan-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">📊</span>
+              <span class="text-xl">&#128202;</span>
               <span class="text-white font-medium">SAP HANA</span>
             </div>
           </div>
           <div class="group px-5 py-3 bg-gradient-to-r from-slate-700/40 to-slate-800/40 rounded-xl border border-slate-500/30 hover:border-slate-400/50 transition-all hover:shadow-lg hover:shadow-slate-500/10">
             <div class="flex items-center space-x-2">
-              <span class="text-xl">📁</span>
+              <span class="text-xl">&#128193;</span>
               <span class="text-white font-medium">CSV / Excel</span>
             </div>
           </div>
@@ -322,10 +419,10 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
           <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
-            Enterprise-Grade Features
+            {{ $t('features.title') }}
           </h2>
           <p class="text-xl text-slate-400 max-w-2xl mx-auto">
-            Everything you need to migrate, transform, and manage your data at scale
+            {{ $t('features.subtitle') }}
           </p>
         </div>
 
@@ -337,8 +434,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">AI Schema Mapping</h3>
-            <p class="text-slate-400">Intelligent analysis of source schemas with automatic mapping recommendations to target data warehouses.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('features.items.schema.title') }}</h3>
+            <p class="text-slate-400">{{ $t('features.items.schema.description') }}</p>
           </div>
 
           <!-- Feature 2 -->
@@ -348,8 +445,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">Auto DBT Generation</h3>
-            <p class="text-slate-400">Automatically generate production-ready DBT models, tests, and documentation from your source data.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('features.items.dbt.title') }}</h3>
+            <p class="text-slate-400">{{ $t('features.items.dbt.description') }}</p>
           </div>
 
           <!-- Feature 3 -->
@@ -381,8 +478,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">Real-time Sync</h3>
-            <p class="text-slate-400">CDC-based incremental migrations with near real-time data synchronization capabilities.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('features.items.realtime.title') }}</h3>
+            <p class="text-slate-400">{{ $t('features.items.realtime.description') }}</p>
           </div>
 
           <!-- Feature 6 -->
@@ -415,10 +512,10 @@
             <span class="text-cyan-300 text-sm font-medium">Autonomous AI Agents</span>
           </div>
           <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
-            Meet Your AI <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Data Team</span>
+            {{ $t('agents.title') }}
           </h2>
           <p class="text-xl text-slate-400 max-w-2xl mx-auto">
-            Eight specialized AI agents work together to handle every aspect of your database migration
+            {{ $t('agents.subtitle') }}
           </p>
         </div>
 
@@ -432,11 +529,11 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">MSSQL Extractor Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.extractor.title') }}</h3>
                 <span class="text-xs text-blue-400 font-medium">Schema Analysis</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">Connects to your MSSQL databases, extracts schemas, relationships, and metadata with zero manual configuration.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.extractor.description') }}</p>
           </div>
 
           <!-- Agent 2: Data Prep Agent -->
@@ -448,11 +545,11 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">Data Prep Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.dataprep.title') }}</h3>
                 <span class="text-xs text-purple-400 font-medium">Transformation</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">Cleans, normalizes, and prepares your data with intelligent type conversions and null handling strategies.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.dataprep.description') }}</p>
           </div>
 
           <!-- Agent 3: DBT Generator Agent -->
@@ -464,11 +561,11 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">DBT Generator Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.dbt.title') }}</h3>
                 <span class="text-xs text-orange-400 font-medium">Code Generation</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">Auto-generates production-ready DBT models, staging layers, and tests following best practices.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.dbt.description') }}</p>
           </div>
 
           <!-- Agent 4: Data Quality Agent -->
@@ -480,11 +577,11 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">Data Quality Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.quality.title') }}</h3>
                 <span class="text-xs text-green-400 font-medium">Validation</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">ML-powered anomaly detection, pattern validation, and continuous data quality monitoring.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.quality.description') }}</p>
           </div>
 
           <!-- Agent 5: Documentation Agent -->
@@ -496,14 +593,14 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">Documentation Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.docs.title') }}</h3>
                 <span class="text-xs text-cyan-400 font-medium">Auto-Docs</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">Generates comprehensive data dictionaries, lineage diagrams, and technical documentation automatically.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.docs.description') }}</p>
           </div>
 
-          <!-- Agent 6: ML Fine-tuning Agent -->
+          <!-- Agent 6: RAG Service Agent -->
           <div class="group p-6 bg-gradient-to-br from-pink-900/40 to-slate-800/40 rounded-2xl border border-pink-500/30 hover:border-pink-400/50 transition-all duration-300">
             <div class="flex items-center space-x-4 mb-4">
               <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
@@ -512,11 +609,11 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">ML Fine-tuning Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.rag.title') }}</h3>
                 <span class="text-xs text-pink-400 font-medium">Learning</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">Learns from your data patterns to continuously improve mapping accuracy and transformation quality.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.rag.description') }}</p>
           </div>
 
           <!-- Agent 7: BI Analytics Agent -->
@@ -528,11 +625,11 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">BI Analytics Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.bi.title') }}</h3>
                 <span class="text-xs text-indigo-400 font-medium">Insights</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">Connects BI tools, optimizes queries, and provides AI-assisted analytics for better business insights.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.bi.description') }}</p>
           </div>
 
           <!-- Agent 8: Validation Agent -->
@@ -544,11 +641,11 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">Validation Agent</h3>
+                <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.validation.title') }}</h3>
                 <span class="text-xs text-amber-400 font-medium">Testing</span>
               </div>
             </div>
-            <p class="text-slate-400 text-sm">Runs comprehensive validation tests, compares source-target data, and ensures migration completeness.</p>
+            <p class="text-slate-400 text-sm">{{ $t('agents.items.validation.description') }}</p>
           </div>
         </div>
       </div>
@@ -620,11 +717,11 @@
         <div class="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
-              Enterprise Security<br>
+              {{ $t('security.title') }}<br>
               <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Built-In</span>
             </h2>
             <p class="text-xl text-slate-400 mb-8">
-              Your data security is our top priority. We implement industry-leading security measures to protect your sensitive information.
+              {{ $t('security.subtitle') }}
             </p>
 
             <div class="space-y-4">
@@ -635,7 +732,7 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-white">End-to-End Encryption</h4>
+                  <h4 class="text-lg font-semibold text-white">{{ $t('security.items.encryption') }}</h4>
                   <p class="text-slate-400">AES-256 encryption for data at rest and TLS 1.3 for data in transit.</p>
                 </div>
               </div>
@@ -647,7 +744,7 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-white">SOC 2 Type II Compliant</h4>
+                  <h4 class="text-lg font-semibold text-white">{{ $t('security.items.soc2') }}</h4>
                   <p class="text-slate-400">Audited security controls with continuous monitoring and compliance.</p>
                 </div>
               </div>
@@ -659,7 +756,7 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-white">GDPR & CCPA Ready</h4>
+                  <h4 class="text-lg font-semibold text-white">{{ $t('security.items.gdpr') }}</h4>
                   <p class="text-slate-400">Built-in PII detection, data masking, and compliance reporting.</p>
                 </div>
               </div>
@@ -671,7 +768,7 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-white">Role-Based Access Control</h4>
+                  <h4 class="text-lg font-semibold text-white">{{ $t('security.items.rbac') }}</h4>
                   <p class="text-slate-400">Granular permissions with SSO integration and audit logging.</p>
                 </div>
               </div>
@@ -737,13 +834,13 @@
     <section class="py-24 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 relative">
       <div class="max-w-4xl mx-auto px-6 text-center">
         <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
-          Ready to Transform Your<br>
+          {{ $t('cta.title') }}<br>
           <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             Data Infrastructure?
           </span>
         </h2>
         <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
-          Join thousands of data engineers who trust DataMigrate AI for their mission-critical migrations.
+          {{ $t('cta.subtitle') }}
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -751,7 +848,7 @@
             to="/register"
             class="group px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl font-semibold text-lg text-white transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/30 flex items-center space-x-2"
           >
-            <span>Start Free - No Credit Card</span>
+            <span>{{ $t('cta.button') }}</span>
             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
@@ -763,6 +860,7 @@
             Contact Sales
           </a>
         </div>
+        <p class="text-slate-500 text-sm mt-4">{{ $t('cta.note') }}</p>
       </div>
     </section>
 
@@ -783,22 +881,22 @@
               AI-powered database migrations for the modern data stack.
             </p>
             <p class="text-slate-500 text-xs">
-              A product by <span class="text-slate-400 font-medium">Okoinvestments ApS</span>
+              {{ $t('footer.madeBy') }} <span class="text-slate-400 font-medium">Okoinvestments ApS</span>
             </p>
           </div>
 
           <div>
-            <h4 class="text-white font-semibold mb-4">Product</h4>
+            <h4 class="text-white font-semibold mb-4">{{ $t('footer.product') }}</h4>
             <ul class="space-y-2 text-slate-400 text-sm">
-              <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
-              <li><a href="#agents" class="hover:text-white transition-colors">AI Agents</a></li>
-              <li><a href="#security" class="hover:text-white transition-colors">Security</a></li>
+              <li><a href="#features" class="hover:text-white transition-colors">{{ $t('nav.features') }}</a></li>
+              <li><a href="#agents" class="hover:text-white transition-colors">{{ $t('nav.agents') }}</a></li>
+              <li><a href="#security" class="hover:text-white transition-colors">{{ $t('nav.security') }}</a></li>
               <li><router-link to="/docs" class="hover:text-white transition-colors">Documentation</router-link></li>
             </ul>
           </div>
 
           <div>
-            <h4 class="text-white font-semibold mb-4">Company</h4>
+            <h4 class="text-white font-semibold mb-4">{{ $t('footer.company') }}</h4>
             <ul class="space-y-2 text-slate-400 text-sm">
               <li><a href="#" class="hover:text-white transition-colors">About Okoinvestments</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
@@ -808,7 +906,7 @@
           </div>
 
           <div>
-            <h4 class="text-white font-semibold mb-4">Legal</h4>
+            <h4 class="text-white font-semibold mb-4">{{ $t('footer.legal') }}</h4>
             <ul class="space-y-2 text-slate-400 text-sm">
               <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
@@ -821,7 +919,7 @@
         <div class="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center">
           <div class="text-center md:text-left mb-4 md:mb-0">
             <p class="text-slate-500 text-sm">
-              &copy; 2025 DataMigrate AI. All rights reserved.
+              &copy; 2025 DataMigrate AI. {{ $t('footer.copyright') }}
             </p>
             <p class="text-slate-600 text-xs mt-1">
               Okoinvestments ApS - Denmark
@@ -852,7 +950,7 @@
 </template>
 
 <script setup lang="ts">
-// Landing page component - no reactive state needed for static content
+import LanguageSelector from '@/components/LanguageSelector.vue'
 </script>
 
 <style scoped>

@@ -8,6 +8,8 @@ import (
 	"github.com/datamigrate-ai/backend/internal/middleware"
 	"github.com/datamigrate-ai/backend/internal/security"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func SetupRouter(cfg *config.Config) *gin.Engine {
@@ -15,6 +17,10 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 
 	// Initialize JWT middleware
 	middleware.InitJWT(cfg)
+
+	// Security Headers middleware (first layer of defense)
+	securityHeadersConfig := security.DefaultSecurityHeadersConfig()
+	router.Use(security.SecurityHeadersMiddleware(securityHeadersConfig))
 
 	// Prometheus metrics middleware (before other middleware)
 	router.Use(metrics.PrometheusMiddleware())
@@ -60,6 +66,9 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	// Prometheus metrics endpoint
 	router.GET("/metrics", metrics.Handler())
 
+	// Swagger documentation endpoint
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 
@@ -74,6 +83,8 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	auth := v1.Group("/auth")
 	auth.POST("/register", authHandler.Register)
 	auth.POST("/login", authHandler.Login)
+	auth.POST("/forgot-password", authHandler.ForgotPassword)
+	auth.POST("/reset-password", authHandler.ResetPassword)
 
 	// Protected routes
 	protected := v1.Group("")
@@ -93,6 +104,9 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	migrations.DELETE("/:id", migrationsHandler.Delete)
 	migrations.POST("/:id/start", migrationsHandler.Start)
 	migrations.POST("/:id/stop", migrationsHandler.Stop)
+	migrations.GET("/:id/files", migrationsHandler.GetFiles)
+	migrations.GET("/:id/files/*filepath", migrationsHandler.GetFileContent)
+	migrations.GET("/:id/download", migrationsHandler.DownloadProject)
 
 	// Stats
 	protected.GET("/stats", migrationsHandler.GetStats)
@@ -105,6 +119,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	connections.PUT("/:id", connectionsHandler.Update)
 	connections.DELETE("/:id", connectionsHandler.Delete)
 	connections.POST("/:id/test", connectionsHandler.Test)
+	connections.GET("/:id/metadata", connectionsHandler.GetMetadata)
 
 	// API Keys
 	apiKeys := protected.Group("/api-keys")
@@ -112,6 +127,10 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	apiKeys.POST("", apiKeysHandler.Create)
 	apiKeys.DELETE("/:id", apiKeysHandler.Delete)
 	apiKeys.PUT("/:id/toggle", apiKeysHandler.Toggle)
+
+	// AI Chat (proxies to Python AI service)
+	chatHandler := NewChatHandler(cfg)
+	protected.POST("/chat", chatHandler.Chat)
 
 	// Security routes (admin only)
 	securityRoutes := protected.Group("/security")

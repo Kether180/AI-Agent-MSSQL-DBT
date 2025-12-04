@@ -35,10 +35,10 @@ func NewRateLimiter() *RateLimiter {
 	rl := &RateLimiter{
 		entries: make(map[string]*RateLimitEntry),
 		config: RateLimitConfig{
-			RequestsPerMinute: 60,
-			RequestsPerHour:   500,
-			BurstLimit:        10,      // Max requests per second
-			BlockDuration:     time.Minute * 5,
+			RequestsPerMinute: 300,     // Increased for development
+			RequestsPerHour:   3000,    // Increased for development
+			BurstLimit:        50,      // Max requests per second (increased for frontend polling)
+			BlockDuration:     time.Minute * 1,
 			CleanupInterval:   time.Minute * 10,
 		},
 		cleanupC: make(chan struct{}),

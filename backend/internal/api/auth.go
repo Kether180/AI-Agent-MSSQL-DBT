@@ -1,16 +1,22 @@
 package api
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/datamigrate-ai/backend/internal/config"
 	"github.com/datamigrate-ai/backend/internal/db"
+	"github.com/datamigrate-ai/backend/internal/email"
 	"github.com/datamigrate-ai/backend/internal/middleware"
 	"github.com/datamigrate-ai/backend/internal/models"
+	"github.com/datamigrate-ai/backend/internal/security"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -41,6 +47,17 @@ func NewAuthHandler(cfg *config.Config) *AuthHandler {
 }
 
 // Register creates a new user and organization
+// @Summary Register a new user
+// @Description Create a new user account with an organization
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.RegisterRequest true "Registration details"
+// @Success 201 {object} models.LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req models.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -154,10 +171,48 @@ func (h *AuthHandler) Register(c *gin.Context) {
 }
 
 // Login authenticates a user
+// @Summary Login user
+// @Description Authenticate a user and return a JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.LoginRequest true "Login credentials"
+// @Success 200 {object} models.LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 429 {object} map[string]string "Account locked"
+// @Failure 500 {object} map[string]string
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get client IP for lockout tracking
+	clientIP := c.ClientIP()
+	accountLockout := security.GetAccountLockout()
+
+	// Check if account is locked
+	lockoutStatus := accountLockout.IsLocked(req.Email)
+	if lockoutStatus.Locked {
+		log.Printf("Login attempt for locked account: %s from IP: %s", req.Email, clientIP)
+		c.JSON(http.StatusTooManyRequests, gin.H{
+			"error":           lockoutStatus.Message,
+			"locked":          true,
+			"retry_after_sec": int(lockoutStatus.RemainingTime.Seconds()),
+		})
+		return
+	}
+
+	// Check if IP is blocked (too many failed attempts across accounts)
+	if accountLockout.CheckIPBlocked(clientIP) {
+		log.Printf("Login attempt from blocked IP: %s for email: %s", clientIP, req.Email)
+		c.JSON(http.StatusTooManyRequests, gin.H{
+			"error":  "Too many failed login attempts from this IP address. Please try again later.",
+			"locked": true,
+		})
 		return
 	}
 
@@ -169,6 +224,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		FROM users WHERE email = $1`, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			// Record failed attempt even for non-existent accounts (prevent enumeration)
+			status := accountLockout.RecordFailedAttempt(req.Email, clientIP)
+			log.Printf("Failed login (user not found): %s from IP: %s, attempts left: %d", req.Email, clientIP, status.AttemptsLeft)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 			return
 		}
@@ -178,15 +236,38 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	// Check if user is active
 	if !user.IsActive {
+		log.Printf("Login attempt for deactivated account: %s from IP: %s", req.Email, clientIP)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Account is deactivated"})
 		return
 	}
 
 	// Check password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		// Record failed attempt
+		status := accountLockout.RecordFailedAttempt(req.Email, clientIP)
+		log.Printf("Failed login (wrong password): %s from IP: %s, attempts left: %d", req.Email, clientIP, status.AttemptsLeft)
+
+		if status.JustLocked {
+			log.Printf("Account locked: %s after %d lock events", req.Email, status.LockCount)
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error":           status.Message,
+				"locked":          true,
+				"retry_after_sec": int(status.RemainingTime.Seconds()),
+			})
+			return
+		}
+
+		response := gin.H{"error": "Invalid credentials"}
+		if status.AttemptsLeft <= 3 && status.AttemptsLeft > 0 {
+			response["warning"] = fmt.Sprintf("%d login attempts remaining before account lockout", status.AttemptsLeft)
+		}
+		c.JSON(http.StatusUnauthorized, response)
 		return
 	}
+
+	// Successful login - clear failed attempts
+	accountLockout.RecordSuccessfulLogin(req.Email, clientIP)
+	log.Printf("Successful login: %s from IP: %s", req.Email, clientIP)
 
 	// Update last login
 	db.DB.Exec("UPDATE users SET last_login_at = NOW() WHERE id = $1", user.ID)
@@ -214,6 +295,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 // GetCurrentUser returns the current authenticated user
+// @Summary Get current user
+// @Description Get the currently authenticated user's profile
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} models.User
+// @Failure 404 {object} map[string]string
+// @Router /auth/me [get]
 func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
@@ -240,11 +330,31 @@ func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 }
 
 // Logout (client-side token removal, but we can add token blacklisting later)
+// @Summary Logout user
+// @Description Logout the current user (client-side token removal)
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]string
+// @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
 // UpdateProfile updates the current user's profile
+// @Summary Update user profile
+// @Description Update the current user's profile information
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body models.UpdateProfileRequest true "Profile update data"
+// @Success 200 {object} models.User
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/profile [put]
 func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
@@ -329,6 +439,19 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 }
 
 // ChangePassword changes the current user's password
+// @Summary Change password
+// @Description Change the current user's password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body models.ChangePasswordRequest true "Password change data"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/password [put]
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
@@ -367,4 +490,178 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+}
+
+// ForgotPassword sends a password reset email
+// @Summary Forgot password
+// @Description Request a password reset email
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.ForgotPasswordRequest true "Email address"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/forgot-password [post]
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req models.ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Find user by email
+	var user struct {
+		ID        int64   `db:"id"`
+		Email     string  `db:"email"`
+		FirstName *string `db:"first_name"`
+		IsActive  bool    `db:"is_active"`
+	}
+	err := db.DB.Get(&user, "SELECT id, email, first_name, is_active FROM users WHERE email = $1", req.Email)
+	if err != nil {
+		// Don't reveal if email exists or not - always return success
+		log.Printf("Password reset requested for unknown email: %s", req.Email)
+		c.JSON(http.StatusOK, gin.H{"message": "If an account with that email exists, a password reset link has been sent"})
+		return
+	}
+
+	// Check if user is active
+	if !user.IsActive {
+		log.Printf("Password reset requested for deactivated account: %s", req.Email)
+		c.JSON(http.StatusOK, gin.H{"message": "If an account with that email exists, a password reset link has been sent"})
+		return
+	}
+
+	// Generate secure reset token
+	tokenBytes := make([]byte, 32)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate reset token"})
+		return
+	}
+	resetToken := hex.EncodeToString(tokenBytes)
+
+	// Set expiration to 1 hour from now
+	expiresAt := time.Now().Add(1 * time.Hour)
+
+	// Delete any existing tokens for this user
+	db.DB.Exec("DELETE FROM password_reset_tokens WHERE user_id = $1", user.ID)
+
+	// Store the reset token
+	_, err = db.DB.Exec(`
+		INSERT INTO password_reset_tokens (user_id, token, expires_at)
+		VALUES ($1, $2, $3)
+	`, user.ID, resetToken, expiresAt)
+	if err != nil {
+		log.Printf("Failed to store password reset token: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create password reset request"})
+		return
+	}
+
+	// Send password reset email
+	emailService := email.NewService()
+	firstName := "User"
+	if user.FirstName != nil && *user.FirstName != "" {
+		firstName = *user.FirstName
+	}
+
+	if emailService.IsConfigured() {
+		err = emailService.SendPasswordResetEmail(user.Email, firstName, resetToken)
+		if err != nil {
+			log.Printf("Failed to send password reset email: %v", err)
+			// Don't reveal email sending failures to the user
+		}
+	} else {
+		// Use mock service in development
+		mockService := email.NewMockService()
+		mockService.SendPasswordResetEmail(user.Email, firstName, resetToken)
+		log.Printf("Email service not configured, using mock. Reset token for %s: %s", user.Email, resetToken)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "If an account with that email exists, a password reset link has been sent"})
+}
+
+// ResetPassword resets the user's password using a reset token
+// @Summary Reset password
+// @Description Reset password using a valid reset token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body models.ResetPasswordRequest true "Reset token and new password"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/reset-password [post]
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	var req models.ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Find the reset token
+	var tokenRecord struct {
+		ID        int64      `db:"id"`
+		UserID    int64      `db:"user_id"`
+		ExpiresAt time.Time  `db:"expires_at"`
+		UsedAt    *time.Time `db:"used_at"`
+	}
+	err := db.DB.Get(&tokenRecord, `
+		SELECT id, user_id, expires_at, used_at
+		FROM password_reset_tokens
+		WHERE token = $1
+	`, req.Token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid or expired reset token"})
+		return
+	}
+
+	// Check if token has already been used
+	if tokenRecord.UsedAt != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "This reset token has already been used"})
+		return
+	}
+
+	// Check if token has expired
+	if time.Now().After(tokenRecord.ExpiresAt) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "This reset token has expired"})
+		return
+	}
+
+	// Hash the new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	// Start transaction
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+	defer tx.Rollback()
+
+	// Update the user's password
+	_, err = tx.Exec("UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2", string(hashedPassword), tokenRecord.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		return
+	}
+
+	// Mark the token as used
+	_, err = tx.Exec("UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1", tokenRecord.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to mark token as used"})
+		return
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	log.Printf("Password successfully reset for user ID: %d", tokenRecord.UserID)
+	c.JSON(http.StatusOK, gin.H{"message": "Password has been reset successfully. You can now log in with your new password."})
 }

@@ -64,7 +64,7 @@ class ApiService {
 
     // Handle empty responses
     const text = await response.text()
-    return text ? JSON.parse(text) : null
+    return text ? JSON.parse(text) : (null as unknown as T)
   }
 
   // Auth endpoints
@@ -126,6 +126,20 @@ class ApiService {
     return this.request<{ message: string }>('/auth/password', {
       method: 'PUT',
       body: data,
+    })
+  }
+
+  async forgotPassword(email: string) {
+    return this.request<{ message: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: { email },
+    })
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    return this.request<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: { token, new_password: newPassword },
     })
   }
 
@@ -197,6 +211,7 @@ class ApiService {
     database_name: string
     username: string
     password: string
+    use_windows_auth?: boolean
     is_source?: boolean
   }) {
     return this.request<any>('/connections', {
@@ -250,7 +265,197 @@ class ApiService {
       method: 'PUT',
     })
   }
+
+  // Migration files
+  async getMigrationFiles(migrationId: number) {
+    return this.request<{ files: { path: string; name: string; size: number; type: string }[] }>(`/migrations/${migrationId}/files`)
+  }
+
+  async getMigrationFileContent(migrationId: number, filepath: string) {
+    return this.request<{ content: string }>(`/migrations/${migrationId}/files/${filepath}`)
+  }
+
+  getDownloadUrl(migrationId: number): string {
+    return `${this.baseUrl}/migrations/${migrationId}/download`
+  }
+
+  // Stats
+  async getDashboardStats() {
+    return this.request<{
+      total_migrations: number
+      completed_migrations: number
+      running_migrations: number
+      failed_migrations: number
+      success_rate: number
+    }>('/stats')
+  }
+
+  // AI Support Chat
+  async sendChatMessage(message: string, conversationHistory: { role: 'user' | 'assistant'; content: string }[]) {
+    return this.request<{ response: string; sources?: string[] }>('/chat', {
+      method: 'POST',
+      body: {
+        message,
+        history: conversationHistory
+      },
+    })
+  }
 }
+
+// =============================================================================
+// Python AI Service API (port 8081)
+// =============================================================================
+
+const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8081'
+
+class AIServiceApi {
+  private baseUrl: string
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl
+  }
+
+  private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    const { method = 'GET', body, headers = {} } = options
+
+    const requestHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...headers,
+    }
+
+    const config: RequestInit = {
+      method,
+      headers: requestHeaders,
+    }
+
+    if (body && method !== 'GET') {
+      config.body = JSON.stringify(body)
+    }
+
+    const response = await fetch(`${this.baseUrl}${endpoint}`, config)
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'An error occurred' }))
+      throw new Error(error.detail || `HTTP error! status: ${response.status}`)
+    }
+
+    const text = await response.text()
+    return text ? JSON.parse(text) : (null as unknown as T)
+  }
+
+  // Validation endpoints
+  async validateMigration(
+    migrationId: number,
+    options: {
+      runDbtCompile?: boolean
+      validateRowCounts?: boolean
+      validateDataTypes?: boolean
+      generateDbtTests?: boolean
+      sourceConnection?: {
+        host: string
+        port?: number
+        database: string
+        username?: string
+        password?: string
+        useWindowsAuth?: boolean
+      }
+    } = {}
+  ) {
+    const {
+      runDbtCompile = false,
+      validateRowCounts = false,
+      validateDataTypes = true,
+      generateDbtTests = true,
+      sourceConnection
+    } = options
+
+    const body: Record<string, unknown> = {
+      run_dbt_compile: runDbtCompile,
+      validate_row_counts: validateRowCounts,
+      validate_data_types: validateDataTypes,
+      generate_dbt_tests: generateDbtTests,
+    }
+
+    // Add source connection for row count validation
+    if (sourceConnection) {
+      body.source_host = sourceConnection.host
+      body.source_port = sourceConnection.port || 1433
+      body.source_database = sourceConnection.database
+      body.source_username = sourceConnection.username || ''
+      body.source_password = sourceConnection.password || ''
+      body.use_windows_auth = sourceConnection.useWindowsAuth || false
+    }
+
+    return this.request<{
+      migration_id: number
+      project_path: string
+      overall_status: string
+      summary: {
+        total_tables: number
+        passed: number
+        warnings: number
+        failed: number
+        pass_rate: number
+        total_checks: number
+        passed_checks: number
+        warning_checks: number
+        failed_checks: number
+        check_pass_rate: number
+        dbt_tests_generated: number
+        row_count_validated: boolean
+        syntax_validated: boolean
+      }
+      table_results: Array<{
+        table_name: string
+        source_table: string
+        target_model: string
+        overall_status: string
+        checks: Array<{
+          check_type: string
+          name: string
+          status: string
+          details: string
+          source_value?: any
+          target_value?: any
+          timestamp: string
+        }>
+      }>
+      dbt_tests_generated: number
+      row_count_validated: boolean
+      syntax_validated: boolean
+    }>(`/migrations/${migrationId}/validate`, {
+      method: 'POST',
+      body,
+    })
+  }
+
+  async enhanceSchema(migrationId: number) {
+    return this.request<{
+      message: string
+      path: string
+      content: string
+    }>(`/migrations/${migrationId}/enhance-schema`, {
+      method: 'POST',
+    })
+  }
+
+  // Get migration files from AI service
+  async getMigrationFiles(migrationId: number) {
+    return this.request<{
+      migration_id: number
+      project_path: string
+      files: Array<{ path: string; name: string; size: number; type: string }>
+    }>(`/migrations/${migrationId}/files`)
+  }
+
+  async getMigrationFileContent(migrationId: number, filepath: string) {
+    return this.request<{ path: string; content: string; size: number }>(
+      `/migrations/${migrationId}/files/${filepath}`
+    )
+  }
+}
+
+export const aiService = new AIServiceApi(AI_SERVICE_URL)
 
 // Export singleton instance
 export const api = new ApiService(API_BASE_URL)

@@ -1,11 +1,81 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMigrationsStore } from '@/stores/migrations'
+import { api, aiService } from '@/services/api'
 
 const route = useRoute()
 const router = useRouter()
 const store = useMigrationsStore()
+
+// File viewer state
+interface FileInfo {
+  path: string
+  name: string
+  size: number
+  type: string
+}
+const files = ref<FileInfo[]>([])
+const selectedFile = ref<string | null>(null)
+const fileContent = ref<string>('')
+const filesLoading = ref(false)
+const fileContentLoading = ref(false)
+
+// Validation state
+interface ValidationCheck {
+  check_type: string
+  name: string
+  status: string
+  details: string
+  source_value?: any
+  target_value?: any
+}
+
+interface TableValidation {
+  table_name: string
+  source_table: string
+  target_model: string
+  overall_status: string
+  checks: ValidationCheck[]
+}
+
+interface ValidationResult {
+  migration_id: number
+  project_path: string
+  overall_status: string
+  summary: {
+    total_tables: number
+    passed: number
+    warnings: number
+    failed: number
+    pass_rate: number
+    total_checks: number
+    passed_checks: number
+    warning_checks: number
+    failed_checks: number
+    check_pass_rate: number
+    dbt_tests_generated: number
+    row_count_validated: boolean
+    syntax_validated: boolean
+  }
+  table_results: TableValidation[]
+  dbt_tests_generated: number
+  row_count_validated: boolean
+  syntax_validated: boolean
+}
+
+const validationResult = ref<ValidationResult | null>(null)
+const validationLoading = ref(false)
+const validationError = ref<string | null>(null)
+const expandedTables = ref<Set<string>>(new Set())
+
+// Validation options state
+const validationOptions = ref({
+  runDbtCompile: false,
+  validateRowCounts: false,
+  validateDataTypes: true,
+  generateDbtTests: true
+})
 
 const migrationId = computed(() => Number(route.params.id))
 const migration = computed(() => store.currentMigration)
@@ -15,18 +85,32 @@ const error = computed(() => store.error)
 // Polling for status updates
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
-const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  running: 'bg-blue-100 text-blue-800',
-  completed: 'bg-green-100 text-green-800',
-  failed: 'bg-red-100 text-red-800'
-}
-
-const statusIcons: Record<string, string> = {
-  pending: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-  running: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
-  completed: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-  failed: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+const statusConfig: Record<string, { bg: string; text: string; icon: string; gradient: string; pulse?: boolean }> = {
+  pending: {
+    bg: 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200',
+    text: 'text-amber-700',
+    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    gradient: 'from-amber-400 to-yellow-500'
+  },
+  running: {
+    bg: 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200',
+    text: 'text-blue-700',
+    icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+    gradient: 'from-blue-500 to-cyan-500',
+    pulse: true
+  },
+  completed: {
+    bg: 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200',
+    text: 'text-emerald-700',
+    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+    gradient: 'from-emerald-500 to-green-500'
+  },
+  failed: {
+    bg: 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200',
+    text: 'text-red-700',
+    icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
+    gradient: 'from-red-500 to-rose-500'
+  }
 }
 
 function formatDate(date?: string): string {
@@ -34,10 +118,16 @@ function formatDate(date?: string): string {
   return new Date(date).toLocaleString()
 }
 
-function formatDuration(start: string, end?: string): string {
+function formatDuration(start: string, end?: string, status?: string): string {
+  // For pending migrations, show N/A since they haven't started
+  if (status === 'pending') return '-'
+
   const startDate = new Date(start)
   const endDate = end ? new Date(end) : new Date()
   const diff = Math.floor((endDate.getTime() - startDate.getTime()) / 1000)
+
+  // Handle negative durations (clock sync issues)
+  if (diff < 0) return '-'
 
   if (diff < 60) return `${diff}s`
   if (diff < 3600) return `${Math.floor(diff / 60)}m ${diff % 60}s`
@@ -90,13 +180,144 @@ function goBack() {
   router.push('/migrations')
 }
 
+async function fetchFiles() {
+  if (!migration.value || migration.value.status !== 'completed') return
+
+  filesLoading.value = true
+  try {
+    const response = await api.getMigrationFiles(migrationId.value)
+    files.value = response.files || []
+    // Auto-select first file
+    if (files.value.length > 0 && !selectedFile.value && files.value[0]) {
+      await selectFile(files.value[0].path)
+    }
+  } catch (err) {
+    console.error('Failed to fetch files:', err)
+  } finally {
+    filesLoading.value = false
+  }
+}
+
+async function selectFile(filepath: string) {
+  selectedFile.value = filepath
+  fileContentLoading.value = true
+  try {
+    const response = await api.getMigrationFileContent(migrationId.value, filepath)
+    fileContent.value = response.content || ''
+  } catch (err) {
+    console.error('Failed to fetch file content:', err)
+    fileContent.value = '// Error loading file content'
+  } finally {
+    fileContentLoading.value = false
+  }
+}
+
+function getFileIcon(filepath: string): string {
+  if (filepath.endsWith('.sql')) return 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7'
+  if (filepath.endsWith('.yml') || filepath.endsWith('.yaml')) return 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+  if (filepath.endsWith('.md')) return 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+  return 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z'
+}
+
+function getFileName(filepath: string): string {
+  return filepath.split('/').pop() || filepath
+}
+
+function handleDownload() {
+  const token = api.getToken()
+  const url = api.getDownloadUrl(migrationId.value)
+
+  // Create a temporary link with auth header via fetch
+  fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => response.blob())
+  .then(blob => {
+    const downloadUrl = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = downloadUrl
+    a.download = `${migration.value?.name || 'dbt-project'}.zip`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(downloadUrl)
+    document.body.removeChild(a)
+  })
+  .catch(err => console.error('Download failed:', err))
+}
+
+async function runValidation() {
+  validationLoading.value = true
+  validationError.value = null
+  try {
+    validationResult.value = await aiService.validateMigration(migrationId.value, {
+      runDbtCompile: validationOptions.value.runDbtCompile,
+      validateRowCounts: validationOptions.value.validateRowCounts,
+      validateDataTypes: validationOptions.value.validateDataTypes,
+      generateDbtTests: validationOptions.value.generateDbtTests
+    })
+  } catch (err: any) {
+    validationError.value = err.message || 'Validation failed'
+    console.error('Validation failed:', err)
+  } finally {
+    validationLoading.value = false
+  }
+}
+
+function toggleTableExpand(tableName: string) {
+  if (expandedTables.value.has(tableName)) {
+    expandedTables.value.delete(tableName)
+  } else {
+    expandedTables.value.add(tableName)
+  }
+  expandedTables.value = new Set(expandedTables.value) // Trigger reactivity
+}
+
+function getStatusIcon(status: string): string {
+  switch (status) {
+    case 'passed': return 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+    case 'warning': return 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+    case 'failed': return 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+    default: return 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+  }
+}
+
+function getStatusColor(status: string): string {
+  switch (status) {
+    case 'passed': return 'text-emerald-500'
+    case 'warning': return 'text-amber-500'
+    case 'failed': return 'text-red-500'
+    default: return 'text-slate-400'
+  }
+}
+
+function getStatusBg(status: string): string {
+  switch (status) {
+    case 'passed': return 'bg-emerald-50 border-emerald-200'
+    case 'warning': return 'bg-amber-50 border-amber-200'
+    case 'failed': return 'bg-red-50 border-red-200'
+    default: return 'bg-slate-50 border-slate-200'
+  }
+}
+
 onMounted(async () => {
   await store.fetchMigration(migrationId.value)
 
+  // Fetch files if migration is completed
+  if (migration.value?.status === 'completed') {
+    await fetchFiles()
+  }
+
   // Poll for updates if migration is running
   pollInterval = setInterval(async () => {
-    if (migration.value?.status === 'running') {
+    const wasRunning = migration.value?.status === 'running'
+    if (wasRunning) {
       await store.fetchMigration(migrationId.value)
+      // Check if just completed (status changed after fetch)
+      if (migration.value?.status === 'completed' && files.value.length === 0) {
+        await fetchFiles()
+      }
     }
   }, 3000)
 })
@@ -109,239 +330,746 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="p-6 max-w-5xl mx-auto">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-cyan-50">
     <!-- Header -->
-    <div class="mb-6">
-      <button
-        @click="goBack"
-        class="flex items-center text-gray-600 hover:text-gray-900 mb-4"
-      >
-        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-        Back to Migrations
-      </button>
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl">
+      <div class="px-4 sm:px-6 lg:px-8">
+        <div class="py-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <button
+                @click="goBack"
+                class="mr-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+              >
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+              </button>
+              <div>
+                <h1 class="text-3xl font-bold text-white">
+                  Migration <span class="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">Details</span>
+                </h1>
+                <p class="mt-1 text-sm text-slate-300">
+                  View and manage your migration progress
+                </p>
+              </div>
+            </div>
 
-      <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold text-gray-900">Migration Details</h1>
-        <div class="flex gap-2">
-          <button
-            v-if="migration?.status === 'pending'"
-            @click="handleStart"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Start Migration
-          </button>
-          <button
-            v-if="migration?.status === 'running'"
-            @click="handleStop"
-            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-            </svg>
-            Stop Migration
-          </button>
-          <button
-            v-if="migration?.status === 'failed'"
-            @click="handleRetry"
-            class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 flex items-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Retry Migration
-          </button>
-          <button
-            v-if="migration?.status !== 'running'"
-            @click="handleDelete"
-            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Delete
-          </button>
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+              <button
+                v-if="migration?.status === 'pending'"
+                @click="handleStart"
+                class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Start Migration
+              </button>
+              <button
+                v-if="migration?.status === 'running'"
+                @click="handleStop"
+                class="px-5 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:from-red-600 hover:to-rose-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                </svg>
+                Stop Migration
+              </button>
+              <button
+                v-if="migration?.status === 'failed'"
+                @click="handleRetry"
+                class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Retry Migration
+              </button>
+              <button
+                v-if="migration?.status !== 'running'"
+                @click="handleDelete"
+                class="px-4 py-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-slate-600 hover:text-white flex items-center gap-2 transition-all duration-200"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading && !migration" class="flex justify-center py-12">
-      <svg class="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-    </div>
+    <div class="px-4 sm:px-6 lg:px-8 py-8">
+      <div class="max-w-6xl mx-auto">
+        <!-- Loading State -->
+        <div v-if="loading && !migration" class="flex flex-col items-center justify-center py-20">
+          <div class="relative">
+            <div class="h-20 w-20 rounded-full border-4 border-cyan-100"></div>
+            <svg class="animate-spin h-20 w-20 text-cyan-600 absolute top-0" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <p class="mt-6 text-slate-500 font-medium">Loading migration details...</p>
+        </div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
-      <div class="flex items-center">
-        <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span class="text-red-800">{{ error }}</span>
-      </div>
-    </div>
+        <!-- Error State -->
+        <div v-else-if="error" class="bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-200 rounded-2xl p-8 shadow-lg">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="ml-5">
+              <h3 class="text-lg font-semibold text-red-800">Error Loading Migration</h3>
+              <p class="text-red-700">{{ error }}</p>
+            </div>
+          </div>
+        </div>
 
-    <!-- Migration Details -->
-    <div v-else-if="migration" class="space-y-6">
-      <!-- Status Card -->
-      <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900">{{ migration.name }}</h2>
-          <span
-            :class="['px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1', statusColors[migration.status]]"
+        <!-- Migration Details -->
+        <div v-else-if="migration" class="space-y-6">
+          <!-- Main Status Card -->
+          <div
+            :class="[
+              'rounded-2xl shadow-lg border-2 overflow-hidden transition-all duration-300',
+              statusConfig[migration.status]?.bg || 'bg-white border-slate-200'
+            ]"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="statusIcons[migration.status]" />
-            </svg>
-            {{ migration.status.charAt(0).toUpperCase() + migration.status.slice(1) }}
-          </span>
-        </div>
+            <!-- Status Header Bar -->
+            <div :class="['h-2 bg-gradient-to-r', statusConfig[migration.status]?.gradient]"></div>
 
-        <!-- Progress Bar -->
-        <div v-if="migration.status === 'running' || migration.progress > 0" class="mb-4">
-          <div class="flex justify-between text-sm text-gray-600 mb-1">
-            <span>Progress</span>
-            <span>{{ migration.progress }}%</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-3">
-            <div
-              class="h-3 rounded-full transition-all duration-500"
-              :class="migration.status === 'completed' ? 'bg-green-500' : migration.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'"
-              :style="{ width: `${migration.progress}%` }"
-            ></div>
-          </div>
-        </div>
+            <div class="p-8">
+              <div class="flex items-start justify-between mb-6">
+                <div>
+                  <h2 class="text-2xl font-bold text-slate-900 mb-2">{{ migration.name }}</h2>
+                  <div class="flex items-center gap-4">
+                    <span
+                      :class="[
+                        'inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm',
+                        statusConfig[migration.status]?.bg,
+                        statusConfig[migration.status]?.text
+                      ]"
+                    >
+                      <svg
+                        :class="['w-4 h-4 mr-2', statusConfig[migration.status]?.pulse ? 'animate-spin' : '']"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="statusConfig[migration.status]?.icon" />
+                      </svg>
+                      {{ migration.status.charAt(0).toUpperCase() + migration.status.slice(1) }}
+                    </span>
+                    <span class="text-sm text-slate-500">ID: #{{ migration.id }}</span>
+                  </div>
+                </div>
 
-        <!-- Error Message -->
-        <div v-if="migration.error" class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-          <div class="flex items-start">
-            <svg class="w-5 h-5 text-red-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-              <p class="text-sm font-medium text-red-800">Error</p>
-              <p class="text-sm text-red-700">{{ migration.error }}</p>
+                <!-- Duration Badge -->
+                <div class="text-right">
+                  <p class="text-sm text-slate-500 mb-1">Duration</p>
+                  <p class="text-2xl font-bold text-slate-700">{{ formatDuration(migration.created_at, migration.completed_at, migration.status) }}</p>
+                </div>
+              </div>
+
+              <!-- Progress Bar (for pending/running/completed) -->
+              <div v-if="migration.status !== 'failed'" class="mb-8">
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="font-medium" :class="statusConfig[migration.status]?.text">
+                    {{ migration.status === 'pending' ? 'Waiting to start...' :
+                       migration.status === 'running' ? 'Processing...' :
+                       'Completed' }}
+                  </span>
+                  <span class="font-bold" :class="statusConfig[migration.status]?.text">{{ migration.progress || 0 }}%</span>
+                </div>
+                <div class="w-full bg-white/50 rounded-full h-4 shadow-inner overflow-hidden">
+                  <div
+                    :class="[
+                      'h-4 rounded-full transition-all duration-700 ease-out bg-gradient-to-r',
+                      statusConfig[migration.status]?.gradient,
+                      statusConfig[migration.status]?.pulse ? 'animate-pulse' : ''
+                    ]"
+                    :style="{ width: `${migration.progress || (migration.status === 'pending' ? 0 : 100)}%` }"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Error Message -->
+              <div v-if="migration.error" class="bg-red-100 border border-red-300 rounded-xl p-5 mb-6">
+                <div class="flex items-start">
+                  <div class="flex-shrink-0 w-10 h-10 bg-red-200 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-semibold text-red-800">Migration Failed</p>
+                    <p class="text-sm text-red-700 mt-1">{{ migration.error }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Details Grid -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                  <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-500">Source Database</p>
+                  </div>
+                  <p class="font-semibold text-slate-900 text-lg truncate">{{ migration.source_database }}</p>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                  <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-500">Target Project</p>
+                  </div>
+                  <p class="font-semibold text-slate-900 text-lg truncate">{{ migration.target_project }}</p>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                  <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 text-cyan-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-500">Tables</p>
+                  </div>
+                  <p class="font-bold text-cyan-600 text-2xl">{{ migration.tables_count || 0 }}</p>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                  <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-500">Views</p>
+                  </div>
+                  <p class="font-bold text-purple-600 text-2xl">{{ migration.views_count || 0 }}</p>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                  <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-500">Foreign Keys</p>
+                  </div>
+                  <p class="font-bold text-orange-600 text-2xl">{{ migration.foreign_keys_count || 0 }}</p>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                  <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-500">dbt Models</p>
+                  </div>
+                  <p class="font-bold text-emerald-600 text-2xl">{{ migration.models_generated || 0 }}</p>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm col-span-2">
+                  <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-500">Created</p>
+                  </div>
+                  <p class="font-semibold text-slate-900 text-lg">{{ formatDate(migration.created_at) }}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Details Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p class="text-sm text-gray-500">Source Database</p>
-            <p class="font-medium text-gray-900">{{ migration.source_database }}</p>
+          <!-- Pending State - Enhanced -->
+          <div v-if="migration.status === 'pending'" class="bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 rounded-2xl shadow-lg border-2 border-amber-200 p-8">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg mr-6">
+                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-amber-800">Ready to Start</h3>
+                  <p class="text-amber-700 mt-1">
+                    This migration is configured and ready. Click the "Start Migration" button to begin processing.
+                  </p>
+                </div>
+              </div>
+              <button
+                @click="handleStart"
+                class="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold text-lg"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Start Now
+              </button>
+            </div>
           </div>
-          <div>
-            <p class="text-sm text-gray-500">Target Project</p>
-            <p class="font-medium text-gray-900">{{ migration.target_project }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Tables</p>
-            <p class="font-medium text-gray-900">{{ migration.tables_count }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Duration</p>
-            <p class="font-medium text-gray-900">{{ formatDuration(migration.created_at, migration.completed_at) }}</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- Timeline Card -->
-      <div class="bg-white rounded-lg shadow-sm border p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Timeline</h3>
-        <div class="space-y-4">
-          <div class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          <!-- Timeline Card -->
+          <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-8">
+            <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
+              <svg class="w-6 h-6 mr-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-900">Migration Created</p>
-              <p class="text-sm text-gray-500">{{ formatDate(migration.created_at) }}</p>
+              Timeline
+            </h3>
+            <div class="relative">
+              <!-- Timeline line -->
+              <div class="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-500 via-blue-500 to-slate-200"></div>
+
+              <div class="space-y-6">
+                <div class="flex items-start relative">
+                  <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center z-10 shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <div class="ml-5 bg-cyan-50 rounded-xl p-4 flex-1 border border-cyan-100">
+                    <p class="text-sm font-semibold text-cyan-800">Migration Created</p>
+                    <p class="text-sm text-cyan-600">{{ formatDate(migration.created_at) }}</p>
+                  </div>
+                </div>
+
+                <div v-if="migration.status !== 'pending'" class="flex items-start relative">
+                  <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center z-10 shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    </svg>
+                  </div>
+                  <div class="ml-5 bg-blue-50 rounded-xl p-4 flex-1 border border-blue-100">
+                    <p class="text-sm font-semibold text-blue-800">Migration Started</p>
+                    <p class="text-sm text-blue-600">{{ formatDate(migration.created_at) }}</p>
+                  </div>
+                </div>
+
+                <div v-if="migration.status === 'completed'" class="flex items-start relative">
+                  <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center z-10 shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div class="ml-5 bg-emerald-50 rounded-xl p-4 flex-1 border border-emerald-100">
+                    <p class="text-sm font-semibold text-emerald-800">Migration Completed</p>
+                    <p class="text-sm text-emerald-600">{{ formatDate(migration.completed_at) }}</p>
+                  </div>
+                </div>
+
+                <div v-if="migration.status === 'failed'" class="flex items-start relative">
+                  <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center z-10 shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <div class="ml-5 bg-red-50 rounded-xl p-4 flex-1 border border-red-100">
+                    <p class="text-sm font-semibold text-red-800">Migration Failed</p>
+                    <p class="text-sm text-red-600">{{ migration.error || 'Unknown error' }}</p>
+                  </div>
+                </div>
+
+                <div v-if="migration.status === 'running'" class="flex items-start relative">
+                  <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center z-10 shadow-lg animate-pulse">
+                    <svg class="w-5 h-5 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </div>
+                  <div class="ml-5 bg-blue-50 rounded-xl p-4 flex-1 border border-blue-100 animate-pulse">
+                    <p class="text-sm font-semibold text-blue-800">Processing...</p>
+                    <p class="text-sm text-blue-600">{{ migration.progress }}% complete</p>
+                  </div>
+                </div>
+
+                <div v-if="migration.status === 'pending'" class="flex items-start relative">
+                  <div class="flex-shrink-0 w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center z-10 border-2 border-dashed border-slate-300">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div class="ml-5 bg-slate-50 rounded-xl p-4 flex-1 border border-dashed border-slate-200">
+                    <p class="text-sm font-semibold text-slate-500">Waiting to Start</p>
+                    <p class="text-sm text-slate-400">Click "Start Migration" to begin</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div v-if="migration.status !== 'pending'" class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-              <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              </svg>
+          <!-- Generated Files Card (only show for completed migrations) -->
+          <div v-if="migration.status === 'completed'" class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-green-50 flex items-center justify-between">
+              <h3 class="text-xl font-bold text-slate-900 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                </svg>
+                Generated dbt Files
+              </h3>
+              <button
+                @click="handleDownload"
+                class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl hover:from-emerald-600 hover:to-green-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Project
+              </button>
             </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-900">Migration Started</p>
-              <p class="text-sm text-gray-500">{{ formatDate(migration.created_at) }}</p>
+
+            <!-- Loading state -->
+            <div v-if="filesLoading" class="p-12 text-center">
+              <div class="relative inline-block">
+                <div class="h-16 w-16 rounded-full border-4 border-emerald-100"></div>
+                <svg class="animate-spin h-16 w-16 text-emerald-600 absolute top-0" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <p class="mt-4 text-slate-500 font-medium">Loading files...</p>
+            </div>
+
+            <!-- Empty state -->
+            <div v-else-if="files.length === 0" class="p-12 text-center">
+              <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="h-10 w-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p class="text-slate-500 font-medium">No files generated yet</p>
+            </div>
+
+            <!-- File browser -->
+            <div v-else class="flex" style="height: 450px;">
+              <!-- File list -->
+              <div class="w-72 border-r border-slate-200 overflow-y-auto bg-slate-50">
+                <ul class="divide-y divide-slate-100">
+                  <li
+                    v-for="file in files"
+                    :key="file.path"
+                    @click="selectFile(file.path)"
+                    :class="[
+                      'px-5 py-3 cursor-pointer hover:bg-white flex items-center gap-3 text-sm transition-all duration-150',
+                      selectedFile === file.path ? 'bg-white text-cyan-700 border-l-4 border-cyan-500 shadow-sm' : 'text-slate-700 border-l-4 border-transparent'
+                    ]"
+                  >
+                    <svg class="w-5 h-5 flex-shrink-0" :class="selectedFile === file.path ? 'text-cyan-500' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getFileIcon(file.path)" />
+                    </svg>
+                    <span class="truncate font-medium">{{ file.name }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- File content -->
+              <div class="flex-1 overflow-hidden flex flex-col bg-slate-900">
+                <div v-if="selectedFile" class="px-5 py-3 bg-slate-800 border-b border-slate-700 text-sm text-cyan-400 font-mono">
+                  {{ selectedFile }}
+                </div>
+                <div class="flex-1 overflow-auto">
+                  <div v-if="fileContentLoading" class="p-8 text-center">
+                    <svg class="animate-spin h-8 w-8 mx-auto text-cyan-500" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                  <pre v-else class="p-5 text-sm font-mono text-slate-300 whitespace-pre-wrap min-h-full leading-relaxed"><code>{{ fileContent }}</code></pre>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div v-if="migration.status === 'completed'" class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
+          <!-- Validation Card (only show for completed migrations) -->
+          <div v-if="migration.status === 'completed'" class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-slate-900 flex items-center">
+                  <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Comprehensive Validation
+                </h3>
+                <button
+                  @click="runValidation"
+                  :disabled="validationLoading"
+                  class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-xl hover:from-indigo-600 hover:to-violet-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="validationLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ validationLoading ? 'Validating...' : 'Run Validation' }}
+                </button>
+              </div>
+              <!-- Validation Options -->
+              <div class="flex flex-wrap gap-4 text-sm">
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-white/50 px-3 py-1.5 rounded-lg transition-colors">
+                  <input type="checkbox" v-model="validationOptions.validateDataTypes" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" />
+                  <span class="text-slate-700">Data Type Mapping</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-white/50 px-3 py-1.5 rounded-lg transition-colors">
+                  <input type="checkbox" v-model="validationOptions.generateDbtTests" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" />
+                  <span class="text-slate-700">Generate dbt Tests</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-white/50 px-3 py-1.5 rounded-lg transition-colors">
+                  <input type="checkbox" v-model="validationOptions.runDbtCompile" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" />
+                  <span class="text-slate-700">dbt Compile</span>
+                  <span class="text-xs text-slate-400">(requires dbt)</span>
+                </label>
+              </div>
             </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-900">Migration Completed</p>
-              <p class="text-sm text-gray-500">{{ formatDate(migration.completed_at) }}</p>
+
+            <!-- Validation Loading -->
+            <div v-if="validationLoading" class="p-12 text-center">
+              <div class="relative inline-block">
+                <div class="h-16 w-16 rounded-full border-4 border-indigo-100"></div>
+                <svg class="animate-spin h-16 w-16 text-indigo-600 absolute top-0" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <p class="mt-4 text-slate-500 font-medium">Validating transformation accuracy...</p>
+            </div>
+
+            <!-- Validation Error -->
+            <div v-else-if="validationError" class="p-6">
+              <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-red-700 font-medium">{{ validationError }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Validation Results -->
+            <div v-else-if="validationResult" class="p-6">
+              <!-- Summary Cards Row 1: Tables -->
+              <div class="grid grid-cols-4 gap-4 mb-4">
+                <div class="bg-slate-50 rounded-xl p-4 text-center">
+                  <p class="text-sm text-slate-500 mb-1">Total Tables</p>
+                  <p class="text-2xl font-bold text-slate-700">{{ validationResult.summary.total_tables }}</p>
+                </div>
+                <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                  <p class="text-sm text-emerald-600 mb-1">Passed</p>
+                  <p class="text-2xl font-bold text-emerald-600">{{ validationResult.summary.passed }}</p>
+                </div>
+                <div class="bg-amber-50 rounded-xl p-4 text-center">
+                  <p class="text-sm text-amber-600 mb-1">Warnings</p>
+                  <p class="text-2xl font-bold text-amber-600">{{ validationResult.summary.warnings }}</p>
+                </div>
+                <div class="bg-red-50 rounded-xl p-4 text-center">
+                  <p class="text-sm text-red-600 mb-1">Failed</p>
+                  <p class="text-2xl font-bold text-red-600">{{ validationResult.summary.failed }}</p>
+                </div>
+              </div>
+
+              <!-- Summary Cards Row 2: Checks & Tests -->
+              <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="bg-indigo-50 rounded-xl p-4 text-center">
+                  <p class="text-sm text-indigo-600 mb-1">Total Checks</p>
+                  <p class="text-2xl font-bold text-indigo-600">{{ validationResult.summary.total_checks || 0 }}</p>
+                </div>
+                <div class="bg-violet-50 rounded-xl p-4 text-center">
+                  <p class="text-sm text-violet-600 mb-1">dbt Tests Generated</p>
+                  <p class="text-2xl font-bold text-violet-600">{{ validationResult.dbt_tests_generated || 0 }}</p>
+                </div>
+                <div class="bg-cyan-50 rounded-xl p-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <svg v-if="validationResult.syntax_validated" class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <svg v-else class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-sm" :class="validationResult.syntax_validated ? 'text-cyan-600' : 'text-slate-500'">Syntax Validated</p>
+                  </div>
+                </div>
+                <div class="bg-teal-50 rounded-xl p-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <svg v-if="validationResult.row_count_validated" class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <svg v-else class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-sm" :class="validationResult.row_count_validated ? 'text-teal-600' : 'text-slate-500'">Row Counts</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pass Rate Progress -->
+              <div class="mb-6 p-4 bg-slate-50 rounded-xl">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-medium text-slate-600">Table Pass Rate</span>
+                  <span class="text-lg font-bold" :class="validationResult.summary.pass_rate >= 80 ? 'text-emerald-600' : validationResult.summary.pass_rate >= 50 ? 'text-amber-600' : 'text-red-600'">
+                    {{ validationResult.summary.pass_rate }}%
+                  </span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                  <div
+                    class="h-3 rounded-full transition-all duration-500"
+                    :class="validationResult.summary.pass_rate >= 80 ? 'bg-emerald-500' : validationResult.summary.pass_rate >= 50 ? 'bg-amber-500' : 'bg-red-500'"
+                    :style="{ width: `${validationResult.summary.pass_rate}%` }"
+                  ></div>
+                </div>
+                <div class="flex justify-between items-center mt-3 mb-2">
+                  <span class="text-sm font-medium text-slate-600">Check Pass Rate</span>
+                  <span class="text-lg font-bold" :class="(validationResult.summary.check_pass_rate || 0) >= 80 ? 'text-emerald-600' : (validationResult.summary.check_pass_rate || 0) >= 50 ? 'text-amber-600' : 'text-red-600'">
+                    {{ validationResult.summary.check_pass_rate || 0 }}%
+                  </span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                  <div
+                    class="h-3 rounded-full transition-all duration-500"
+                    :class="(validationResult.summary.check_pass_rate || 0) >= 80 ? 'bg-emerald-500' : (validationResult.summary.check_pass_rate || 0) >= 50 ? 'bg-amber-500' : 'bg-red-500'"
+                    :style="{ width: `${validationResult.summary.check_pass_rate || 0}%` }"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Table Results -->
+              <div class="space-y-3">
+                <div
+                  v-for="table in validationResult.table_results"
+                  :key="table.table_name"
+                  :class="['border rounded-xl overflow-hidden', getStatusBg(table.overall_status)]"
+                >
+                  <!-- Table Header (clickable) -->
+                  <div
+                    @click="toggleTableExpand(table.table_name)"
+                    class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-white/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-3">
+                      <svg :class="['w-5 h-5', getStatusColor(table.overall_status)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getStatusIcon(table.overall_status)" />
+                      </svg>
+                      <div>
+                        <p class="font-semibold text-slate-800">{{ table.target_model }}</p>
+                        <p class="text-xs text-slate-500">from {{ table.source_table }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span :class="['text-xs font-medium px-2 py-1 rounded-full', table.overall_status === 'passed' ? 'bg-emerald-100 text-emerald-700' : table.overall_status === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700']">
+                        {{ table.overall_status }}
+                      </span>
+                      <svg
+                        :class="['w-5 h-5 text-slate-400 transition-transform', expandedTables.has(table.table_name) ? 'rotate-180' : '']"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Expanded Checks -->
+                  <div v-if="expandedTables.has(table.table_name)" class="border-t border-slate-200 bg-white/70 px-4 py-3 space-y-2">
+                    <div
+                      v-for="(check, idx) in table.checks"
+                      :key="idx"
+                      class="flex items-start gap-2 text-sm"
+                    >
+                      <svg :class="['w-4 h-4 mt-0.5 flex-shrink-0', getStatusColor(check.status)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getStatusIcon(check.status)" />
+                      </svg>
+                      <div>
+                        <span class="font-medium text-slate-700">{{ check.name }}</span>
+                        <span class="text-slate-500 ml-2">({{ check.check_type }})</span>
+                        <p class="text-slate-600 text-xs mt-0.5">{{ check.details }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="p-12 text-center">
+              <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="h-10 w-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p class="text-slate-600 font-medium mb-2">Validate Your Transformation</p>
+              <p class="text-slate-500 text-sm max-w-md mx-auto">
+                Click "Run Validation" to verify that your dbt models accurately represent the source MSSQL schema,
+                including columns, constraints, and relationships.
+              </p>
             </div>
           </div>
 
-          <div v-if="migration.status === 'failed'" class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-              <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <!-- Info Card -->
+          <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-8">
+            <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
+              <svg class="w-6 h-6 mr-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-900">Migration Failed</p>
-              <p class="text-sm text-gray-500">{{ migration.error || 'Unknown error' }}</p>
-            </div>
-          </div>
-
-          <div v-if="migration.status === 'running'" class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg class="w-4 h-4 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-900">In Progress</p>
-              <p class="text-sm text-gray-500">Processing {{ migration.progress }}% complete...</p>
-            </div>
+              Migration Information
+            </h3>
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-slate-50 rounded-xl p-4">
+                <dt class="text-sm text-slate-500 mb-1">Migration ID</dt>
+                <dd class="font-mono text-sm font-semibold text-slate-900">{{ migration.id }}</dd>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4">
+                <dt class="text-sm text-slate-500 mb-1">User ID</dt>
+                <dd class="font-mono text-sm font-semibold text-slate-900">{{ migration.user_id }}</dd>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4">
+                <dt class="text-sm text-slate-500 mb-1">Created At</dt>
+                <dd class="text-sm font-semibold text-slate-900">{{ formatDate(migration.created_at) }}</dd>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4">
+                <dt class="text-sm text-slate-500 mb-1">Completed At</dt>
+                <dd class="text-sm font-semibold text-slate-900">{{ formatDate(migration.completed_at) }}</dd>
+              </div>
+            </dl>
           </div>
         </div>
-      </div>
-
-      <!-- Info Card -->
-      <div class="bg-white rounded-lg shadow-sm border p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Migration Information</h3>
-        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <dt class="text-sm text-gray-500">Migration ID</dt>
-            <dd class="font-mono text-sm text-gray-900">{{ migration.id }}</dd>
-          </div>
-          <div>
-            <dt class="text-sm text-gray-500">User ID</dt>
-            <dd class="font-mono text-sm text-gray-900">{{ migration.user_id }}</dd>
-          </div>
-          <div>
-            <dt class="text-sm text-gray-500">Created At</dt>
-            <dd class="text-sm text-gray-900">{{ formatDate(migration.created_at) }}</dd>
-          </div>
-          <div>
-            <dt class="text-sm text-gray-500">Completed At</dt>
-            <dd class="text-sm text-gray-900">{{ formatDate(migration.completed_at) }}</dd>
-          </div>
-        </dl>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Custom scrollbar for file browser */
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* Code block scrollbar */
+.bg-slate-900 .overflow-auto::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.bg-slate-900 .overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+</style>

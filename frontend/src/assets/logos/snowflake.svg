@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <path fill="#29B5E8" d="M50 5L61.5 16.5L50 28L38.5 16.5L50 5Z"/>
+  <path fill="#29B5E8" d="M50 72L61.5 83.5L50 95L38.5 83.5L50 72Z"/>
+  <path fill="#29B5E8" d="M5 50L16.5 38.5L28 50L16.5 61.5L5 50Z"/>
+  <path fill="#29B5E8" d="M72 50L83.5 38.5L95 50L83.5 61.5L72 50Z"/>
+  <path fill="#29B5E8" d="M50 38.5L61.5 50L50 61.5L38.5 50L50 38.5Z"/>
+  <path fill="#29B5E8" d="M28 28L39.5 16.5L51 28L39.5 39.5L28 28Z" opacity="0.7"/>
+  <path fill="#29B5E8" d="M72 28L83.5 16.5L95 28L83.5 39.5L72 28Z" opacity="0.7"/>
+  <path fill="#29B5E8" d="M28 72L39.5 60.5L51 72L39.5 83.5L28 72Z" opacity="0.7"/>
+  <path fill="#29B5E8" d="M72 72L83.5 60.5L95 72L83.5 83.5L72 72Z" opacity="0.7"/>
+</svg>

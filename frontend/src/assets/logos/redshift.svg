@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <path fill="#8C4FFF" d="M50 5L15 25v50l35 20 35-20V25L50 5z"/>
+  <path fill="#FFFFFF" d="M50 20L30 32v36l20 12 20-12V32L50 20z" opacity="0.4"/>
+  <path fill="#FFFFFF" d="M50 32L38 40v20l12 8 12-8V40L50 32z"/>
+  <polygon fill="#8C4FFF" points="50,42 44,46 44,54 50,58 56,54 56,46"/>
+</svg>

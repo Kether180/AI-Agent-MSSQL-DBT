@@ -1,0 +1,552 @@
+version: 2
+sources:
+- name: mssql_source
+  description: 'MSSQL source database: UE_DMS'
+  database: '{{ env_var("SOURCE_DATABASE", "raw") }}'
+  schema: '{{ env_var("SOURCE_SCHEMA", "mssql") }}'
+  tables:
+  - name: auth_users
+    description: 'Source table: auth_users'
+    columns:
+    - name: user_id
+      description: Column user_id (varchar)
+    - name: admin
+      description: Column admin (bit)
+    - name: pw_hash
+      description: Column pw_hash (varchar)
+    - name: idp
+      description: Column idp (varchar)
+    - name: idp_sub
+      description: Column idp_sub (varchar)
+  - name: auth_users_plants
+    description: 'Source table: auth_users_plants'
+    columns:
+    - name: user_id
+      description: Column user_id (varchar)
+    - name: plant_id
+      description: Column plant_id (int)
+  - name: cellcarriers
+    description: 'Source table: cellcarriers'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: carriername
+      description: Column carriername (varchar)
+    - name: carriercountry
+      description: Column carriercountry (varchar)
+    - name: carriernumberlength
+      description: Column carriernumberlength (int)
+    - name: carriermmsstring
+      description: Column carriermmsstring (varchar)
+  - name: config
+    description: 'Source table: config'
+    columns:
+    - name: k
+      description: Column k (varchar)
+    - name: v
+      description: Column v (varchar)
+  - name: config_privileged
+    description: 'Source table: config_privileged'
+    columns:
+    - name: k
+      description: Column k (varchar)
+    - name: v
+      description: Column v (varchar)
+  - name: contacts
+    description: 'Source table: contacts'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: username
+      description: Column username (varchar)
+    - name: firstname
+      description: Column firstname (varchar)
+    - name: lastname
+      description: Column lastname (varchar)
+    - name: emailaddress
+      description: Column emailaddress (varchar)
+    - name: cellnumber
+      description: Column cellnumber (varchar)
+    - name: cellcarrierid
+      description: Column cellcarrierid (int)
+    - name: lang
+      description: Column lang (varchar)
+  - name: files
+    description: 'Source table: files'
+    columns:
+    - name: name
+      description: Column name (char)
+    - name: datestamp
+      description: Column datestamp (datetime)
+    - name: data
+      description: Column data (varbinary)
+    - name: fmode
+      description: Column fmode (bit)
+    - name: fdata
+      description: Column fdata (varbinary)
+    - name: fid
+      description: Column fid (uniqueidentifier)
+  - name: groups
+    description: 'Source table: groups'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: softdeleted
+      description: Column softdeleted (bit)
+    - name: imagefiles
+      description: Column imagefiles (varchar)
+    - name: plantid
+      description: Column plantid (int)
+    - name: groupname
+      description: Column groupname (nvarchar)
+    - name: grouptype
+      description: Column grouptype (varchar)
+    - name: groupformat
+      description: Column groupformat (varchar)
+    - name: groupdisplayfields
+      description: Column groupdisplayfields (varchar)
+    - name: grouporder
+      description: Column grouporder (int)
+    - name: hidealarms
+      description: Column hidealarms (bit)
+    - name: alarmsonbottom
+      description: Column alarmsonbottom (bit)
+    - name: updatedtime
+      description: Column updatedtime (datetime)
+    - name: updateduser
+      description: Column updateduser (varchar)
+    - name: showtrash
+      description: Column showtrash (bit)
+    - name: comment
+      description: Column comment (nvarchar)
+  - name: locations
+    description: 'Source table: locations'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: softdeleted
+      description: Column softdeleted (bit)
+    - name: imagefiles
+      description: Column imagefiles (varchar)
+    - name: groupid
+      description: Column groupid (int)
+    - name: locationorder
+      description: Column locationorder (int)
+    - name: locationname
+      description: Column locationname (nvarchar)
+    - name: updatedtime
+      description: Column updatedtime (datetime)
+    - name: updateduser
+      description: Column updateduser (varchar)
+    - name: linkednodes
+      description: Column linkednodes (varchar)
+    - name: showtrash
+      description: Column showtrash (bit)
+    - name: comment
+      description: Column comment (nvarchar)
+    - name: ref_code
+      description: Column ref_code (nvarchar)
+    - name: ref_equipmentinfo
+      description: Column ref_equipmentinfo (nvarchar)
+  - name: notification
+    description: 'Source table: notification'
+    columns:
+    - name: id
+      description: ID of notification setting.
+    - name: contact_id
+      description: Contact ID of notification target.
+    - name: other_id
+      description: Column other_id (varchar)
+    - name: plant_id
+      description: Plant ID sending the notification.
+    - name: group_id
+      description: Group ID sending the notification.
+    - name: location_id
+      description: Location ID sending the notification.
+    - name: point_id
+      description: Point ID sending the notification.
+    - name: notificationlevel
+      description: Level of notifications for which messages are sent, enum. {None=0,
+        HighAlarmOnly=1, AllAlarms=2, AllRecords=3}
+    - name: notificationlimit
+      description: Limit of notifications to send within the time interval defined.
+    - name: notificationlimitinterval
+      description: Time interval for which notificationlimit applies. {None=0, Minutely=1,
+        Hourly=60, Daily=1440, Weekly=10080, Monthly=43200}
+    - name: jsonconfig
+      description: Notification config in JSON format.
+    - name: type
+      description: Generic list of notification send methods.
+    - name: flag_all
+      description: Column flag_all (bit)
+  - name: notificationhistory
+    description: 'Source table: notificationhistory'
+    columns:
+    - name: id
+      description: ID of notification.
+    - name: notification_id
+      description: ID of notification setting.
+    - name: point_id
+      description: Point ID that triggered the notification.
+    - name: sent_time
+      description: Time that the notification was sent.
+    - name: sent
+      description: Notification sent.
+  - name: permanentchannels
+    description: 'Source table: permanentchannels'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: nodeid
+      description: Column nodeid (int)
+    - name: channelindex
+      description: Column channelindex (int)
+    - name: pointid
+      description: Column pointid (int)
+    - name: updatedtime
+      description: Column updatedtime (datetime)
+    - name: preferred_time_interval
+      description: Column preferred_time_interval (int)
+    - name: jsonstore
+      description: Column jsonstore (varchar)
+    - name: status
+      description: Column status (int)
+    - name: actual_flags
+      description: Column actual_flags (int)
+    - name: actual_sensitivity
+      description: Column actual_sensitivity (int)
+    - name: actual_offset
+      description: Column actual_offset (int)
+    - name: actual_highalarm
+      description: Column actual_highalarm (int)
+    - name: actual_lowalarm
+      description: Column actual_lowalarm (int)
+    - name: actual_rrp
+      description: Column actual_rrp (int)
+    - name: actual_rrs
+      description: Column actual_rrs (int)
+    - name: actual_rra
+      description: Column actual_rra (int)
+    - name: actual_nrba
+      description: Column actual_nrba (int)
+    - name: actual_nrda
+      description: Column actual_nrda (int)
+    - name: actual_nraa
+      description: Column actual_nraa (int)
+    - name: actual_nwba
+      description: Column actual_nwba (int)
+    - name: actual_nwda
+      description: Column actual_nwda (int)
+    - name: actual_nwaa
+      description: Column actual_nwaa (int)
+    - name: actual_wrp
+      description: Column actual_wrp (int)
+    - name: actual_wrs
+      description: Column actual_wrs (int)
+    - name: actual_wra
+      description: Column actual_wra (int)
+    - name: actual_wdm
+      description: Column actual_wdm (int)
+    - name: actual_wds
+      description: Column actual_wds (int)
+    - name: actual_wda
+      description: Column actual_wda (int)
+    - name: actual_autosensitivityhigh
+      description: Column actual_autosensitivityhigh (int)
+    - name: actual_autosensitivitylow
+      description: Column actual_autosensitivitylow (int)
+    - name: actual_averaging
+      description: Column actual_averaging (int)
+    - name: actual_alarmrelease
+      description: Column actual_alarmrelease (int)
+    - name: desired_flags
+      description: Column desired_flags (int)
+    - name: desired_sensitivity
+      description: Column desired_sensitivity (int)
+    - name: desired_offset
+      description: Column desired_offset (int)
+    - name: desired_highalarm
+      description: Column desired_highalarm (int)
+    - name: desired_lowalarm
+      description: Column desired_lowalarm (int)
+    - name: desired_rrp
+      description: Column desired_rrp (int)
+    - name: desired_rrs
+      description: Column desired_rrs (int)
+    - name: desired_rra
+      description: Column desired_rra (int)
+    - name: desired_nrba
+      description: Column desired_nrba (int)
+    - name: desired_nrda
+      description: Column desired_nrda (int)
+    - name: desired_nraa
+      description: Column desired_nraa (int)
+    - name: desired_nwba
+      description: Column desired_nwba (int)
+    - name: desired_nwda
+      description: Column desired_nwda (int)
+    - name: desired_nwaa
+      description: Column desired_nwaa (int)
+    - name: desired_wrp
+      description: Column desired_wrp (int)
+    - name: desired_wrs
+      description: Column desired_wrs (int)
+    - name: desired_wra
+      description: Column desired_wra (int)
+    - name: desired_wdm
+      description: Column desired_wdm (int)
+  - name: permanentnodes
+    description: 'Source table: permanentnodes'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: name
+      description: Column name (varchar)
+    - name: uuid
+      description: Column uuid (varchar)
+    - name: editor
+      description: Column editor (varchar)
+    - name: ipaddress
+      description: Column ipaddress (varchar)
+    - name: channelcount
+      description: Column channelcount (int)
+    - name: osmajorrev
+      description: Column osmajorrev (int)
+    - name: osminorrev
+      description: Column osminorrev (int)
+    - name: fwmajorrev
+      description: Column fwmajorrev (int)
+    - name: fwminorrev
+      description: Column fwminorrev (int)
+    - name: fwbuildrev
+      description: Column fwbuildrev (int)
+    - name: devmajorrev
+      description: Column devmajorrev (int)
+    - name: devminorrev
+      description: Column devminorrev (int)
+    - name: devicetype
+      description: Column devicetype (int)
+    - name: imagefiles
+      description: Column imagefiles (varchar)
+    - name: deleted
+      description: Column deleted (bit)
+    - name: connected
+      description: Column connected (bit)
+    - name: jsonstore
+      description: Column jsonstore (varchar)
+    - name: status
+      description: Column status (int)
+    - name: actual_flags
+      description: Column actual_flags (int)
+    - name: actual_readingretention
+      description: Column actual_readingretention (int)
+    - name: actual_wavretention
+      description: Column actual_wavretention (int)
+    - name: desired_flags
+      description: Column desired_flags (int)
+    - name: desired_readingretention
+      description: Column desired_readingretention (int)
+    - name: desired_wavretention
+      description: Column desired_wavretention (int)
+    - name: time_lastconnect
+      description: Column time_lastconnect (datetime)
+    - name: time_lastdisconnect
+      description: Column time_lastdisconnect (datetime)
+    - name: filetransferinprogress
+      description: Column filetransferinprogress (bit)
+    - name: filetransferinprogresspercent
+      description: Column filetransferinprogresspercent (int)
+    - name: filetransferinprogressname
+      description: Column filetransferinprogressname (varchar)
+    - name: filetransferoutprogress
+      description: Column filetransferoutprogress (bit)
+    - name: filetransferoutprogresspercent
+      description: Column filetransferoutprogresspercent (int)
+    - name: filetransferoutprogressname
+      description: Column filetransferoutprogressname (varchar)
+  - name: plants
+    description: 'Source table: plants'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: softdeleted
+      description: Column softdeleted (bit)
+    - name: imagefiles
+      description: Column imagefiles (varchar)
+    - name: plantname
+      description: Column plantname (nvarchar)
+    - name: plantorder
+      description: Column plantorder (int)
+    - name: editor
+      description: Column editor (varchar)
+    - name: updatedtime
+      description: Column updatedtime (datetime)
+    - name: updateduser
+      description: Column updateduser (varchar)
+    - name: showtrash
+      description: Column showtrash (bit)
+    - name: comment
+      description: Column comment (varchar)
+    - name: application_bearing_showtrash
+      description: Column application_bearing_showtrash (bit)
+    - name: application_electrical_showtrash
+      description: Column application_electrical_showtrash (bit)
+    - name: application_generic_showtrash
+      description: Column application_generic_showtrash (bit)
+    - name: application_leak_showtrash
+      description: Column application_leak_showtrash (bit)
+    - name: application_steam_showtrash
+      description: Column application_steam_showtrash (bit)
+    - name: application_valve_showtrash
+      description: Column application_valve_showtrash (bit)
+    - name: lists
+      description: Column lists (varchar)
+    - name: altids
+      description: Column altids (nvarchar)
+  - name: points
+    description: 'Source table: points'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: softdeleted
+      description: Column softdeleted (bit)
+    - name: imagefiles
+      description: Column imagefiles (varchar)
+    - name: locationid
+      description: Column locationid (int)
+    - name: pointorder
+      description: Column pointorder (int)
+    - name: pointname
+      description: Column pointname (nvarchar)
+    - name: monthrange
+      description: Column monthrange (int)
+    - name: limitdisplaymonths
+      description: Column limitdisplaymonths (bit)
+    - name: updatedtime
+      description: Column updatedtime (datetime)
+    - name: updateduser
+      description: Column updateduser (varchar)
+    - name: showtrash
+      description: Column showtrash (bit)
+    - name: comment
+      description: Column comment (nvarchar)
+    - name: ref_code
+      description: Column ref_code (nvarchar)
+    - name: ref_equipmentinfo
+      description: Column ref_equipmentinfo (nvarchar)
+  - name: records
+    description: 'Source table: records'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: softdeleted
+      description: Column softdeleted (bit)
+    - name: imagefiles
+      description: Column imagefiles (varchar)
+    - name: pointid
+      description: Column pointid (int)
+    - name: isbaseline
+      description: Column isbaseline (bit)
+    - name: datestamp
+      description: Column datestamp (datetime)
+    - name: db
+      description: Column db (int)
+    - name: frequency
+      description: Column frequency (int)
+    - name: mode
+      description: Column mode (varchar)
+    - name: sensitivity
+      description: Column sensitivity (int)
+    - name: offset
+      description: Column offset (int)
+    - name: recordtype
+      description: Column recordtype (varchar)
+    - name: moduletype
+      description: Column moduletype (varchar)
+    - name: inspectorid
+      description: Column inspectorid (nvarchar)
+    - name: meterresponse
+      description: Column meterresponse (varchar)
+    - name: language
+      description: Column language (varchar)
+    - name: units
+      description: Column units (varchar)
+    - name: scale
+      description: Column scale (varchar)
+    - name: comment
+      description: Column comment (nvarchar)
+    - name: serialnumber
+      description: Column serialnumber (nvarchar)
+    - name: instrument
+      description: Column instrument (nvarchar)
+    - name: lowalarm
+      description: Column lowalarm (int)
+    - name: highalarm
+      description: Column highalarm (int)
+    - name: wavfile
+      description: Column wavfile (varchar)
+    - name: bearing_testresult
+      description: Column bearing_testresult (varchar)
+    - name: bearing_temperature
+      description: Column bearing_temperature (int)
+    - name: bearing_info
+      description: Column bearing_info (nvarchar)
+    - name: bearing_type
+      description: Column bearing_type (nvarchar)
+    - name: bearing_rpm
+      description: Column bearing_rpm (int)
+    - name: bearing_bearinginfo
+      description: Column bearing_bearinginfo (nvarchar)
+    - name: bearing_greasegunactualstrokes
+      description: Column bearing_greasegunactualstrokes (int)
+    - name: bearing_greaseguntargetstrokes
+      description: Column bearing_greaseguntargetstrokes (int)
+    - name: bearing_greasegunmassperstroke
+      description: Column bearing_greasegunmassperstroke (float)
+    - name: bearing_greasetype
+      description: Column bearing_greasetype (nvarchar)
+    - name: bearing_greaseviscosity
+      description: Column bearing_greaseviscosity (nvarchar)
+    - name: bearing_greasecostperunit
+      description: Column bearing_greasecostperunit (float)
+    - name: bearing_greaseguncaltimestamp
+      description: Column bearing_greaseguncaltimestamp (datetime)
+    - name: electrical_testresult
+      description: Column electrical_testresult (nvarchar)
+    - name: electrical_temperature
+      description: Column electrical_temperature (int)
+    - name: electrical_electricallocation
+      description: Column electrical_electricallocation (nvarchar)
+    - name: electrical_itemcomponent
+      description: Column electrical_itemcomponent (nvarchar)
+    - name: electrical_voltage
+      description: Column electrical_voltage (nvarchar)
+    - name: electrical_humidity
+      description: Column electrical_humidity (int)
+    - name: generic_testresult
+      description: Column generic_testresult (nvarchar)
+    - name: generic_temperature
+      description: Column generic_temperature (int)
+    - name: leak_testresult
+      description: Column leak_testresult (nvarchar)
+    - name: leak_pressure
+      description: Column leak_pressure (int)
+    - name: leak_leakapplication
+      description: Column leak_leakapplication (nvarchar)
+    - name: leak_distance
+      description: Column leak_distance (nvarchar)
+    - name: steam_testresult
+      description: Column steam_testresult (nvarchar)
+  - name: serverqueue
+    description: 'Source table: serverqueue'
+    columns:
+    - name: id
+      description: Column id (int)
+    - name: method
+      description: Column method (varchar)
+    - name: uuid
+      description: Column uuid (varchar)
+    - name: parameters
+      description: Column parameters (varchar)
+    - name: timestamp
+      description: Column timestamp (datetime)

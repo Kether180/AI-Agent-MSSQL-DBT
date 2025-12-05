@@ -16,9 +16,10 @@ const showNavbar = computed(() => {
 })
 
 const showSupportWidget = computed(() => {
-  // Show support widget on all authenticated pages
-  const noWidgetRoutes = ['Login', 'NotFound', 'ForgotPassword', 'ResetPassword']
-  return isAuthenticated.value && !noWidgetRoutes.includes(route.name as string)
+  // Show support widget on landing page and all authenticated pages
+  const noWidgetRoutes = ['Login', 'NotFound', 'ForgotPassword', 'ResetPassword', 'Register']
+  const isLandingPage = route.name === 'Landing'
+  return isLandingPage || (isAuthenticated.value && !noWidgetRoutes.includes(route.name as string))
 })
 </script>
 

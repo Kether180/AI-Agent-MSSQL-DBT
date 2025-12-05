@@ -35,7 +35,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+    <section class="min-h-screen flex items-center justify-center relative overflow-hidden pt-28">
       <!-- Animated Background -->
       <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
       <div class="absolute inset-0">

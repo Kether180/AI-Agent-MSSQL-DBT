@@ -55,11 +55,17 @@ class ApiService {
       config.body = JSON.stringify(body)
     }
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, config)
+    let response: Response
+    try {
+      response = await fetch(`${this.baseUrl}${endpoint}`, config)
+    } catch (networkError) {
+      // Network error - server unreachable, CORS, etc.
+      throw new Error('Unable to connect to server. Please check your internet connection and try again.')
+    }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'An error occurred' }))
-      throw new Error(error.error || `HTTP error! status: ${response.status}`)
+      throw new Error(error.error || `Request failed. Please try again.`)
     }
 
     // Handle empty responses

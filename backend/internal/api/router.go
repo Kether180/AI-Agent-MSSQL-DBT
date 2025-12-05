@@ -49,6 +49,15 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 			}
 		}
 
+		// Also allow Railway domains and same-origin requests
+		if !allowed && origin != "" {
+			// Allow *.railway.app domains
+			if strings.HasSuffix(origin, ".railway.app") ||
+				strings.HasSuffix(origin, ".up.railway.app") {
+				allowed = true
+			}
+		}
+
 		if allowed {
 			c.Header("Access-Control-Allow-Origin", origin)
 			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")

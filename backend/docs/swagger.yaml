@@ -1,0 +1,1170 @@
+basePath: /api/v1
+definitions:
+  models.ChangePasswordRequest:
+    properties:
+      current_password:
+        minLength: 6
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  models.CreateConnectionRequest:
+    properties:
+      database_name:
+        type: string
+      db_type:
+        type: string
+      host:
+        type: string
+      is_source:
+        type: boolean
+      name:
+        type: string
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    required:
+    - database_name
+    - db_type
+    - host
+    - name
+    - password
+    - port
+    - username
+    type: object
+  models.CreateMigrationRequest:
+    properties:
+      include_views:
+        type: boolean
+      name:
+        minLength: 3
+        type: string
+      source_database:
+        type: string
+      tables:
+        items:
+          type: string
+        type: array
+      target_project:
+        type: string
+    required:
+    - name
+    - source_database
+    - target_project
+    type: object
+  models.DashboardStats:
+    properties:
+      completed_migrations:
+        type: integer
+      failed_migrations:
+        type: integer
+      running_migrations:
+        type: integer
+      success_rate:
+        type: number
+      total_migrations:
+        type: integer
+    type: object
+  models.DatabaseConnection:
+    properties:
+      created_at:
+        type: string
+      database_name:
+        type: string
+      db_type:
+        description: mssql, postgresql, mysql
+        type: string
+      host:
+        type: string
+      id:
+        type: integer
+      is_source:
+        type: boolean
+      name:
+        type: string
+      port:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  models.Migration:
+    properties:
+      completed_at:
+        type: string
+      config:
+        description: JSON config
+        type: string
+      created_at:
+        type: string
+      error:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      progress:
+        type: integer
+      source_database:
+        type: string
+      status:
+        description: pending, running, completed, failed
+        type: string
+      tables_count:
+        type: integer
+      target_project:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.Organization:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      max_migrations:
+        type: integer
+      max_users:
+        type: integer
+      name:
+        type: string
+      plan:
+        description: free, starter, professional, enterprise
+        type: string
+      slug:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.RegisterRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        minLength: 1
+        type: string
+      job_title:
+        type: string
+      last_name:
+        minLength: 1
+        type: string
+      organization_name:
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - organization_name
+    - password
+    type: object
+  models.UpdateProfileRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      job_title:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      is_admin:
+        type: boolean
+      job_title:
+        type: string
+      last_login_at:
+        type: string
+      last_name:
+        type: string
+      organization:
+        allOf:
+        - $ref: '#/definitions/models.Organization'
+        description: Virtual field (joined from organization)
+      organization_id:
+        type: integer
+      phone:
+        type: string
+      role:
+        description: admin, member, viewer
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@datamigrate.ai
+    name: API Support
+    url: http://www.datamigrate.ai/support
+  description: AI-powered MSSQL to dbt migration service API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: DataMigrate AI API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout the current user (client-side token removal)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the currently authenticated user's profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - auth
+  /auth/password:
+    put:
+      consumes:
+      - application/json
+      description: Change the current user's password
+      parameters:
+      - description: Password change data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - auth
+  /auth/profile:
+    put:
+      consumes:
+      - application/json
+      description: Update the current user's profile information
+      parameters:
+      - description: Profile update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with an organization
+      parameters:
+      - description: Registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /connections:
+    get:
+      consumes:
+      - application/json
+      description: Get all database connections for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DatabaseConnection'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all connections
+      tags:
+      - connections
+    post:
+      consumes:
+      - application/json
+      description: Create a new database connection
+      parameters:
+      - description: Connection details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateConnectionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.DatabaseConnection'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a connection
+      tags:
+      - connections
+  /connections/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a database connection
+      parameters:
+      - description: Connection ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a connection
+      tags:
+      - connections
+    get:
+      consumes:
+      - application/json
+      description: Get a specific database connection by ID
+      parameters:
+      - description: Connection ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DatabaseConnection'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get connection details
+      tags:
+      - connections
+    put:
+      consumes:
+      - application/json
+      description: Update an existing database connection
+      parameters:
+      - description: Connection ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Connection details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateConnectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DatabaseConnection'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a connection
+      tags:
+      - connections
+  /connections/{id}/metadata:
+    get:
+      consumes:
+      - application/json
+      description: Extract schema metadata (tables, views, procedures) from a database
+        connection
+      parameters:
+      - description: Connection ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get database metadata
+      tags:
+      - connections
+  /connections/{id}/test:
+    post:
+      consumes:
+      - application/json
+      description: Test if a database connection is valid and reachable
+      parameters:
+      - description: Connection ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Test a connection
+      tags:
+      - connections
+  /internal/migrations/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Internal endpoint for AI service to update migration status
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status update
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update migration status (Internal)
+      tags:
+      - internal
+  /migrations:
+    get:
+      consumes:
+      - application/json
+      description: Get all migrations for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Migration'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all migrations
+      tags:
+      - migrations
+    post:
+      consumes:
+      - application/json
+      description: Create a new migration project
+      parameters:
+      - description: Migration configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateMigrationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Migration'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new migration
+      tags:
+      - migrations
+  /migrations/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a migration project (cannot delete running migrations)
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a migration
+      tags:
+      - migrations
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific migration
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Migration'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get migration details
+      tags:
+      - migrations
+  /migrations/{id}/download:
+    get:
+      consumes:
+      - application/json
+      description: Get download URL for the completed dbt project as ZIP
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Download dbt project
+      tags:
+      - migrations
+  /migrations/{id}/files:
+    get:
+      consumes:
+      - application/json
+      description: Get list of generated dbt files for a migration
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get migration files
+      tags:
+      - migrations
+  /migrations/{id}/files/{filepath}:
+    get:
+      consumes:
+      - application/json
+      description: Get the content of a specific generated dbt file
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: File path within the project
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get file content
+      tags:
+      - migrations
+  /migrations/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a pending migration to begin extracting metadata and generating
+        dbt project
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Start a migration
+      tags:
+      - migrations
+  /migrations/{id}/stop:
+    post:
+      consumes:
+      - application/json
+      description: Stop a running migration
+      parameters:
+      - description: Migration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Stop a migration
+      tags:
+      - migrations
+  /stats:
+    get:
+      consumes:
+      - application/json
+      description: Get migration statistics for the current user's dashboard
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DashboardStats'
+      security:
+      - BearerAuth: []
+      summary: Get dashboard statistics
+      tags:
+      - stats
+securityDefinitions:
+  BearerAuth:
+    description: Enter your JWT token with the `Bearer ` prefix
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

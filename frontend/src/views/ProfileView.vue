@@ -140,20 +140,20 @@ const activityLog = ref([
     <div class="px-4 sm:px-6 lg:px-8 py-8">
       <div class="max-w-4xl mx-auto space-y-8">
         <!-- Profile Header Card -->
-        <div class="bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl border border-gray-200/50 overflow-hidden">
-          <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-32 relative">
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
+        <div class="bg-white shadow-lg rounded-2xl border border-slate-200/50 overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 h-28 relative">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMCAwdi02aC02djZoNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50"></div>
           </div>
-          <div class="px-6 pb-6">
-            <div class="-mt-16 flex items-end space-x-6">
-              <div class="h-32 w-32 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-xl" style="box-shadow: 0 10px 40px -10px rgb(99 102 241 / 0.5);">
+          <div class="px-6 pb-6 bg-white">
+            <div class="-mt-14 flex items-end space-x-5">
+              <div class="h-28 w-28 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center text-white text-3xl font-bold border-4 border-white shadow-xl flex-shrink-0">
                 {{ getUserInitials() }}
               </div>
-              <div class="pb-2">
-                <h2 class="text-2xl font-bold text-slate-800">
+              <div class="pb-3 min-w-0">
+                <h2 class="text-2xl font-bold text-slate-800 truncate">
                   {{ profile.firstName }} {{ profile.lastName }}
                 </h2>
-                <p class="text-slate-500">{{ profile.jobTitle || t('profile.teamMember') }} at {{ profile.company }}</p>
+                <p class="text-slate-500 truncate">{{ profile.jobTitle || t('profile.teamMember') }} {{ t('profile.at') || 'at' }} {{ profile.company }}</p>
               </div>
             </div>
           </div>

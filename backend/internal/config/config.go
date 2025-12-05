@@ -33,6 +33,9 @@ type Config struct {
 	// AI Service
 	AIServiceURL string
 
+	// Static files (frontend)
+	StaticDir string
+
 	// Environment
 	Environment string // development, staging, production
 }
@@ -67,6 +70,9 @@ func Load() (*Config, error) {
 
 		// AI Service (Python FastAPI microservice)
 		AIServiceURL: getEnv("AI_SERVICE_URL", "http://localhost:8081"),
+
+		// Static files directory (frontend build output)
+		StaticDir: getEnv("STATIC_DIR", ""),
 
 		// Encryption key for database credentials (REQUIRED in production)
 		// Generate with: openssl rand -base64 32

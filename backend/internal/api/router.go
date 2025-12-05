@@ -1,7 +1,11 @@
 package api
 
 import (
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/datamigrate-ai/backend/internal/config"
 	"github.com/datamigrate-ai/backend/internal/metrics"
@@ -147,6 +151,37 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	// Internal routes (for AI service communication - no auth required)
 	internal := v1.Group("/internal")
 	internal.PATCH("/migrations/:id/status", migrationsHandler.UpdateStatus)
+
+	// Serve static frontend files if STATIC_DIR is configured
+	if cfg.StaticDir != "" {
+		if _, err := os.Stat(cfg.StaticDir); err == nil {
+			log.Printf("Serving static files from: %s", cfg.StaticDir)
+
+			// Serve static assets (js, css, images, etc.)
+			router.Static("/assets", filepath.Join(cfg.StaticDir, "assets"))
+
+			// Serve favicon and other root static files
+			router.StaticFile("/favicon.ico", filepath.Join(cfg.StaticDir, "favicon.ico"))
+
+			// For Vue.js SPA: serve index.html for any unmatched routes
+			router.NoRoute(func(c *gin.Context) {
+				// Don't serve index.html for API routes or other special paths
+				path := c.Request.URL.Path
+				if strings.HasPrefix(path, "/api/") ||
+					strings.HasPrefix(path, "/health") ||
+					strings.HasPrefix(path, "/metrics") ||
+					strings.HasPrefix(path, "/swagger/") {
+					c.JSON(404, gin.H{"error": "not found"})
+					return
+				}
+
+				// Serve index.html for SPA routing
+				c.File(filepath.Join(cfg.StaticDir, "index.html"))
+			})
+		} else {
+			log.Printf("Warning: STATIC_DIR configured but directory not found: %s", cfg.StaticDir)
+		}
+	}
 
 	return router
 }

@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
+type ProductionStatus = 'production' | 'beta' | 'coming-soon'
+
 interface Agent {
   id: string
   name: string
@@ -13,6 +15,8 @@ interface Agent {
   color: string
   icon: string
   status: 'active' | 'idle' | 'processing' | 'error'
+  productionStatus: ProductionStatus
+  completionPercent: number
   lastRun: string | null
   processedItems: number
   capabilities: string[]
@@ -28,25 +32,13 @@ const agents = ref<Agent[]>([
     badge: 'Schema Analysis',
     color: 'blue',
     icon: 'database',
-    status: 'idle',
+    status: 'active',
+    productionStatus: 'production',
+    completionPercent: 95,
     lastRun: '2024-12-05T10:30:00',
     processedItems: 1250,
     capabilities: ['Schema extraction', 'Relationship detection', 'Index analysis', 'View & SP mapping', 'Data type inference'],
     techStack: ['pyodbc', 'SQLAlchemy', 'pandas']
-  },
-  {
-    id: 'dataprep',
-    name: 'DataPrep Agent',
-    description: 'Cleans, transforms, and prepares your data for the target warehouse',
-    longDescription: 'The DataPrep Agent handles all data preparation tasks including profiling, cleaning, deduplication, and transformation. It uses ML algorithms to detect anomalies, missing values, and outliers. The agent can automatically suggest and apply data quality fixes.',
-    badge: 'Transformation',
-    color: 'purple',
-    icon: 'beaker',
-    status: 'idle',
-    lastRun: '2024-12-05T09:15:00',
-    processedItems: 3420,
-    capabilities: ['Data profiling', 'Deduplication', 'Outlier detection', 'Missing value handling', 'Type conversion'],
-    techStack: ['pandas', 'numpy', 'scikit-learn']
   },
   {
     id: 'dbt-generator',
@@ -56,7 +48,9 @@ const agents = ref<Agent[]>([
     badge: 'Code Generation',
     color: 'orange',
     icon: 'code',
-    status: 'idle',
+    status: 'active',
+    productionStatus: 'production',
+    completionPercent: 95,
     lastRun: '2024-12-05T08:45:00',
     processedItems: 89,
     capabilities: ['Model generation', 'Test creation', 'Documentation', 'Source definitions', 'Materialization config'],
@@ -71,6 +65,8 @@ const agents = ref<Agent[]>([
     color: 'teal',
     icon: 'play',
     status: 'idle',
+    productionStatus: 'beta',
+    completionPercent: 70,
     lastRun: '2024-12-05T08:50:00',
     processedItems: 156,
     capabilities: ['dbt run', 'dbt test', 'dbt docs', 'Incremental builds', 'Dependency management'],
@@ -85,52 +81,12 @@ const agents = ref<Agent[]>([
     color: 'green',
     icon: 'shield-check',
     status: 'idle',
+    productionStatus: 'beta',
+    completionPercent: 60,
     lastRun: '2024-12-05T07:30:00',
     processedItems: 45000,
     capabilities: ['Null checking', 'Uniqueness validation', 'Referential integrity', 'Anomaly detection', 'Data drift monitoring'],
     techStack: ['Great Expectations', 'pandas', 'scipy']
-  },
-  {
-    id: 'documentation',
-    name: 'Documentation Agent',
-    description: 'Auto-generates comprehensive documentation and data lineage maps',
-    longDescription: 'The Documentation Agent creates rich documentation for your data models. It generates column descriptions, table overviews, data lineage diagrams, and ERD visualizations. The agent can also create data dictionaries and business glossaries.',
-    badge: 'Auto-Docs',
-    color: 'cyan',
-    icon: 'document-text',
-    status: 'idle',
-    lastRun: '2024-12-04T16:00:00',
-    processedItems: 234,
-    capabilities: ['Auto descriptions', 'Lineage mapping', 'ERD generation', 'Data dictionary', 'Business glossary'],
-    techStack: ['OpenAI', 'Mermaid.js', 'Markdown']
-  },
-  {
-    id: 'rag-service',
-    name: 'RAG Service',
-    description: 'Retrieval-augmented generation for intelligent query assistance',
-    longDescription: 'The RAG Service Agent provides intelligent query assistance using retrieval-augmented generation. It indexes your schema documentation and can answer questions about your data models, suggest SQL queries, and provide contextual help.',
-    badge: 'AI Learning',
-    color: 'pink',
-    icon: 'light-bulb',
-    status: 'active',
-    lastRun: null,
-    processedItems: 12500,
-    capabilities: ['Query assistance', 'Schema Q&A', 'SQL suggestions', 'Context-aware help', 'Learning from feedback'],
-    techStack: ['LangChain', 'ChromaDB', 'OpenAI']
-  },
-  {
-    id: 'bi-analytics',
-    name: 'BI Analytics',
-    description: 'Generates insights, dashboards, and business intelligence reports',
-    longDescription: 'The BI Analytics Agent analyzes your data and generates insights automatically. It can create summary statistics, trend analysis, and suggest visualizations. The agent integrates with popular BI tools like Metabase, Looker, and Tableau.',
-    badge: 'Insights',
-    color: 'indigo',
-    icon: 'chart-bar',
-    status: 'idle',
-    lastRun: '2024-12-04T14:30:00',
-    processedItems: 567,
-    capabilities: ['Auto insights', 'Trend detection', 'Visualization suggestions', 'BI tool integration', 'Report generation'],
-    techStack: ['pandas', 'plotly', 'Metabase API']
   },
   {
     id: 'validation',
@@ -141,10 +97,76 @@ const agents = ref<Agent[]>([
     color: 'amber',
     icon: 'clipboard-check',
     status: 'idle',
+    productionStatus: 'beta',
+    completionPercent: 50,
     lastRun: '2024-12-05T06:00:00',
     processedItems: 89000,
     capabilities: ['Row count validation', 'Checksum comparison', 'Sample data verification', 'Reconciliation reports', 'Delta detection'],
     techStack: ['pandas', 'hashlib', 'pyodbc']
+  },
+  {
+    id: 'rag-service',
+    name: 'RAG Service',
+    description: 'Retrieval-augmented generation for intelligent query assistance',
+    longDescription: 'The RAG Service Agent provides intelligent query assistance using retrieval-augmented generation. It indexes your schema documentation and can answer questions about your data models, suggest SQL queries, and provide contextual help.',
+    badge: 'AI Learning',
+    color: 'pink',
+    icon: 'light-bulb',
+    status: 'idle',
+    productionStatus: 'beta',
+    completionPercent: 85,
+    lastRun: null,
+    processedItems: 12500,
+    capabilities: ['Query assistance', 'Schema Q&A', 'SQL suggestions', 'Context-aware help', 'Learning from feedback'],
+    techStack: ['LangChain', 'ChromaDB', 'OpenAI']
+  },
+  {
+    id: 'dataprep',
+    name: 'DataPrep Agent',
+    description: 'Cleans, transforms, and prepares your data for the target warehouse',
+    longDescription: 'The DataPrep Agent handles all data preparation tasks including profiling, cleaning, deduplication, and transformation. It uses ML algorithms to detect anomalies, missing values, and outliers. The agent can automatically suggest and apply data quality fixes.',
+    badge: 'Transformation',
+    color: 'purple',
+    icon: 'beaker',
+    status: 'idle',
+    productionStatus: 'coming-soon',
+    completionPercent: 25,
+    lastRun: null,
+    processedItems: 0,
+    capabilities: ['Data profiling', 'Deduplication', 'Outlier detection', 'Missing value handling', 'Type conversion'],
+    techStack: ['pandas', 'numpy', 'scikit-learn']
+  },
+  {
+    id: 'documentation',
+    name: 'Documentation Agent',
+    description: 'Auto-generates comprehensive documentation and data lineage maps',
+    longDescription: 'The Documentation Agent creates rich documentation for your data models. It generates column descriptions, table overviews, data lineage diagrams, and ERD visualizations. The agent can also create data dictionaries and business glossaries.',
+    badge: 'Auto-Docs',
+    color: 'cyan',
+    icon: 'document-text',
+    status: 'idle',
+    productionStatus: 'coming-soon',
+    completionPercent: 20,
+    lastRun: null,
+    processedItems: 0,
+    capabilities: ['Auto descriptions', 'Lineage mapping', 'ERD generation', 'Data dictionary', 'Business glossary'],
+    techStack: ['OpenAI', 'Mermaid.js', 'Markdown']
+  },
+  {
+    id: 'bi-analytics',
+    name: 'BI Analytics',
+    description: 'Generates insights, dashboards, and business intelligence reports',
+    longDescription: 'The BI Analytics Agent analyzes your data and generates insights automatically. It can create summary statistics, trend analysis, and suggest visualizations. The agent integrates with popular BI tools like Metabase, Looker, and Tableau.',
+    badge: 'Insights',
+    color: 'indigo',
+    icon: 'chart-bar',
+    status: 'idle',
+    productionStatus: 'coming-soon',
+    completionPercent: 15,
+    lastRun: null,
+    processedItems: 0,
+    capabilities: ['Auto insights', 'Trend detection', 'Visualization suggestions', 'BI tool integration', 'Report generation'],
+    techStack: ['pandas', 'plotly', 'Metabase API']
   },
   {
     id: 'ml-finetuning',
@@ -155,8 +177,10 @@ const agents = ref<Agent[]>([
     color: 'rose',
     icon: 'academic-cap',
     status: 'idle',
-    lastRun: '2024-12-03T22:00:00',
-    processedItems: 25000,
+    productionStatus: 'coming-soon',
+    completionPercent: 10,
+    lastRun: null,
+    processedItems: 0,
     capabilities: ['Embedding fine-tuning', 'Classification training', 'Model optimization', 'Transfer learning', 'AutoML'],
     techStack: ['PyTorch', 'HuggingFace', 'scikit-learn']
   },
@@ -168,7 +192,9 @@ const agents = ref<Agent[]>([
     badge: 'Orchestration',
     color: 'violet',
     icon: 'shield-exclamation',
-    status: 'active',
+    status: 'idle',
+    productionStatus: 'coming-soon',
+    completionPercent: 5,
     lastRun: null,
     processedItems: 0,
     capabilities: ['Agent orchestration', 'Health monitoring', 'Failure recovery', 'Guardrails enforcement', 'Audit logging'],
@@ -218,6 +244,36 @@ const getStatusClasses = (status: string) => {
     default: return { bg: 'bg-slate-500', text: 'text-slate-400', label: 'Idle', pulse: false }
   }
 }
+
+const getProductionStatusClasses = (status: ProductionStatus) => {
+  switch (status) {
+    case 'production': return {
+      bg: 'bg-emerald-100',
+      text: 'text-emerald-700',
+      border: 'border-emerald-200',
+      label: 'Production',
+      icon: 'check-circle'
+    }
+    case 'beta': return {
+      bg: 'bg-amber-100',
+      text: 'text-amber-700',
+      border: 'border-amber-200',
+      label: 'Beta',
+      icon: 'beaker'
+    }
+    case 'coming-soon': return {
+      bg: 'bg-slate-100',
+      text: 'text-slate-600',
+      border: 'border-slate-200',
+      label: 'Coming Soon',
+      icon: 'clock'
+    }
+  }
+}
+
+const productionAgentsCount = computed(() => agents.value.filter(a => a.productionStatus === 'production').length)
+const betaAgentsCount = computed(() => agents.value.filter(a => a.productionStatus === 'beta').length)
+const comingSoonAgentsCount = computed(() => agents.value.filter(a => a.productionStatus === 'coming-soon').length)
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Running now'
@@ -284,21 +340,32 @@ onUnmounted(() => {
             </div>
 
             <!-- Stats -->
-            <div class="mt-6 lg:mt-0 flex items-center space-x-4">
-              <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10">
+            <div class="mt-6 lg:mt-0 flex items-center space-x-3">
+              <div class="bg-emerald-500/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-emerald-500/30">
                 <div class="flex items-center space-x-2">
-                  <span class="flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <span class="text-white font-semibold">{{ activeAgentsCount }}</span>
-                  <span class="text-slate-400 text-sm">Active</span>
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="text-white font-semibold">{{ productionAgentsCount }}</span>
+                  <span class="text-emerald-300 text-sm">Production</span>
                 </div>
               </div>
-              <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10">
+              <div class="bg-amber-500/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-amber-500/30">
                 <div class="flex items-center space-x-2">
-                  <span class="text-white font-semibold">{{ formatNumber(totalProcessedItems) }}</span>
-                  <span class="text-slate-400 text-sm">Items Processed</span>
+                  <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                  </svg>
+                  <span class="text-white font-semibold">{{ betaAgentsCount }}</span>
+                  <span class="text-amber-300 text-sm">Beta</span>
+                </div>
+              </div>
+              <div class="bg-slate-500/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-500/30">
+                <div class="flex items-center space-x-2">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="text-white font-semibold">{{ comingSoonAgentsCount }}</span>
+                  <span class="text-slate-300 text-sm">Coming Soon</span>
                 </div>
               </div>
             </div>
@@ -412,14 +479,23 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <!-- Status indicator -->
-              <div class="flex items-center space-x-1">
-                <span v-if="getStatusClasses(agent.status).pulse" class="flex h-2 w-2">
-                  <span :class="['animate-ping absolute inline-flex h-2 w-2 rounded-full opacity-75', getStatusClasses(agent.status).bg]"></span>
-                  <span :class="['relative inline-flex rounded-full h-2 w-2', getStatusClasses(agent.status).bg]"></span>
-                </span>
-                <span v-else :class="['h-2 w-2 rounded-full', getStatusClasses(agent.status).bg]"></span>
-                <span :class="['text-xs font-medium', getStatusClasses(agent.status).text]">{{ getStatusClasses(agent.status).label }}</span>
+              <!-- Production Status Badge -->
+              <div :class="[
+                'flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-medium border',
+                getProductionStatusClasses(agent.productionStatus).bg,
+                getProductionStatusClasses(agent.productionStatus).text,
+                getProductionStatusClasses(agent.productionStatus).border
+              ]">
+                <svg v-if="agent.productionStatus === 'production'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <svg v-else-if="agent.productionStatus === 'beta'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                </svg>
+                <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ getProductionStatusClasses(agent.productionStatus).label }}</span>
               </div>
             </div>
           </div>
@@ -428,14 +504,43 @@ onUnmounted(() => {
           <div class="p-6">
             <p class="text-slate-600 text-sm mb-4">{{ agent.description }}</p>
 
+            <!-- Completion Progress -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-slate-500">Completion</span>
+                <span :class="[
+                  'font-semibold',
+                  agent.completionPercent >= 90 ? 'text-emerald-600' :
+                  agent.completionPercent >= 50 ? 'text-amber-600' : 'text-slate-500'
+                ]">{{ agent.completionPercent }}%</span>
+              </div>
+              <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  :class="[
+                    'h-full rounded-full transition-all',
+                    agent.completionPercent >= 90 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' :
+                    agent.completionPercent >= 50 ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
+                    'bg-gradient-to-r from-slate-400 to-slate-300'
+                  ]"
+                  :style="{ width: `${agent.completionPercent}%` }"
+                ></div>
+              </div>
+            </div>
+
             <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-1 text-slate-500">
+              <div v-if="agent.lastRun" class="flex items-center space-x-1 text-slate-500">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span>{{ formatDate(agent.lastRun) }}</span>
               </div>
-              <div class="flex items-center space-x-1 text-slate-500">
+              <div v-else class="flex items-center space-x-1 text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Not yet run</span>
+              </div>
+              <div v-if="agent.processedItems > 0" class="flex items-center space-x-1 text-slate-500">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
@@ -481,13 +586,22 @@ onUnmounted(() => {
                       <span :class="['text-xs font-medium px-2 py-0.5 rounded-full', getColorClasses(selectedAgent.color).light, getColorClasses(selectedAgent.color).text]">
                         {{ selectedAgent.badge }}
                       </span>
-                      <span class="flex items-center space-x-1">
-                        <span v-if="getStatusClasses(selectedAgent.status).pulse" class="flex h-2 w-2">
-                          <span :class="['animate-ping absolute inline-flex h-2 w-2 rounded-full opacity-75', getStatusClasses(selectedAgent.status).bg]"></span>
-                          <span :class="['relative inline-flex rounded-full h-2 w-2', getStatusClasses(selectedAgent.status).bg]"></span>
-                        </span>
-                        <span v-else :class="['h-2 w-2 rounded-full', getStatusClasses(selectedAgent.status).bg]"></span>
-                        <span :class="['text-xs font-medium', getStatusClasses(selectedAgent.status).text]">{{ getStatusClasses(selectedAgent.status).label }}</span>
+                      <span :class="[
+                        'flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-medium border',
+                        getProductionStatusClasses(selectedAgent.productionStatus).bg,
+                        getProductionStatusClasses(selectedAgent.productionStatus).text,
+                        getProductionStatusClasses(selectedAgent.productionStatus).border
+                      ]">
+                        <svg v-if="selectedAgent.productionStatus === 'production'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <svg v-else-if="selectedAgent.productionStatus === 'beta'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                        </svg>
+                        <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ getProductionStatusClasses(selectedAgent.productionStatus).label }}
                       </span>
                     </div>
                   </div>
@@ -508,11 +622,34 @@ onUnmounted(() => {
                 <p class="text-slate-700">{{ selectedAgent.longDescription }}</p>
               </div>
 
+              <!-- Completion Progress -->
+              <div class="p-4 bg-slate-50 rounded-xl">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-sm font-medium text-slate-600">Development Progress</p>
+                  <span :class="[
+                    'text-lg font-bold',
+                    selectedAgent.completionPercent >= 90 ? 'text-emerald-600' :
+                    selectedAgent.completionPercent >= 50 ? 'text-amber-600' : 'text-slate-500'
+                  ]">{{ selectedAgent.completionPercent }}%</span>
+                </div>
+                <div class="h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div
+                    :class="[
+                      'h-full rounded-full transition-all',
+                      selectedAgent.completionPercent >= 90 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' :
+                      selectedAgent.completionPercent >= 50 ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
+                      'bg-gradient-to-r from-slate-400 to-slate-300'
+                    ]"
+                    :style="{ width: `${selectedAgent.completionPercent}%` }"
+                  ></div>
+                </div>
+              </div>
+
               <!-- Stats -->
               <div class="grid grid-cols-2 gap-4">
                 <div class="p-4 bg-slate-50 rounded-xl">
                   <p class="text-sm text-slate-500 mb-1">Last Run</p>
-                  <p class="text-lg font-semibold text-slate-800">{{ formatDate(selectedAgent.lastRun) }}</p>
+                  <p class="text-lg font-semibold text-slate-800">{{ selectedAgent.lastRun ? formatDate(selectedAgent.lastRun) : 'Not yet run' }}</p>
                 </div>
                 <div class="p-4 bg-slate-50 rounded-xl">
                   <p class="text-sm text-slate-500 mb-1">Items Processed</p>
@@ -550,15 +687,15 @@ onUnmounted(() => {
             </div>
 
             <!-- Modal Footer -->
-            <div class="px-6 py-4 bg-slate-50 border-t border-gray-100 flex justify-end space-x-3">
-              <button @click="closeDetail" class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium transition-colors">
+            <div class="px-6 py-4 bg-slate-50 border-t border-gray-100 flex items-center justify-between">
+              <div class="flex items-center space-x-2 text-sm text-slate-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Agent configuration is managed by system administrators</span>
+              </div>
+              <button @click="closeDetail" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors">
                 Close
-              </button>
-              <button :class="[
-                'px-4 py-2 rounded-xl font-medium text-white shadow-lg transition-all hover:scale-105',
-                `bg-gradient-to-r ${getColorClasses(selectedAgent.color).gradient}`
-              ]">
-                Configure Agent
               </button>
             </div>
           </div>

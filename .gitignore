@@ -81,3 +81,8 @@ infrastructure/docker/*.tfstate
 infrastructure/docker/*.tfstate.*
 infrastructure/docker/.terraform.lock.hcl
 infrastructure/docker/secrets.tfvars
+.claude/
+TODO.md
+backend/docs/
+backend/server.exe
+*.exe

@@ -34,6 +34,33 @@ const passwordsMatch = computed(() => {
   return confirmPassword.value.length === 0 || password.value === confirmPassword.value
 })
 
+// Password strength indicators
+const passwordLength = computed(() => password.value.length >= 6)
+const passwordHasNumber = computed(() => /\d/.test(password.value))
+const passwordHasLetter = computed(() => /[a-zA-Z]/.test(password.value))
+const passwordStrength = computed(() => {
+  let strength = 0
+  if (password.value.length >= 6) strength++
+  if (password.value.length >= 8) strength++
+  if (/\d/.test(password.value)) strength++
+  if (/[a-zA-Z]/.test(password.value)) strength++
+  if (/[^a-zA-Z0-9]/.test(password.value)) strength++
+  return strength
+})
+const passwordStrengthLabel = computed(() => {
+  if (password.value.length === 0) return ''
+  if (passwordStrength.value <= 2) return 'Weak'
+  if (passwordStrength.value <= 3) return 'Medium'
+  if (passwordStrength.value <= 4) return 'Strong'
+  return 'Very Strong'
+})
+const passwordStrengthColor = computed(() => {
+  if (passwordStrength.value <= 2) return 'bg-red-500'
+  if (passwordStrength.value <= 3) return 'bg-yellow-500'
+  if (passwordStrength.value <= 4) return 'bg-green-500'
+  return 'bg-emerald-500'
+})
+
 const handleRegister = async () => {
   if (!isFormValid.value) {
     if (password.value !== confirmPassword.value) {
@@ -221,10 +248,63 @@ const handleKeyPress = (event: KeyboardEvent) => {
               type="password"
               autocomplete="new-password"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              :class="[
+                'mt-1 appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                password.length > 0 && !passwordLength ? 'border-red-500' : 'border-gray-300'
+              ]"
               placeholder="Min 6 characters"
               @keypress="handleKeyPress"
             />
+
+            <!-- Password Strength Meter -->
+            <div v-if="password.length > 0" class="mt-2">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-gray-500">Password strength:</span>
+                <span :class="[
+                  'text-xs font-medium',
+                  passwordStrength <= 2 ? 'text-red-600' : '',
+                  passwordStrength === 3 ? 'text-yellow-600' : '',
+                  passwordStrength >= 4 ? 'text-green-600' : ''
+                ]">{{ passwordStrengthLabel }}</span>
+              </div>
+              <div class="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  :class="['h-full transition-all duration-300', passwordStrengthColor]"
+                  :style="{ width: (passwordStrength / 5 * 100) + '%' }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Password Requirements Checklist -->
+            <div class="mt-3 space-y-1">
+              <div class="flex items-center text-xs">
+                <svg v-if="passwordLength" class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                <svg v-else class="w-4 h-4 text-gray-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"/>
+                </svg>
+                <span :class="passwordLength ? 'text-green-600' : 'text-gray-500'">At least 6 characters</span>
+              </div>
+              <div class="flex items-center text-xs">
+                <svg v-if="passwordHasLetter" class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                <svg v-else class="w-4 h-4 text-gray-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"/>
+                </svg>
+                <span :class="passwordHasLetter ? 'text-green-600' : 'text-gray-500'">Contains a letter</span>
+              </div>
+              <div class="flex items-center text-xs">
+                <svg v-if="passwordHasNumber" class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                <svg v-else class="w-4 h-4 text-gray-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"/>
+                </svg>
+                <span :class="passwordHasNumber ? 'text-green-600' : 'text-gray-500'">Contains a number</span>
+              </div>
+            </div>
           </div>
 
           <!-- Confirm Password -->
@@ -239,21 +319,26 @@ const handleKeyPress = (event: KeyboardEvent) => {
               required
               :class="[
                 'mt-1 appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
-                !passwordsMatch ? 'border-red-500' : 'border-gray-300'
+                confirmPassword.length > 0 && !passwordsMatch ? 'border-red-500' : '',
+                confirmPassword.length > 0 && passwordsMatch ? 'border-green-500' : '',
+                confirmPassword.length === 0 ? 'border-gray-300' : ''
               ]"
               placeholder="Re-enter password"
               @keypress="handleKeyPress"
             />
-          </div>
 
-          <!-- Password Match Warning -->
-          <div v-if="!passwordsMatch" class="mt-2 text-sm text-red-600">
-            Passwords do not match
-          </div>
-
-          <!-- Password Requirements -->
-          <div class="mt-2 text-xs text-gray-500">
-            Password must be at least 6 characters long
+            <!-- Password Match Indicator -->
+            <div v-if="confirmPassword.length > 0" class="mt-2 flex items-center text-xs">
+              <svg v-if="passwordsMatch" class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              <svg v-else class="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+              <span :class="passwordsMatch ? 'text-green-600' : 'text-red-600'">
+                {{ passwordsMatch ? 'Passwords match' : 'Passwords do not match' }}
+              </span>
+            </div>
           </div>
         </div>
 

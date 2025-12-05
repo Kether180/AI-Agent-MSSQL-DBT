@@ -8,7 +8,7 @@
 
 An enterprise-grade AI-powered platform for automating the migration of legacy MSSQL databases to modern dbt projects. Built with an **Eight-Agent AI Architecture** featuring RAG, Security, ML Fine-Tuning, and DataPrep capabilities. Equipped with a full-featured SaaS interface.
 
-**🌐 Live Demo:** [https://ai-agent-mssql-dbt-production.up.railway.app](https://ai-agent-mssql-dbt-production.up.railway.app/)
+**🌐 Live Demo:** [https://datamigrate-ai.up.railway.app](https://datamigrate-ai.up.railway.app/)
 
 ## Project Status: WORKING
 

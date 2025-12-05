@@ -15,6 +15,9 @@ import (
 func SetupRouter(cfg *config.Config) *gin.Engine {
 	router := gin.Default()
 
+	// Trust only private network proxies (Railway uses internal load balancer)
+	router.SetTrustedProxies([]string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"})
+
 	// Initialize JWT middleware
 	middleware.InitJWT(cfg)
 

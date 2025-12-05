@@ -115,6 +115,31 @@ const getFallbackResponse = (userMessage: string): string => {
   const errorKeywords = ['error', 'fail', 'problem', 'issue', 'fallo', 'problema', 'fejl', 'fehler']
   const helpKeywords = ['help', 'how', 'ayuda', 'cómo', 'hjælp', 'hvordan', 'hilfe', 'wie']
 
+  // Validation warning keywords (multi-language)
+  const validationKeywords = ['validation', 'warning', 'recommendation', 'validación', 'advertencia', 'recomendación', 'validierung', 'warnung', 'empfehlung', 'validering', 'advarsel', 'anbefaling', 'validação', 'aviso', 'recomendação']
+  const documentationWarningKeywords = ['documentation_completeness', 'documentation completeness', 'missing description', 'missing documentation', 'no description', 'undocumented']
+  const sqlLintingKeywords = ['sql_linting', 'sql linting', 'lint', 'code style', 'sqlfluff', 'formatting']
+  const columnVerificationKeywords = ['column_sql_verification', 'column verification', 'column mismatch', 'column mapping', 'column error']
+  const dataTypeMappingKeywords = ['data_type_mapping', 'data type', 'type mapping', 'type conversion', 'datetime2', 'money type', 'geography']
+
+  // Check specific validation warnings first (most specific)
+  if (documentationWarningKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.documentationWarningHelp')
+  }
+  if (sqlLintingKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.sqlLintingWarningHelp')
+  }
+  if (columnVerificationKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.columnVerificationWarningHelp')
+  }
+  if (dataTypeMappingKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.dataTypeMappingWarningHelp')
+  }
+  // General validation help
+  if (validationKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.validationHelp')
+  }
+
   if (migrationKeywords.some(k => lowerMessage.includes(k))) {
     return t('chat.fallback.migrationHelp')
   }

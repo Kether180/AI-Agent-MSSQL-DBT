@@ -293,7 +293,12 @@
       "dbtHelp": "DataMigrate AI generiert automatisch dbt-Modelle aus Ihrem MSSQL-Schema. Es erstellt Staging-Modelle, Zwischentransformationen und kann Tests und Dokumentation enthalten.",
       "agentHelp": "Wir haben mehrere KI-Agenten verfügbar: DataPrep-Agent für Datenprofilierung und -bereinigung, ML-Feinabstimmungs-Agent für Transformationsoptimierung, Datenqualitäts-Agent für Validierung und mehr.",
       "errorHelp": "Es tut mir leid, dass Sie Probleme haben. Häufige Lösungen sind: 1) Überprüfen Sie Ihre Datenbank-Anmeldedaten, 2) Prüfen Sie die Netzwerkverbindung zu SQL Server, 3) Stellen Sie sicher, dass der Benutzer Leserechte hat.",
-      "generalHelp": "Ich kann bei folgenden Themen helfen: Migrationen erstellen, Datenbankverbindungen konfigurieren, dbt-Modelle verstehen, KI-Agenten verwenden und Probleme beheben. Worüber möchten Sie mehr erfahren?"
+      "generalHelp": "Ich kann bei folgenden Themen helfen: Migrationen erstellen, Datenbankverbindungen konfigurieren, dbt-Modelle verstehen, KI-Agenten verwenden und Probleme beheben. Worüber möchten Sie mehr erfahren?",
+      "validationHelp": "Validierungswarnungen helfen sicherzustellen, dass Ihre Migration vollständig ist und Best Practices folgt. Hier ist, was jede Warnung bedeutet:\n\n**Dokumentationsvollständigkeit**: Tabellen oder Spalten fehlen Beschreibungen. Fügen Sie Beschreibungen in Ihrer Quelldatenbank oder dbt schema.yml Dateien hinzu.\n\n**SQL Linting**: Codestil-Probleme erkannt. Überprüfen Sie die vorgeschlagenen Korrekturen zur Verbesserung der Lesbarkeit.\n\n**Spaltenverifizierung**: Abweichungen zwischen Quell- und Zielspalten. Überprüfen Sie Datentypen und Namenskonventionen.\n\n**Datentyp-Mapping**: Einige Datentypen erfordern manuelle Überprüfung. Siehe die Konvertierungstabelle in unserer Dokumentation.",
+      "documentationWarningHelp": "**Dokumentationsvollständigkeits-Warnung**\n\nDiese Warnung erscheint, wenn Tabellen oder Spalten Beschreibungen fehlen. Gut dokumentierte Datenmodelle sind entscheidend für:\n\n1. Teamzusammenarbeit\n2. Daten-Governance\n3. Self-Service-Analysen\n\n**So beheben Sie es:**\n- Fügen Sie Spaltenbeschreibungen in Ihrer MSSQL-Datenbank hinzu\n- Oder aktualisieren Sie die generierte schema.yml Datei mit Beschreibungen\n- Verwenden Sie den KI-Dokumentationsagenten zur Auto-Generierung von Beschreibungen",
+      "sqlLintingWarningHelp": "**SQL Linting-Warnung**\n\nDiese Warnung zeigt Codestil-Probleme im generierten SQL an. Häufige Probleme sind:\n\n1. Inkonsistente Namenskonventionen\n2. Fehlende oder überschüssige Leerzeichen\n3. Lange Zeilen, die umgebrochen werden sollten\n4. Ungenutzte CTEs oder Spalten\n\n**So beheben Sie es:**\n- Überprüfen Sie die spezifischen Linting-Fehler\n- Verwenden Sie ein SQL-Formatierungstool\n- Konfigurieren Sie sqlfluff-Regeln in Ihrem dbt-Projekt",
+      "columnVerificationWarningHelp": "**Spalten-SQL-Verifizierungs-Warnung**\n\nDiese Warnung erscheint bei Abweichungen zwischen Quell- und Zielspalten:\n\n1. Spaltennamen entsprechen nicht dem erwarteten Muster\n2. Datentypen weichen von der Quelle ab\n3. Nullable-Einstellungen geändert\n\n**So beheben Sie es:**\n- Überprüfen Sie das Spalten-Mapping in den Migrationsdetails\n- Passen Sie Datentyp-Mappings in den Einstellungen an\n- Prüfen Sie auf reservierte Schlüsselwörter im Ziel-Warehouse",
+      "dataTypeMappingWarningHelp": "**Datentyp-Mapping-Warnung**\n\nEinige MSSQL-Datentypen erfordern spezielle Behandlung:\n\n• **DATETIME2** → TIMESTAMP_NTZ (verliert Zeitzone)\n• **MONEY** → DECIMAL(19,4)\n• **GEOGRAPHY** → VARCHAR (benötigt benutzerdefinierte Behandlung)\n• **HIERARCHYID** → VARCHAR\n\n**So beheben Sie es:**\n- Überprüfen Sie die Datentyp-Konvertierungstabelle\n- Fügen Sie benutzerdefinierte Typ-Mappings in den Migrationseinstellungen hinzu\n- Testen Sie Grenzfälle mit Beispieldaten"
     }
   },
   "profile": {
@@ -403,6 +408,88 @@
     "enterApiKeyName": "Bitte geben Sie einen Namen für den API-Schlüssel ein",
     "saveChanges": "Änderungen Speichern",
     "saving": "Speichern..."
+  },
+  "docs": {
+    "title": "Dokumentation",
+    "subtitle": "Alles, was Sie über DataMigrate AI wissen müssen",
+    "searchPlaceholder": "Dokumentation durchsuchen...",
+    "readDocumentation": "Dokumentation Lesen",
+    "needMoreHelp": "Brauchen Sie Mehr Hilfe?",
+    "aiSupportAvailable": "Unser KI-Support-Assistent ist 24/7 verfügbar, um Ihre Fragen zu beantworten.",
+    "contactSupport": "Support Kontaktieren",
+    "gettingStarted": {
+      "title": "Erste Schritte",
+      "description": "Erfahren Sie, wie Sie DataMigrate AI für Ihre erste Migration konfigurieren.",
+      "topics": ["Schnellstart-Anleitung", "Installation", "Erste Migration", "Konfiguration"],
+      "overview": "DataMigrate AI transformiert Ihre MSSQL-Datenbanken in produktionsbereite dbt-Projekte mit 8 spezialisierten KI-Agenten.",
+      "steps": [
+        { "title": "1. Konto Erstellen", "description": "Registrieren Sie sich kostenlos auf datamigrate.ai. Sie erhalten eine Willkommens-E-Mail mit Anmeldedaten." },
+        { "title": "2. Datenbankverbindung Hinzufügen", "description": "Navigieren Sie zu Einstellungen > Verbindungen und fügen Sie Ihre MSSQL-Datenbank hinzu. Unterstützt SQL Server- und Windows-Authentifizierung." },
+        { "title": "3. Migration Starten", "description": "Klicken Sie auf 'Neue Migration' im Dashboard. Wählen Sie Ihre Quelldatenbank und die zu migrierenden Tabellen/Views." },
+        { "title": "4. Ziel Konfigurieren", "description": "Wählen Sie Ihr Ziel-Data-Warehouse (Snowflake, Databricks, BigQuery, Redshift oder Microsoft Fabric) und geben Sie die Anmeldedaten ein." },
+        { "title": "5. Überprüfen und Bereitstellen", "description": "Unsere KI-Agenten analysieren Ihr Schema, generieren dbt-Modelle und bereiten Deployment-Skripte vor. Überprüfen und bereitstellen!" }
+      ]
+    },
+    "databaseConnections": {
+      "title": "Datenbankverbindungen",
+      "description": "Konfigurieren und verwalten Sie Ihre MSSQL-Datenbankverbindungen sicher.",
+      "topics": ["Verbindungseinrichtung", "Windows Auth", "Verbindungstest", "Sicherheit"],
+      "overview": "Stellen Sie sichere Verbindungen zu Ihren MSSQL-Datenbanken mit branchenüblicher Verschlüsselung her.",
+      "steps": [
+        { "title": "SQL Server-Authentifizierung", "description": "Geben Sie Serverhostname, Port (Standard 1433), Datenbankname, Benutzername und Passwort an." },
+        { "title": "Windows-Authentifizierung", "description": "Verwenden Sie Ihre Windows-Domänenanmeldedaten. Format: DOMÄNE\\Benutzername" },
+        { "title": "Verbindungstest", "description": "Testen Sie Ihre Verbindung immer vor dem Speichern. Wir überprüfen die Konnektivität und listen verfügbare Tabellen auf." },
+        { "title": "Sicherheits-Best-Practices", "description": "Verwenden Sie schreibgeschützte Konten mit minimalen erforderlichen Berechtigungen. Alle Anmeldedaten werden verschlüsselt gespeichert." }
+      ]
+    },
+    "migrationGuide": {
+      "title": "Migrationsanleitung",
+      "description": "Schritt-für-Schritt-Anleitung zur Migration Ihrer MSSQL-Datenbanken zu dbt-Projekten.",
+      "topics": ["Tabellenauswahl", "Schema-Mapping", "Datentypen", "Beziehungen"],
+      "overview": "Unsere KI-Agenten übernehmen automatisch komplexe Schemaanalysen, Datentyp-Mapping und Beziehungserkennung.",
+      "steps": [
+        { "title": "Tabellenauswahl", "description": "Wählen Sie die einzuschließenden Tabellen und Views. Nutzen Sie Suche und Filter für spezifische Objekte." },
+        { "title": "Schemaanalyse", "description": "KI analysiert Primärschlüssel, Fremdschlüssel, Indizes und Constraints zur Wahrung der Datenintegrität." },
+        { "title": "Datentyp-Mapping", "description": "Automatische Konvertierung von MSSQL-Typen in Ziel-Warehouse-Typen (z.B. DATETIME2 → TIMESTAMP_NTZ)." },
+        { "title": "dbt-Modellgenerierung", "description": "Erstellt Staging-Modelle, Zwischentransformationen und Mart-Modelle nach dbt-Best-Practices." }
+      ]
+    },
+    "apiReference": {
+      "title": "API-Referenz",
+      "description": "Vollständige API-Dokumentation zur Integration mit DataMigrate AI.",
+      "topics": ["Authentifizierung", "Endpoints", "Rate Limits", "Webhooks"],
+      "overview": "RESTful API für programmatischen Zugriff auf alle DataMigrate AI-Funktionen.",
+      "steps": [
+        { "title": "Authentifizierung", "description": "Verwenden Sie Bearer-Token-Authentifizierung. Holen Sie Ihren API-Schlüssel unter Einstellungen > API-Schlüssel." },
+        { "title": "Haupt-Endpoints", "description": "POST /api/v1/migrations - Migration erstellen\nGET /api/v1/migrations - Migrationen auflisten\nGET /api/v1/migrations/:id - Migrationsdetails abrufen" },
+        { "title": "Rate Limits", "description": "100 Anfragen pro Minute für Standardkonten. Enterprise-Konten haben unbegrenzte Anfragen." },
+        { "title": "Webhooks", "description": "Konfigurieren Sie Webhooks, um Benachrichtigungen zu erhalten, wenn Migrationen abgeschlossen werden oder fehlschlagen." }
+      ]
+    },
+    "bestPractices": {
+      "title": "Best Practices",
+      "description": "Richtlinien zur Optimierung Ihrer Datenmigrationen und dbt-Projekte.",
+      "topics": ["Leistung", "Fehlerbehandlung", "Testen", "Bereitstellung"],
+      "overview": "Befolgen Sie diese Richtlinien für reibungslose Migrationen und wartbare dbt-Projekte.",
+      "steps": [
+        { "title": "Klein Anfangen", "description": "Beginnen Sie mit wenigen Tabellen, um den Prozess zu testen. Erweitern Sie, wenn Sie mit dem Workflow vertraut sind." },
+        { "title": "Generierten Code Überprüfen", "description": "Überprüfen Sie immer KI-generierte dbt-Modelle. Fügen Sie bei Bedarf benutzerdefinierte Geschäftslogik hinzu." },
+        { "title": "Inkrementell Testen", "description": "Führen Sie dbt-Tests nach jedem Migrationsbatch aus. Beheben Sie Probleme vor dem Fortfahren." },
+        { "title": "Versionskontrolle", "description": "Committen Sie generierte dbt-Projekte in Git. Verfolgen Sie Änderungen und ermöglichen Sie Zusammenarbeit." }
+      ]
+    },
+    "troubleshooting": {
+      "title": "Fehlerbehebung",
+      "description": "Häufige Probleme und Lösungen für DataMigrate AI.",
+      "topics": ["Verbindungsprobleme", "Migrationsfehler", "Leistung", "FAQs"],
+      "overview": "Lösungen für häufige Probleme während Migrationen.",
+      "steps": [
+        { "title": "Verbindungs-Timeout", "description": "Überprüfen Sie Firewall-Regeln, stellen Sie sicher, dass der Server erreichbar ist, und prüfen Sie den korrekten Port (Standard 1433)." },
+        { "title": "Authentifizierung Fehlgeschlagen", "description": "Überprüfen Sie Anmeldedaten, prüfen Sie den SQL Server-Authentifizierungsmodus und stellen Sie sicher, dass der Benutzer die erforderlichen Berechtigungen hat." },
+        { "title": "Migration Hängt", "description": "Große Tabellen können Zeit brauchen. Überprüfen Sie den Fortschritt in den Migrationsdetails. Kontaktieren Sie den Support bei keinem Fortschritt nach 30+ Minuten." },
+        { "title": "Typkonvertierungsfehler", "description": "Einige benutzerdefinierte Typen erfordern möglicherweise manuelles Mapping. Überprüfen Sie das Fehlerprotokoll für spezifische Spaltenprobleme." }
+      ]
+    }
   },
   "navbar": {
     "dashboard": "Dashboard",

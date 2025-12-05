@@ -293,7 +293,12 @@
       "dbtHelp": "DataMigrate AI genererer automatisk dbt-modeller fra dit MSSQL-skema. Den opretter staging-modeller, mellemliggende transformationer og kan inkludere tests og dokumentation. Du kan tilpasse mål-warehouse (Snowflake, BigQuery, Fabric osv.) under migreringsopsætning.",
       "agentHelp": "Vi har flere AI-agenter tilgængelige: DataPrep-agent til dataprofilering og rensning, ML Finjustering-agent til optimering af transformationer, Datakvalitets-agent til validering og mere. Tilgå dem fra Dashboard.",
       "errorHelp": "Beklager, at du oplever problemer. Almindelige løsninger inkluderer: 1) Verificer dine database-legitimationsoplysninger, 2) Tjek netværksforbindelse til SQL Server, 3) Sørg for, at brugeren har læserettigheder til databasen. For vedvarende problemer, tjek migreringsloggene eller kontakt support.",
-      "generalHelp": "Jeg kan hjælpe med: oprette migreringer, konfigurere databaseforbindelser, forstå dbt-modeller, bruge AI-agenter og fejlfinding. Hvad vil du gerne vide mere om?"
+      "generalHelp": "Jeg kan hjælpe med: oprette migreringer, konfigurere databaseforbindelser, forstå dbt-modeller, bruge AI-agenter og fejlfinding. Hvad vil du gerne vide mere om?",
+      "validationHelp": "Valideringsadvarsler hjælper med at sikre, at din migrering er komplet og følger bedste praksis. Her er hvad hver advarsel betyder:\n\n**Dokumentationsfuldstændighed**: Tabeller eller kolonner mangler beskrivelser. Tilføj beskrivelser i din kildedatabase eller dbt schema.yml filer.\n\n**SQL Linting**: Kodestilsproblemer opdaget. Gennemgå de foreslåede rettelser for at forbedre læsbarheden.\n\n**Kolonneverificering**: Uoverensstemmelser mellem kilde- og målkolonner. Tjek datatyper og navngivningskonventioner.\n\n**Datatypemapping**: Nogle datatyper kan kræve manuel gennemgang. Se konverteringstabellen i vores dokumentation.",
+      "documentationWarningHelp": "**Dokumentationsfuldstændigheds-advarsel**\n\nDenne advarsel vises, når tabeller eller kolonner mangler beskrivelser. Veldokumenterede datamodeller er afgørende for:\n\n1. Teamsamarbejde\n2. Datastyring\n3. Selvbetjeningsanalyse\n\n**Sådan løses det:**\n- Tilføj kolonnebeskrivelser i din MSSQL-database\n- Eller opdater den genererede schema.yml fil med beskrivelser\n- Brug AI Dokumentationsagenten til auto-generering af beskrivelser",
+      "sqlLintingWarningHelp": "**SQL Linting-advarsel**\n\nDenne advarsel indikerer kodestilsproblemer i den genererede SQL. Almindelige problemer inkluderer:\n\n1. Inkonsistente navngivningskonventioner\n2. Manglende eller ekstra mellemrum\n3. Lange linjer der bør ombrydes\n4. Ubrugte CTE'er eller kolonner\n\n**Sådan løses det:**\n- Gennemgå de specifikke linting-fejl vist\n- Brug et SQL-formateringsværktøj\n- Konfigurer sqlfluff-regler i dit dbt-projekt",
+      "columnVerificationWarningHelp": "**Kolonne SQL Verificerings-advarsel**\n\nDenne advarsel vises, når der er uoverensstemmelser mellem kilde- og målkolonner:\n\n1. Kolonnenavne matcher ikke forventet mønster\n2. Datatyper adskiller sig fra kilden\n3. Nullable-indstillinger ændret\n\n**Sådan løses det:**\n- Gennemgå kolonnemapping i migreringsdetaljer\n- Juster datatypemappings i indstillinger\n- Tjek for reserverede nøgleord i mål-warehouse",
+      "dataTypeMappingWarningHelp": "**Datatypemapping-advarsel**\n\nNogle MSSQL-datatyper kræver særlig håndtering:\n\n• **DATETIME2** → TIMESTAMP_NTZ (mister tidszone)\n• **MONEY** → DECIMAL(19,4)\n• **GEOGRAPHY** → VARCHAR (kræver brugerdefineret håndtering)\n• **HIERARCHYID** → VARCHAR\n\n**Sådan løses det:**\n- Gennemgå datatypekonverteringstabellen\n- Tilføj brugerdefinerede typemappings i migreringsindstillinger\n- Test edge cases med prøvedata"
     }
   },
   "profile": {
@@ -403,6 +408,88 @@
     "enterApiKeyName": "Indtast venligst et navn til API-nøglen",
     "saveChanges": "Gem Ændringer",
     "saving": "Gemmer..."
+  },
+  "docs": {
+    "title": "Dokumentation",
+    "subtitle": "Alt hvad du behøver at vide om DataMigrate AI",
+    "searchPlaceholder": "Søg i dokumentation...",
+    "readDocumentation": "Læs Dokumentation",
+    "needMoreHelp": "Brug for Mere Hjælp?",
+    "aiSupportAvailable": "Vores AI-supportassistent er tilgængelig 24/7 for at besvare dine spørgsmål.",
+    "contactSupport": "Kontakt Support",
+    "gettingStarted": {
+      "title": "Kom i Gang",
+      "description": "Lær hvordan du konfigurerer DataMigrate AI til din første migrering.",
+      "topics": ["Hurtigstartsguide", "Installation", "Første Migrering", "Konfiguration"],
+      "overview": "DataMigrate AI transformerer dine MSSQL-databaser til produktionsklare dbt-projekter ved hjælp af 8 specialiserede AI-agenter.",
+      "steps": [
+        { "title": "1. Opret Din Konto", "description": "Tilmeld dig gratis på datamigrate.ai. Du modtager en velkomstmail med loginoplysninger." },
+        { "title": "2. Tilføj Databaseforbindelse", "description": "Naviger til Indstillinger > Forbindelser og tilføj din MSSQL-database. Understøtter SQL Server-godkendelse og Windows-godkendelse." },
+        { "title": "3. Start en Migrering", "description": "Klik på 'Ny Migrering' fra dashboardet. Vælg din kildedatabase og vælg tabeller/visninger til migrering." },
+        { "title": "4. Konfigurer Mål", "description": "Vælg dit mål-datawarehouse (Snowflake, Databricks, BigQuery, Redshift eller Microsoft Fabric) og indtast legitimationsoplysninger." },
+        { "title": "5. Gennemse og Implementer", "description": "Vores AI-agenter vil analysere dit skema, generere dbt-modeller og forberede implementeringsscripts. Gennemse og implementer!" }
+      ]
+    },
+    "databaseConnections": {
+      "title": "Databaseforbindelser",
+      "description": "Konfigurer og administrer dine MSSQL-databaseforbindelser sikkert.",
+      "topics": ["Forbindelsesopsætning", "Windows Auth", "Forbindelsestest", "Sikkerhed"],
+      "overview": "Opret sikker forbindelse til dine MSSQL-databaser med industristandardkryptering.",
+      "steps": [
+        { "title": "SQL Server-godkendelse", "description": "Angiv serverværtsnavn, port (standard 1433), databasenavn, brugernavn og adgangskode." },
+        { "title": "Windows-godkendelse", "description": "Brug dine Windows-domæneoplysninger. Format: DOMÆNE\\brugernavn" },
+        { "title": "Forbindelsestest", "description": "Test altid din forbindelse før du gemmer. Vi verificerer forbindelsen og viser tilgængelige tabeller." },
+        { "title": "Sikkerhedspraksis", "description": "Brug skrivebeskyttede konti med minimale nødvendige tilladelser. Alle legitimationsoplysninger er krypteret." }
+      ]
+    },
+    "migrationGuide": {
+      "title": "Migreringsguide",
+      "description": "Trin-for-trin guide til migrering af dine MSSQL-databaser til dbt-projekter.",
+      "topics": ["Tabelvalg", "Skemamapping", "Datatyper", "Relationer"],
+      "overview": "Vores AI-agenter håndterer kompleks skemaanalyse, datatypemapping og relationsdetektion automatisk.",
+      "steps": [
+        { "title": "Tabelvalg", "description": "Vælg hvilke tabeller og visninger der skal inkluderes. Brug søg og filter til at finde specifikke objekter." },
+        { "title": "Skemaanalyse", "description": "AI analyserer primærnøgler, fremmednøgler, indekser og begrænsninger for at bevare dataintegritet." },
+        { "title": "Datatypemapping", "description": "Automatisk konvertering af MSSQL-typer til målwarehousetyper (f.eks. DATETIME2 → TIMESTAMP_NTZ)." },
+        { "title": "dbt-modelgenerering", "description": "Opretter staging-modeller, mellemliggende transformationer og mart-modeller efter dbt-bedste praksis." }
+      ]
+    },
+    "apiReference": {
+      "title": "API-reference",
+      "description": "Komplet API-dokumentation til integration med DataMigrate AI.",
+      "topics": ["Godkendelse", "Endpoints", "Rate Limits", "Webhooks"],
+      "overview": "RESTful API til programmatisk adgang til alle DataMigrate AI-funktioner.",
+      "steps": [
+        { "title": "Godkendelse", "description": "Brug Bearer token-godkendelse. Få din API-nøgle fra Indstillinger > API-nøgler." },
+        { "title": "Hovedendpoints", "description": "POST /api/v1/migrations - Opret migrering\nGET /api/v1/migrations - List migreringer\nGET /api/v1/migrations/:id - Hent migreringsdetaljer" },
+        { "title": "Rate Limits", "description": "100 anmodninger per minut for standardkonti. Enterprise-konti har ubegrænsede anmodninger." },
+        { "title": "Webhooks", "description": "Konfigurer webhooks for at modtage notifikationer når migreringer fuldføres eller fejler." }
+      ]
+    },
+    "bestPractices": {
+      "title": "Bedste Praksis",
+      "description": "Retningslinjer for optimering af dine datamigreringer og dbt-projekter.",
+      "topics": ["Ydeevne", "Fejlhåndtering", "Test", "Implementering"],
+      "overview": "Følg disse retningslinjer for at sikre problemfri migreringer og vedligeholdelige dbt-projekter.",
+      "steps": [
+        { "title": "Start Småt", "description": "Begynd med få tabeller for at teste processen. Udvid når du er fortrolig med arbejdsgangen." },
+        { "title": "Gennemse Genereret Kode", "description": "Gennemse altid AI-genererede dbt-modeller. Tilføj tilpasset forretningslogik efter behov." },
+        { "title": "Test Inkrementelt", "description": "Kør dbt-tests efter hver migreringsbatch. Ret problemer før du fortsætter." },
+        { "title": "Versionskontrol", "description": "Commit genererede dbt-projekter til Git. Spor ændringer og muliggør samarbejde." }
+      ]
+    },
+    "troubleshooting": {
+      "title": "Fejlfinding",
+      "description": "Almindelige problemer og løsninger for DataMigrate AI.",
+      "topics": ["Forbindelsesproblemer", "Migreringsfejl", "Ydeevne", "FAQs"],
+      "overview": "Løsninger på almindelige problemer under migreringer.",
+      "steps": [
+        { "title": "Forbindelsestimeout", "description": "Tjek firewallregler, verificer at serveren er tilgængelig, og sikr korrekt port (standard 1433)." },
+        { "title": "Godkendelse Fejlet", "description": "Verificer legitimationsoplysninger, tjek SQL Server-godkendelsestilstand, og sikr at brugeren har nødvendige tilladelser." },
+        { "title": "Migrering Hænger", "description": "Store tabeller kan tage tid. Tjek fremskridt i migreringsdetaljer. Kontakt support hvis ingen fremskridt i 30+ minutter." },
+        { "title": "Typekonverteringsfejl", "description": "Nogle brugerdefinerede typer kan kræve manuel mapping. Tjek fejlloggen for specifikke kolonneproblemer." }
+      ]
+    }
   },
   "navbar": {
     "dashboard": "Dashboard",

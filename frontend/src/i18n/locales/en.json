@@ -293,7 +293,12 @@
       "dbtHelp": "DataMigrate AI automatically generates dbt models from your MSSQL schema. It creates staging models, intermediate transformations, and can include tests and documentation. You can customize the target warehouse (Snowflake, BigQuery, Fabric, etc.) during migration setup.",
       "agentHelp": "We have several AI agents available: DataPrep Agent for data profiling and cleaning, ML Fine-Tuning Agent for optimizing transformations, Data Quality Agent for validation, and more. Access them from the Dashboard.",
       "errorHelp": "I'm sorry you're experiencing issues. Common solutions include: 1) Verify your database credentials, 2) Check network connectivity to SQL Server, 3) Ensure the user has read permissions on the database. For persistent issues, check the migration logs or contact support.",
-      "generalHelp": "I can help you with: creating migrations, configuring database connections, understanding dbt models, using AI agents, and troubleshooting issues. What would you like to know more about?"
+      "generalHelp": "I can help you with: creating migrations, configuring database connections, understanding dbt models, using AI agents, and troubleshooting issues. What would you like to know more about?",
+      "validationHelp": "Validation warnings help ensure your migration is complete and follows best practices. Here's what each warning means:\n\n**Documentation Completeness**: Tables or columns missing descriptions. Add descriptions in your source database or dbt schema.yml files.\n\n**SQL Linting**: Code style issues detected. Review the suggested fixes to improve readability.\n\n**Column Verification**: Mismatches between source and target columns. Check data types and naming conventions.\n\n**Data Type Mapping**: Some data types may need manual review. Check the conversion table in our documentation.",
+      "documentationWarningHelp": "**Documentation Completeness Warning**\n\nThis warning appears when tables or columns are missing descriptions. Well-documented data models are crucial for:\n\n1. Team collaboration\n2. Data governance\n3. Self-service analytics\n\n**How to fix:**\n- Add column descriptions in your MSSQL database\n- Or update the generated schema.yml file with descriptions\n- Use the AI Documentation agent to auto-generate descriptions",
+      "sqlLintingWarningHelp": "**SQL Linting Warning**\n\nThis warning indicates code style issues in the generated SQL. Common issues include:\n\n1. Inconsistent naming conventions\n2. Missing or extra whitespace\n3. Long lines that should be wrapped\n4. Unused CTEs or columns\n\n**How to fix:**\n- Review the specific linting errors shown\n- Use a SQL formatter tool\n- Configure sqlfluff rules in your dbt project",
+      "columnVerificationWarningHelp": "**Column SQL Verification Warning**\n\nThis warning appears when there are mismatches between source and target columns:\n\n1. Column names don't match expected pattern\n2. Data types differ from source\n3. Nullable settings changed\n\n**How to fix:**\n- Review the column mapping in migration details\n- Adjust data type mappings in settings\n- Check for reserved keywords in target warehouse",
+      "dataTypeMappingWarningHelp": "**Data Type Mapping Warning**\n\nSome MSSQL data types require special handling:\n\n• **DATETIME2** → TIMESTAMP_NTZ (loses timezone)\n• **MONEY** → DECIMAL(19,4)\n• **GEOGRAPHY** → VARCHAR (needs custom handling)\n• **HIERARCHYID** → VARCHAR\n\n**How to fix:**\n- Review the data type conversion table\n- Add custom type mappings in migration settings\n- Test edge cases with sample data"
     }
   },
   "auth": {
@@ -449,65 +454,81 @@
     "subtitle": "Everything you need to know about DataMigrate AI",
     "searchPlaceholder": "Search documentation...",
     "readDocumentation": "Read Documentation",
+    "needMoreHelp": "Need More Help?",
+    "aiSupportAvailable": "Our AI support assistant is available 24/7 to answer your questions.",
+    "contactSupport": "Contact Support",
     "gettingStarted": {
       "title": "Getting Started",
       "description": "Learn how to set up and configure DataMigrate AI for your first migration.",
-      "topics": {
-        "quickStart": "Quick Start Guide",
-        "installation": "Installation",
-        "firstMigration": "First Migration",
-        "configuration": "Configuration"
-      }
+      "topics": ["Quick Start Guide", "Installation", "First Migration", "Configuration"],
+      "overview": "DataMigrate AI transforms your MSSQL databases into production-ready dbt projects using 8 specialized AI agents.",
+      "steps": [
+        { "title": "1. Create Your Account", "description": "Sign up for a free account at datamigrate.ai. You'll receive a welcome email with login credentials." },
+        { "title": "2. Add Database Connection", "description": "Navigate to Settings > Connections and add your MSSQL database. Supports SQL Server Authentication and Windows Authentication." },
+        { "title": "3. Start a Migration", "description": "Click 'New Migration' from the dashboard. Select your source database and choose tables/views to migrate." },
+        { "title": "4. Configure Target", "description": "Select your target data warehouse (Snowflake, Databricks, BigQuery, Redshift, or Microsoft Fabric) and enter credentials." },
+        { "title": "5. Review & Deploy", "description": "Our AI agents will analyze your schema, generate dbt models, and prepare deployment scripts. Review and deploy!" }
+      ]
     },
     "databaseConnections": {
       "title": "Database Connections",
       "description": "Configure and manage your MSSQL database connections securely.",
-      "topics": {
-        "connectionSetup": "Connection Setup",
-        "windowsAuth": "Windows Auth",
-        "connectionTesting": "Connection Testing",
-        "security": "Security"
-      }
+      "topics": ["Connection Setup", "Windows Auth", "Connection Testing", "Security"],
+      "overview": "Securely connect to your MSSQL databases using industry-standard encryption.",
+      "steps": [
+        { "title": "SQL Server Authentication", "description": "Provide server hostname, port (default 1433), database name, username, and password." },
+        { "title": "Windows Authentication", "description": "Use your Windows domain credentials. Format: DOMAIN\\username" },
+        { "title": "Connection Testing", "description": "Always test your connection before saving. We verify connectivity and list available tables." },
+        { "title": "Security Best Practices", "description": "Use read-only accounts with minimum required permissions. All credentials are encrypted at rest." }
+      ]
     },
     "migrationGuide": {
       "title": "Migration Guide",
       "description": "Step-by-step guide to migrating your MSSQL databases to dbt projects.",
-      "topics": {
-        "tableSelection": "Table Selection",
-        "schemaMapping": "Schema Mapping",
-        "dataTypes": "Data Types",
-        "relationships": "Relationships"
-      }
+      "topics": ["Table Selection", "Schema Mapping", "Data Types", "Relationships"],
+      "overview": "Our AI agents handle complex schema analysis, data type mapping, and relationship detection automatically.",
+      "steps": [
+        { "title": "Table Selection", "description": "Choose which tables and views to include. Use the search and filter to find specific objects." },
+        { "title": "Schema Analysis", "description": "AI analyzes primary keys, foreign keys, indexes, and constraints to preserve data integrity." },
+        { "title": "Data Type Mapping", "description": "Automatic conversion of MSSQL types to target warehouse types (e.g., DATETIME2 → TIMESTAMP_NTZ)." },
+        { "title": "dbt Model Generation", "description": "Creates staging models, intermediate transformations, and mart models following dbt best practices." }
+      ]
     },
     "apiReference": {
       "title": "API Reference",
       "description": "Complete API documentation for integrating with DataMigrate AI.",
-      "topics": {
-        "authentication": "Authentication",
-        "endpoints": "Endpoints",
-        "rateLimits": "Rate Limits",
-        "webhooks": "Webhooks"
-      }
+      "topics": ["Authentication", "Endpoints", "Rate Limits", "Webhooks"],
+      "overview": "RESTful API for programmatic access to all DataMigrate AI features.",
+      "steps": [
+        { "title": "Authentication", "description": "Use Bearer token authentication. Get your API key from Settings > API Keys." },
+        { "title": "Core Endpoints", "description": "POST /api/v1/migrations - Create migration\nGET /api/v1/migrations - List migrations\nGET /api/v1/migrations/:id - Get migration details" },
+        { "title": "Rate Limits", "description": "100 requests per minute for standard accounts. Enterprise accounts have unlimited requests." },
+        { "title": "Webhooks", "description": "Configure webhooks to receive notifications when migrations complete or fail." }
+      ]
     },
     "bestPractices": {
       "title": "Best Practices",
       "description": "Guidelines for optimizing your data migrations and dbt projects.",
-      "topics": {
-        "performance": "Performance",
-        "errorHandling": "Error Handling",
-        "testing": "Testing",
-        "deployment": "Deployment"
-      }
+      "topics": ["Performance", "Error Handling", "Testing", "Deployment"],
+      "overview": "Follow these guidelines to ensure smooth migrations and maintainable dbt projects.",
+      "steps": [
+        { "title": "Start Small", "description": "Begin with a few tables to test the process. Expand once you're comfortable with the workflow." },
+        { "title": "Review Generated Code", "description": "Always review AI-generated dbt models. Add custom business logic as needed." },
+        { "title": "Test Incrementally", "description": "Run dbt tests after each migration batch. Fix issues before proceeding." },
+        { "title": "Version Control", "description": "Commit generated dbt projects to Git. Track changes and enable collaboration." }
+      ]
     },
     "troubleshooting": {
       "title": "Troubleshooting",
       "description": "Common issues and solutions for DataMigrate AI.",
-      "topics": {
-        "connectionIssues": "Connection Issues",
-        "migrationErrors": "Migration Errors",
-        "performance": "Performance",
-        "faqs": "FAQs"
-      }
+      "topics": ["Connection Issues", "Migration Errors", "Performance", "FAQs"],
+      "overview": "Solutions to common problems encountered during migrations.",
+      "steps": [
+        { "title": "Connection Timeout", "description": "Check firewall rules, verify server is accessible, and ensure correct port (default 1433)." },
+        { "title": "Authentication Failed", "description": "Verify credentials, check SQL Server authentication mode, and ensure user has required permissions." },
+        { "title": "Migration Stuck", "description": "Large tables may take time. Check progress in migration details. Contact support if no progress for 30+ minutes." },
+        { "title": "Type Conversion Errors", "description": "Some custom types may need manual mapping. Check the error log for specific column issues." }
+      ]
     }
   },
   "navbar": {

@@ -2,7 +2,20 @@
  * API Service for communicating with the Go backend
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
+// In production (Railway), use relative URL since frontend is served by backend
+// In development, use localhost
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+  // If running on Railway or production, use relative URL
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return '/api/v1'
+  }
+  return 'http://localhost:8080/api/v1'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'

@@ -8,8 +8,6 @@ import (
 	"github.com/datamigrate-ai/backend/internal/config"
 	"github.com/datamigrate-ai/backend/internal/crypto"
 	"github.com/datamigrate-ai/backend/internal/db"
-
-	_ "github.com/datamigrate-ai/backend/docs" // swagger docs
 )
 
 // @title DataMigrate AI API

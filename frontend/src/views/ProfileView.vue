@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { api } from '@/services/api'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 
 const user = computed(() => authStore.user)
@@ -118,9 +120,9 @@ const activityLog = ref([
     <div class="bg-white shadow">
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-6">
-          <h1 class="text-3xl font-bold text-gray-900">Profile</h1>
+          <h1 class="text-3xl font-bold text-gray-900">{{ t('profile.title') }}</h1>
           <p class="mt-1 text-sm text-gray-500">
-            Manage your account information and security settings
+            {{ t('profile.subtitle') }}
           </p>
         </div>
       </div>
@@ -140,7 +142,7 @@ const activityLog = ref([
                 <h2 class="text-2xl font-bold text-gray-900">
                   {{ profile.firstName }} {{ profile.lastName }}
                 </h2>
-                <p class="text-gray-500">{{ profile.jobTitle || 'Team Member' }} at {{ profile.company }}</p>
+                <p class="text-gray-500">{{ profile.jobTitle || t('profile.teamMember') }} at {{ profile.company }}</p>
               </div>
             </div>
           </div>
@@ -149,9 +151,9 @@ const activityLog = ref([
         <!-- Profile Information -->
         <div class="bg-white shadow rounded-lg">
           <div class="px-6 py-5 border-b border-gray-200">
-            <h2 class="text-lg font-medium text-gray-900">Profile Information</h2>
+            <h2 class="text-lg font-medium text-gray-900">{{ t('profile.profileInfo') }}</h2>
             <p class="mt-1 text-sm text-gray-500">
-              Update your personal information
+              {{ t('profile.updatePersonalInfo') }}
             </p>
           </div>
 
@@ -159,7 +161,7 @@ const activityLog = ref([
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="firstName" class="block text-sm font-medium text-gray-700">
-                  First Name
+                  {{ t('profile.firstName') }}
                 </label>
                 <input
                   id="firstName"
@@ -171,7 +173,7 @@ const activityLog = ref([
 
               <div>
                 <label for="lastName" class="block text-sm font-medium text-gray-700">
-                  Last Name
+                  {{ t('profile.lastName') }}
                 </label>
                 <input
                   id="lastName"
@@ -184,7 +186,7 @@ const activityLog = ref([
 
             <div>
               <label for="email" class="block text-sm font-medium text-gray-700">
-                Email Address
+                {{ t('profile.emailAddress') }}
               </label>
               <input
                 id="email"
@@ -197,7 +199,7 @@ const activityLog = ref([
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="company" class="block text-sm font-medium text-gray-700">
-                  Company
+                  {{ t('profile.company') }}
                 </label>
                 <input
                   id="company"
@@ -209,13 +211,13 @@ const activityLog = ref([
 
               <div>
                 <label for="jobTitle" class="block text-sm font-medium text-gray-700">
-                  Job Title
+                  {{ t('profile.jobTitle') }}
                 </label>
                 <input
                   id="jobTitle"
                   v-model="profile.jobTitle"
                   type="text"
-                  placeholder="e.g. Data Engineer, CTO"
+                  :placeholder="t('profile.jobTitlePlaceholder')"
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
@@ -224,7 +226,7 @@ const activityLog = ref([
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="timezone" class="block text-sm font-medium text-gray-700">
-                  Timezone
+                  {{ t('profile.timezone') }}
                 </label>
                 <select
                   id="timezone"
@@ -241,7 +243,7 @@ const activityLog = ref([
 
               <div>
                 <label for="language" class="block text-sm font-medium text-gray-700">
-                  Language
+                  {{ t('profile.language') }}
                 </label>
                 <select
                   id="language"
@@ -273,7 +275,7 @@ const activityLog = ref([
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                {{ isUpdatingProfile ? 'Saving...' : 'Save Changes' }}
+                {{ isUpdatingProfile ? t('profile.saving') : t('profile.saveChanges') }}
               </button>
             </div>
           </form>
@@ -282,16 +284,16 @@ const activityLog = ref([
         <!-- Change Password -->
         <div class="bg-white shadow rounded-lg">
           <div class="px-6 py-5 border-b border-gray-200">
-            <h2 class="text-lg font-medium text-gray-900">Change Password</h2>
+            <h2 class="text-lg font-medium text-gray-900">{{ t('profile.changePassword') }}</h2>
             <p class="mt-1 text-sm text-gray-500">
-              Update your password to keep your account secure
+              {{ t('profile.keepAccountSecure') }}
             </p>
           </div>
 
           <form @submit.prevent="updatePassword" class="px-6 py-5 space-y-6">
             <div>
               <label for="currentPassword" class="block text-sm font-medium text-gray-700">
-                Current Password
+                {{ t('profile.currentPassword') }}
               </label>
               <input
                 id="currentPassword"
@@ -304,7 +306,7 @@ const activityLog = ref([
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="newPassword" class="block text-sm font-medium text-gray-700">
-                  New Password
+                  {{ t('profile.newPasswordLabel') }}
                 </label>
                 <input
                   id="newPassword"
@@ -316,7 +318,7 @@ const activityLog = ref([
 
               <div>
                 <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
-                  Confirm New Password
+                  {{ t('profile.confirmNewPassword') }}
                 </label>
                 <input
                   id="confirmPassword"
@@ -344,7 +346,7 @@ const activityLog = ref([
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                {{ isUpdatingPassword ? 'Updating...' : 'Update Password' }}
+                {{ isUpdatingPassword ? t('profile.updating') : t('profile.updatePassword') }}
               </button>
             </div>
           </form>
@@ -353,9 +355,9 @@ const activityLog = ref([
         <!-- Activity Log -->
         <div class="bg-white shadow rounded-lg">
           <div class="px-6 py-5 border-b border-gray-200">
-            <h2 class="text-lg font-medium text-gray-900">Recent Activity</h2>
+            <h2 class="text-lg font-medium text-gray-900">{{ t('profile.recentActivity') }}</h2>
             <p class="mt-1 text-sm text-gray-500">
-              Your recent account activity
+              {{ t('profile.yourRecentActivity') }}
             </p>
           </div>
 

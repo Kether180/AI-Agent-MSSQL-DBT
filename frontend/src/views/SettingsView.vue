@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { api } from '@/services/api'
 import type { DatabaseConnection, APIKey, CreateConnectionRequest } from '@/types'
+
+const { t } = useI18n()
 
 // Loading states
 const isLoading = ref(false)
@@ -241,9 +244,9 @@ const formatDate = (dateString: string) => {
     <div class="bg-white shadow">
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-6">
-          <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
+          <h1 class="text-3xl font-bold text-gray-900">{{ t('settings.title') }}</h1>
           <p class="mt-1 text-sm text-gray-500">
-            Manage your account settings and preferences
+            {{ t('settings.subtitle') }}
           </p>
         </div>
       </div>
@@ -256,9 +259,9 @@ const formatDate = (dateString: string) => {
           <div class="px-6 py-5 border-b border-gray-200">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-medium text-gray-900">Database Connections</h2>
+                <h2 class="text-lg font-medium text-gray-900">{{ t('settings.databaseConnections') }}</h2>
                 <p class="mt-1 text-sm text-gray-500">
-                  Manage your MSSQL database connections
+                  {{ t('settings.manageMssqlConnections') }}
                 </p>
               </div>
               <button
@@ -268,7 +271,7 @@ const formatDate = (dateString: string) => {
                 <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                Add Connection
+                {{ t('settings.addConnection') }}
               </button>
             </div>
           </div>
@@ -298,19 +301,19 @@ const formatDate = (dateString: string) => {
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
-                    {{ connection.status === 'testing' ? 'Testing...' : connection.status }}
+                    {{ connection.status === 'testing' ? t('settings.testing') : t('settings.' + connection.status) }}
                   </span>
                   <button
                     @click="testConnection(connection)"
                     class="text-sm text-indigo-600 hover:text-indigo-900"
                   >
-                    Test
+                    {{ t('settings.test') }}
                   </button>
                   <button
                     @click="deleteConnection(connection.id)"
                     class="text-sm text-red-600 hover:text-red-900"
                   >
-                    Delete
+                    {{ t('settings.delete') }}
                   </button>
                 </div>
               </div>
@@ -321,8 +324,8 @@ const formatDate = (dateString: string) => {
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No connections</h3>
-            <p class="mt-1 text-sm text-gray-500">Get started by adding a database connection.</p>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">{{ t('settings.noConnections') }}</h3>
+            <p class="mt-1 text-sm text-gray-500">{{ t('settings.getStartedConnection') }}</p>
           </div>
 
           <div v-if="connectionsLoading" class="px-6 py-8 text-center">
@@ -330,7 +333,7 @@ const formatDate = (dateString: string) => {
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            <p class="mt-2 text-sm text-gray-500">Loading connections...</p>
+            <p class="mt-2 text-sm text-gray-500">{{ t('settings.loadingConnections') }}</p>
           </div>
         </div>
 
@@ -339,9 +342,9 @@ const formatDate = (dateString: string) => {
           <div class="px-6 py-5 border-b border-gray-200">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-medium text-gray-900">API Keys</h2>
+                <h2 class="text-lg font-medium text-gray-900">{{ t('settings.apiKeys') }}</h2>
                 <p class="mt-1 text-sm text-gray-500">
-                  Manage API keys for programmatic access
+                  {{ t('settings.manageApiKeys') }}
                 </p>
               </div>
               <button
@@ -351,7 +354,7 @@ const formatDate = (dateString: string) => {
                 <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                Generate API Key
+                {{ t('settings.generateApiKey') }}
               </button>
             </div>
           </div>
@@ -363,10 +366,10 @@ const formatDate = (dateString: string) => {
                   <h3 class="text-sm font-medium text-gray-900">{{ key.name }}</h3>
                   <div class="mt-1 flex items-center space-x-4 text-sm text-gray-500">
                     <span class="font-mono">{{ key.key ? key.key.substring(0, 8) : 'dm_' }}••••••••</span>
-                    <span>Created {{ formatDate(key.created_at) }}</span>
-                    <span>Last used: {{ key.last_used_at ? formatDate(key.last_used_at) : 'Never' }}</span>
+                    <span>{{ t('settings.created') }} {{ formatDate(key.created_at) }}</span>
+                    <span>{{ t('settings.lastUsed') }}: {{ key.last_used_at ? formatDate(key.last_used_at) : t('settings.never') }}</span>
                     <span :class="key.is_active ? 'text-green-600' : 'text-red-600'">
-                      {{ key.is_active ? 'Active' : 'Inactive' }}
+                      {{ key.is_active ? t('settings.active') : t('settings.inactive') }}
                     </span>
                   </div>
                 </div>
@@ -375,13 +378,13 @@ const formatDate = (dateString: string) => {
                     @click="toggleApiKey(key)"
                     class="text-sm text-indigo-600 hover:text-indigo-900"
                   >
-                    {{ key.is_active ? 'Deactivate' : 'Activate' }}
+                    {{ key.is_active ? t('settings.deactivate') : t('settings.activate') }}
                   </button>
                   <button
                     @click="deleteApiKey(key.id)"
                     class="text-sm text-red-600 hover:text-red-900"
                   >
-                    Revoke
+                    {{ t('settings.revoke') }}
                   </button>
                 </div>
               </div>
@@ -392,8 +395,8 @@ const formatDate = (dateString: string) => {
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No API keys</h3>
-            <p class="mt-1 text-sm text-gray-500">Generate an API key for programmatic access.</p>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">{{ t('settings.noApiKeys') }}</h3>
+            <p class="mt-1 text-sm text-gray-500">{{ t('settings.generateApiKeyAccess') }}</p>
           </div>
 
           <div v-if="apiKeysLoading" class="px-6 py-8 text-center">
@@ -401,24 +404,24 @@ const formatDate = (dateString: string) => {
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            <p class="mt-2 text-sm text-gray-500">Loading API keys...</p>
+            <p class="mt-2 text-sm text-gray-500">{{ t('settings.loadingApiKeys') }}</p>
           </div>
         </div>
 
         <!-- Notifications -->
         <div class="bg-white shadow rounded-lg">
           <div class="px-6 py-5 border-b border-gray-200">
-            <h2 class="text-lg font-medium text-gray-900">Notifications</h2>
+            <h2 class="text-lg font-medium text-gray-900">{{ t('settings.notifications') }}</h2>
             <p class="mt-1 text-sm text-gray-500">
-              Configure how you want to be notified
+              {{ t('settings.configureNotifications') }}
             </p>
           </div>
 
           <div class="px-6 py-5 space-y-6">
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-sm font-medium text-gray-900">Migration Complete</h3>
-                <p class="text-sm text-gray-500">Get notified when a migration completes successfully</p>
+                <h3 class="text-sm font-medium text-gray-900">{{ t('settings.migrationComplete') }}</h3>
+                <p class="text-sm text-gray-500">{{ t('settings.migrationCompleteDesc') }}</p>
               </div>
               <button
                 @click="notifications.migrationComplete = !notifications.migrationComplete"
@@ -438,8 +441,8 @@ const formatDate = (dateString: string) => {
 
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-sm font-medium text-gray-900">Migration Failed</h3>
-                <p class="text-sm text-gray-500">Get notified when a migration fails</p>
+                <h3 class="text-sm font-medium text-gray-900">{{ t('settings.migrationFailed') }}</h3>
+                <p class="text-sm text-gray-500">{{ t('settings.migrationFailedDesc') }}</p>
               </div>
               <button
                 @click="notifications.migrationFailed = !notifications.migrationFailed"
@@ -459,8 +462,8 @@ const formatDate = (dateString: string) => {
 
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-sm font-medium text-gray-900">Daily Report</h3>
-                <p class="text-sm text-gray-500">Receive a daily summary of migrations</p>
+                <h3 class="text-sm font-medium text-gray-900">{{ t('settings.dailyReport') }}</h3>
+                <p class="text-sm text-gray-500">{{ t('settings.dailyReportDesc') }}</p>
               </div>
               <button
                 @click="notifications.dailyReport = !notifications.dailyReport"
@@ -480,8 +483,8 @@ const formatDate = (dateString: string) => {
 
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-sm font-medium text-gray-900">Weekly Report</h3>
-                <p class="text-sm text-gray-500">Receive a weekly summary of migrations</p>
+                <h3 class="text-sm font-medium text-gray-900">{{ t('settings.weeklyReport') }}</h3>
+                <p class="text-sm text-gray-500">{{ t('settings.weeklyReportDesc') }}</p>
               </div>
               <button
                 @click="notifications.weeklyReport = !notifications.weeklyReport"
@@ -510,7 +513,7 @@ const formatDate = (dateString: string) => {
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
               </svg>
-              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+              {{ isSaving ? t('settings.saving') : t('settings.saveChanges') }}
             </button>
           </div>
         </div>
@@ -518,30 +521,30 @@ const formatDate = (dateString: string) => {
         <!-- Danger Zone -->
         <div class="bg-white shadow rounded-lg border-2 border-red-200">
           <div class="px-6 py-5 border-b border-gray-200">
-            <h2 class="text-lg font-medium text-red-600">Danger Zone</h2>
+            <h2 class="text-lg font-medium text-red-600">{{ t('settings.dangerZone') }}</h2>
             <p class="mt-1 text-sm text-gray-500">
-              Irreversible and destructive actions
+              {{ t('settings.dangerZoneDesc') }}
             </p>
           </div>
 
           <div class="px-6 py-5 space-y-4">
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-sm font-medium text-gray-900">Delete All Migrations</h3>
-                <p class="text-sm text-gray-500">Permanently delete all migration history and data</p>
+                <h3 class="text-sm font-medium text-gray-900">{{ t('settings.deleteAllMigrations') }}</h3>
+                <p class="text-sm text-gray-500">{{ t('settings.deleteAllMigrationsDesc') }}</p>
               </div>
               <button class="px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
-                Delete All
+                {{ t('settings.deleteAll') }}
               </button>
             </div>
 
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-sm font-medium text-gray-900">Delete Account</h3>
-                <p class="text-sm text-gray-500">Permanently delete your account and all data</p>
+                <h3 class="text-sm font-medium text-gray-900">{{ t('settings.deleteAccount') }}</h3>
+                <p class="text-sm text-gray-500">{{ t('settings.deleteAccountDesc') }}</p>
               </div>
               <button class="px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
-                Delete Account
+                {{ t('settings.deleteAccount') }}
               </button>
             </div>
           </div>
@@ -564,16 +567,16 @@ const formatDate = (dateString: string) => {
       <div class="flex items-center justify-center min-h-screen px-4">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showAddConnectionModal = false"></div>
         <div class="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Add Database Connection</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('settings.addDbConnection') }}</h3>
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Connection Name</label>
+              <label class="block text-sm font-medium text-gray-700">{{ t('settings.connectionName') }}</label>
               <input v-model="newConnection.name" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="My Database">
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Database Type</label>
+              <label class="block text-sm font-medium text-gray-700">{{ t('settings.databaseType') }}</label>
               <select v-model="newConnection.db_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2">
                 <option value="mssql">Microsoft SQL Server</option>
                 <option value="postgres">PostgreSQL</option>
@@ -583,32 +586,32 @@ const formatDate = (dateString: string) => {
 
             <div class="grid grid-cols-3 gap-4">
               <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Host</label>
+                <label class="block text-sm font-medium text-gray-700">{{ t('settings.host') }}</label>
                 <input v-model="newConnection.host" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="localhost">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Port</label>
+                <label class="block text-sm font-medium text-gray-700">{{ t('settings.port') }}</label>
                 <input v-model.number="newConnection.port" type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="1433">
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Database Name</label>
+              <label class="block text-sm font-medium text-gray-700">{{ t('settings.databaseName') }}</label>
               <input v-model="newConnection.database_name" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="my_database">
             </div>
 
             <div class="flex items-center">
               <input v-model="newConnection.use_windows_auth" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-              <label class="ml-2 block text-sm text-gray-900">Use Windows Authentication</label>
+              <label class="ml-2 block text-sm text-gray-900">{{ t('settings.useWindowsAuth') }}</label>
             </div>
 
             <div v-if="!newConnection.use_windows_auth" class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Username</label>
+                <label class="block text-sm font-medium text-gray-700">{{ t('settings.username') }}</label>
                 <input v-model="newConnection.username" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="sa">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <label class="block text-sm font-medium text-gray-700">{{ t('auth.password') }}</label>
                 <input v-model="newConnection.password" type="password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2">
               </div>
             </div>
@@ -616,10 +619,10 @@ const formatDate = (dateString: string) => {
 
           <div class="mt-6 flex justify-end space-x-3">
             <button @click="showAddConnectionModal = false" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Cancel
+              {{ t('settings.cancel') }}
             </button>
             <button @click="addConnection" :disabled="isLoading" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
-              {{ isLoading ? 'Adding...' : 'Add Connection' }}
+              {{ isLoading ? t('settings.adding') : t('settings.addConnection') }}
             </button>
           </div>
         </div>
@@ -633,45 +636,45 @@ const formatDate = (dateString: string) => {
         <div class="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
           <!-- Show key result if just created -->
           <template v-if="newApiKeyResult">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">API Key Created</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('settings.apiKeyCreated') }}</h3>
             <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
               <p class="text-sm text-yellow-800 mb-2">
-                Copy this key now. You won't be able to see it again!
+                {{ t('settings.copyKeyNow') }}
               </p>
               <div class="flex items-center space-x-2">
                 <code class="flex-1 bg-gray-100 px-3 py-2 rounded text-sm font-mono break-all">{{ newApiKeyResult.key }}</code>
                 <button @click="copyToClipboard(newApiKeyResult.key)" class="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
-                  Copy
+                  {{ t('settings.copy') }}
                 </button>
               </div>
             </div>
             <button @click="closeApiKeyResult" class="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-              Done
+              {{ t('settings.done') }}
             </button>
           </template>
 
           <!-- Show form if not yet created -->
           <template v-else>
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Generate API Key</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('settings.generateApiKey') }}</h3>
 
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Key Name</label>
+                <label class="block text-sm font-medium text-gray-700">{{ t('settings.keyName') }}</label>
                 <input v-model="newApiKeyName" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="Production API Key">
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700">Rate Limit (requests/hour)</label>
+                <label class="block text-sm font-medium text-gray-700">{{ t('settings.rateLimit') }}</label>
                 <input v-model.number="newApiKeyRateLimit" type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" min="100" max="10000">
               </div>
             </div>
 
             <div class="mt-6 flex justify-end space-x-3">
               <button @click="showAddApiKeyModal = false" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Cancel
+                {{ t('settings.cancel') }}
               </button>
               <button @click="createApiKey" :disabled="isLoading" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
-                {{ isLoading ? 'Generating...' : 'Generate Key' }}
+                {{ isLoading ? t('settings.generating') : t('settings.generateKey') }}
               </button>
             </div>
           </template>

@@ -187,6 +187,7 @@ DataMigrate AI - MSSQL to dbt Migration Platform
 }
 
 func (s *Service) getWelcomeHTML(firstName, organizationName, loginURL string) string {
+	dashboardURL := strings.Replace(loginURL, "/login", "/dashboard", 1)
 	tmpl := `
 <!DOCTYPE html>
 <html>
@@ -195,28 +196,56 @@ func (s *Service) getWelcomeHTML(firstName, organizationName, loginURL string) s
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to DataMigrate AI</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to DataMigrate AI!</h1>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px;">Welcome to DataMigrate AI!</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Your AI-Powered Migration Journey Starts Now</p>
     </div>
-    <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+    <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
         <h2 style="color: #333; margin-top: 0;">Hi {{.FirstName}}! 🎉</h2>
-        <p>Your account has been created for <strong>{{.OrganizationName}}</strong>.</p>
-        <p>DataMigrate AI helps you migrate your MSSQL databases to modern dbt projects with AI-powered transformation.</p>
-        <h3 style="color: #667eea;">What you can do:</h3>
-        <ul>
-            <li>Connect to your MSSQL databases</li>
-            <li>Select tables and views to migrate</li>
-            <li>Generate dbt models automatically</li>
-            <li>Deploy to Snowflake, Databricks, or Fabric</li>
-        </ul>
-        <div style="text-align: center; margin: 30px 0;">
-            <a href="{{.LoginURL}}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Get Started</a>
+        <p>Thank you for joining DataMigrate AI! Your account for <strong>{{.OrganizationName}}</strong> is ready.</p>
+
+        <div style="background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%); padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #667eea; margin-top: 0;">🚀 Why Teams Choose Us</h3>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li><strong>90% Faster Migrations</strong> - What takes weeks now takes hours</li>
+                <li><strong>AI-Powered Accuracy</strong> - 8 specialized agents handle complex transformations</li>
+                <li><strong>Enterprise Security</strong> - Your data never leaves your infrastructure</li>
+                <li><strong>Multi-Warehouse Support</strong> - Deploy to Snowflake, Databricks, Fabric & more</li>
+            </ul>
         </div>
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px; text-align: center;">
+
+        <h3 style="color: #667eea;">📋 Get Started in 3 Steps:</h3>
+        <div style="margin: 15px 0;">
+            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px;">1</span>
+                <span><strong>Connect</strong> - Add your MSSQL database connection</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px;">2</span>
+                <span><strong>Select</strong> - Choose tables and views to migrate</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px;">3</span>
+                <span><strong>Deploy</strong> - One-click deployment to your data warehouse</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{.DashboardURL}}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">Start Your First Migration</a>
+        </div>
+
+        <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; color: #856404;"><strong>💡 Pro Tip:</strong> Start with a small table to see the magic! Our AI will analyze your schema, detect relationships, and generate production-ready dbt models.</p>
+        </div>
+    </div>
+    <div style="background: #f8f9fa; padding: 20px 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+        <p style="color: #666; font-size: 13px; margin: 0 0 10px 0; text-align: center;">
+            Need help? Our AI support assistant is available 24/7 in the app.
+        </p>
+        <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
             DataMigrate AI - MSSQL to dbt Migration Platform<br>
-            This is an automated message, please do not reply.
+            © 2025 OKO Investments. All rights reserved.
         </p>
     </div>
 </body>
@@ -226,30 +255,40 @@ func (s *Service) getWelcomeHTML(firstName, organizationName, loginURL string) s
 		"FirstName":        firstName,
 		"OrganizationName": organizationName,
 		"LoginURL":         loginURL,
+		"DashboardURL":     dashboardURL,
 	}
 	return executeTemplate(tmpl, data)
 }
 
 func (s *Service) getWelcomeText(firstName, organizationName, loginURL string) string {
+	dashboardURL := strings.Replace(loginURL, "/login", "/dashboard", 1)
 	return fmt.Sprintf(`Hi %s!
 
-Welcome to DataMigrate AI!
+Welcome to DataMigrate AI! 🎉
 
-Your account has been created for %s.
+Thank you for joining us! Your account for %s is ready.
 
-DataMigrate AI helps you migrate your MSSQL databases to modern dbt projects with AI-powered transformation.
+WHY TEAMS CHOOSE US:
+• 90%% Faster Migrations - What takes weeks now takes hours
+• AI-Powered Accuracy - 8 specialized agents handle complex transformations
+• Enterprise Security - Your data never leaves your infrastructure
+• Multi-Warehouse Support - Deploy to Snowflake, Databricks, Fabric & more
 
-What you can do:
-- Connect to your MSSQL databases
-- Select tables and views to migrate
-- Generate dbt models automatically
-- Deploy to Snowflake, Databricks, or Fabric
+GET STARTED IN 3 STEPS:
+1. Connect - Add your MSSQL database connection
+2. Select - Choose tables and views to migrate
+3. Deploy - One-click deployment to your data warehouse
 
-Get started: %s
+Start your first migration: %s
+
+Pro Tip: Start with a small table to see the magic! Our AI will analyze your schema, detect relationships, and generate production-ready dbt models.
+
+Need help? Our AI support assistant is available 24/7 in the app.
 
 --
 DataMigrate AI - MSSQL to dbt Migration Platform
-`, firstName, organizationName, loginURL)
+© 2025 OKO Investments. All rights reserved.
+`, firstName, organizationName, dashboardURL)
 }
 
 func (s *Service) getInvitationHTML(inviterName, organizationName, inviteURL string) string {

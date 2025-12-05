@@ -39,16 +39,16 @@ const hasError = ref(false)
 const chatContainer = ref<HTMLElement | null>(null)
 const hasNewMessage = ref(true)
 
-// Fallback responses when API is unavailable
-const fallbackResponses = [
-  'I can help you with that! Could you provide more details about your migration requirements?',
-  'Great question! DataMigrate AI supports MSSQL to dbt migrations with automatic schema analysis.',
-  'To create a new migration, go to Migrations > New Migration and follow the wizard steps.',
-  'Our AI agents can automatically generate dbt models, tests, and documentation for your data.',
-  'If you\'re experiencing connection issues, please verify your SQL Server credentials and network settings.',
-  'You can use the DataPrep Agent to profile and clean your data before migration.',
-  'The ML Fine-Tuning agent helps optimize model performance for your specific data patterns.',
-  'Check the Documentation section for detailed guides on all features.'
+// Computed fallback responses that update with language changes
+const getFallbackResponses = () => [
+  t('chat.fallback.moreDetails'),
+  t('chat.fallback.mssqlSupport'),
+  t('chat.fallback.createMigration'),
+  t('chat.fallback.aiAgents'),
+  t('chat.fallback.connectionIssues'),
+  t('chat.fallback.dataPrep'),
+  t('chat.fallback.mlFineTuning'),
+  t('chat.fallback.documentation')
 ]
 
 const toggleChat = () => {
@@ -107,28 +107,37 @@ const sendMessage = async () => {
 const getFallbackResponse = (userMessage: string): string => {
   const lowerMessage = userMessage.toLowerCase()
 
-  if (lowerMessage.includes('migration') || lowerMessage.includes('migrate')) {
-    return 'To create a new migration, navigate to the Migrations page and click "New Migration". The wizard will guide you through connecting to your MSSQL database, selecting tables, and configuring your dbt project settings.'
+  // Detect keywords in multiple languages
+  const migrationKeywords = ['migration', 'migrate', 'migración', 'migrar', 'migrering', 'migrere']
+  const connectKeywords = ['connect', 'database', 'mssql', 'conexión', 'base de datos', 'forbindelse', 'datenbank']
+  const dbtKeywords = ['dbt', 'model', 'modelo', 'modell']
+  const agentKeywords = ['agent', 'ai', 'agente', 'ia']
+  const errorKeywords = ['error', 'fail', 'problem', 'issue', 'fallo', 'problema', 'fejl', 'fehler']
+  const helpKeywords = ['help', 'how', 'ayuda', 'cómo', 'hjælp', 'hvordan', 'hilfe', 'wie']
+
+  if (migrationKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.migrationHelp')
   }
-  if (lowerMessage.includes('connect') || lowerMessage.includes('database') || lowerMessage.includes('mssql')) {
-    return 'For database connections, you can use either SQL Server authentication or Windows Authentication. Go to Settings > Connections to add a new connection. Make sure your SQL Server allows remote connections and the firewall permits access on port 1433.'
+  if (connectKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.connectionHelp')
   }
-  if (lowerMessage.includes('dbt') || lowerMessage.includes('model')) {
-    return 'DataMigrate AI automatically generates dbt models from your MSSQL schema. It creates staging models, intermediate transformations, and can include tests and documentation. You can customize the target warehouse (Snowflake, BigQuery, Fabric, etc.) during migration setup.'
+  if (dbtKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.dbtHelp')
   }
-  if (lowerMessage.includes('agent') || lowerMessage.includes('ai')) {
-    return 'We have several AI agents available: DataPrep Agent for data profiling and cleaning, ML Fine-Tuning Agent for optimizing transformations, Data Quality Agent for validation, and more. Access them from the Dashboard or navigate to /agents.'
+  if (agentKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.agentHelp')
   }
-  if (lowerMessage.includes('error') || lowerMessage.includes('fail') || lowerMessage.includes('problem')) {
-    return 'I\'m sorry you\'re experiencing issues. Common solutions include: 1) Verify your database credentials, 2) Check network connectivity to SQL Server, 3) Ensure the user has read permissions on the database. For persistent issues, check the migration logs or contact support.'
+  if (errorKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.errorHelp')
   }
-  if (lowerMessage.includes('help') || lowerMessage.includes('how')) {
-    return 'I can help you with: creating migrations, configuring database connections, understanding dbt models, using AI agents, and troubleshooting issues. What would you like to know more about?'
+  if (helpKeywords.some(k => lowerMessage.includes(k))) {
+    return t('chat.fallback.generalHelp')
   }
 
-  // Random fallback for other queries
-  const randomIndex = Math.floor(Math.random() * fallbackResponses.length)
-  return fallbackResponses[randomIndex] ?? fallbackResponses[0] ?? 'How can I help you today?'
+  // Random fallback for unrecognized queries
+  const responses = getFallbackResponses()
+  const randomIndex = Math.floor(Math.random() * responses.length)
+  return responses[randomIndex] ?? t('chat.fallback.default')
 }
 
 const handleKeyPress = (event: KeyboardEvent) => {

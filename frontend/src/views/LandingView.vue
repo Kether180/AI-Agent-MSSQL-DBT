@@ -47,7 +47,7 @@
       <!-- Grid Pattern -->
       <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzAgMzBtLTEgMGExIDEgMCAxIDAgMiAwYTEgMSAwIDEgMCAtMiAwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiLz48L2c+PC9zdmc+')] opacity-40"></div>
 
-      <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+      <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center overflow-hidden">
         <!-- Animated Logo -->
         <div class="mb-8 flex justify-center">
           <div class="relative">
@@ -66,18 +66,18 @@
           <span class="text-slate-300 text-sm">{{ $t('hero.badge') }}</span>
         </div>
 
-        <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight break-words hyphens-auto">
           <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             {{ $t('hero.title1') }}
           </span>
           <span class="text-white"> {{ $t('hero.title2') }}</span><br>
           <span class="text-white">{{ $t('hero.title3') }} </span>
-          <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent break-all sm:break-normal">
             {{ $t('hero.title4') }}
           </span>
         </h1>
 
-        <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed">
+        <p class="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed px-2 sm:px-0">
           {{ $t('hero.subtitle') }}
         </p>
 

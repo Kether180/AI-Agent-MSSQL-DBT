@@ -277,7 +277,24 @@
     "clearChat": "Clear chat",
     "requestCallback": "Request Callback",
     "emailUs": "Email Us",
-    "offlineMode": "Using offline mode - responses may be limited"
+    "offlineMode": "Using offline mode - responses may be limited",
+    "fallback": {
+      "default": "I'm not sure I understand. Could you please rephrase your question? I can help you with migrations, database connections, dbt models, and AI agents.",
+      "moreDetails": "I can help you with that! Could you provide more details about your migration requirements?",
+      "mssqlSupport": "Great question! DataMigrate AI supports MSSQL to dbt migrations with automatic schema analysis.",
+      "createMigration": "To create a new migration, go to Migrations > New Migration and follow the wizard steps.",
+      "aiAgents": "Our AI agents can automatically generate dbt models, tests, and documentation for your data.",
+      "connectionIssues": "If you're experiencing connection issues, please verify your SQL Server credentials and network settings.",
+      "dataPrep": "You can use the DataPrep Agent to profile and clean your data before migration.",
+      "mlFineTuning": "The ML Fine-Tuning agent helps optimize model performance for your specific data patterns.",
+      "documentation": "Check the Documentation section for detailed guides on all features.",
+      "migrationHelp": "To create a new migration, navigate to the Migrations page and click 'New Migration'. The wizard will guide you through connecting to your MSSQL database, selecting tables, and configuring your dbt project settings.",
+      "connectionHelp": "For database connections, you can use either SQL Server authentication or Windows Authentication. Go to Settings > Connections to add a new connection. Make sure your SQL Server allows remote connections and the firewall permits access on port 1433.",
+      "dbtHelp": "DataMigrate AI automatically generates dbt models from your MSSQL schema. It creates staging models, intermediate transformations, and can include tests and documentation. You can customize the target warehouse (Snowflake, BigQuery, Fabric, etc.) during migration setup.",
+      "agentHelp": "We have several AI agents available: DataPrep Agent for data profiling and cleaning, ML Fine-Tuning Agent for optimizing transformations, Data Quality Agent for validation, and more. Access them from the Dashboard.",
+      "errorHelp": "I'm sorry you're experiencing issues. Common solutions include: 1) Verify your database credentials, 2) Check network connectivity to SQL Server, 3) Ensure the user has read permissions on the database. For persistent issues, check the migration logs or contact support.",
+      "generalHelp": "I can help you with: creating migrations, configuring database connections, understanding dbt models, using AI agents, and troubleshooting issues. What would you like to know more about?"
+    }
   },
   "auth": {
     "signIn": "Sign in",
@@ -423,7 +440,9 @@
     "confirmDeleteConnection": "Are you sure you want to delete this connection?",
     "confirmRevokeApiKey": "Are you sure you want to revoke this API key? This action cannot be undone.",
     "fillAllFields": "Please fill in all required fields",
-    "enterApiKeyName": "Please enter a name for the API key"
+    "enterApiKeyName": "Please enter a name for the API key",
+    "saveChanges": "Save Changes",
+    "saving": "Saving..."
   },
   "docs": {
     "title": "Documentation",

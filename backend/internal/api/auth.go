@@ -140,6 +140,23 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
+	// Send welcome email (async, don't block registration)
+	go func() {
+		emailService := email.NewService()
+		if emailService.IsConfigured() {
+			err := emailService.SendWelcomeEmail(req.Email, req.FirstName, req.OrganizationName)
+			if err != nil {
+				log.Printf("Failed to send welcome email to %s: %v", req.Email, err)
+			} else {
+				log.Printf("Welcome email sent to %s", req.Email)
+			}
+		} else {
+			// Use mock service in development
+			mockService := email.NewMockService()
+			mockService.SendWelcomeEmail(req.Email, req.FirstName, req.OrganizationName)
+		}
+	}()
+
 	// Generate token
 	token, err := middleware.GenerateToken(userID, req.Email, false, h.cfg.JWTExpiration)
 	if err != nil {

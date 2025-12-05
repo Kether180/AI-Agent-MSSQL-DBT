@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/services/api'
+import api, { aiService } from '@/services/api'
 
 // Platform logos
 import snowflakeLogo from '@/assets/logos/snowflake.svg'
@@ -133,6 +133,32 @@ const isParsingExcel = ref(false)
 const excelParseError = ref('')
 const parsedExcelSheets = ref<{ fileName: string; sheets: { name: string; rowCount: number; columns: string[] }[] }[]>([])
 const fileInputRef = ref<HTMLInputElement | null>(null)
+
+// Data Quality Scan state
+const isScanning = ref(false)
+const qualityScanError = ref('')
+const qualityScanResult = ref<{
+  overall_score: number
+  tables_scanned: number
+  total_issues: number
+  critical_issues: number
+  error_issues: number
+  warning_issues: number
+  info_issues: number
+  issues_by_severity: {
+    critical: Array<{ table_name: string; column_name?: string; description: string; recommendation: string }>
+    error: Array<any>
+    warning: Array<any>
+    info: Array<any>
+  }
+  tables: Array<{
+    table_name: string
+    row_count: number
+    column_count: number
+    issues: Array<any>
+  }>
+} | null>(null)
+const showQualityScan = ref(false)
 
 // Computed
 const isStepValid = computed(() => {
@@ -424,6 +450,53 @@ const deselectAllTables = () => {
 
 const formatNumber = (num: number) => {
   return num.toLocaleString()
+}
+
+// Data Quality Scan function
+const runDataQualityScan = async () => {
+  if (formData.value.sourceType !== 'mssql') return
+
+  isScanning.value = true
+  qualityScanError.value = ''
+  qualityScanResult.value = null
+
+  try {
+    const result = await aiService.scanDataQuality({
+      host: formData.value.sourceHost,
+      port: parseInt(formData.value.sourcePort) || 1433,
+      database: formData.value.sourceDatabase,
+      username: formData.value.useWindowsAuth ? '' : formData.value.sourceUsername,
+      password: formData.value.useWindowsAuth ? '' : formData.value.sourcePassword,
+      use_windows_auth: formData.value.useWindowsAuth,
+      sample_size: 10000
+    })
+
+    qualityScanResult.value = result
+    showQualityScan.value = true
+  } catch (error: any) {
+    qualityScanError.value = error.message || 'Failed to scan data quality'
+    console.error('Data quality scan failed:', error)
+  } finally {
+    isScanning.value = false
+  }
+}
+
+const getQualityScoreColor = (score: number) => {
+  if (score >= 80) return 'text-emerald-600'
+  if (score >= 60) return 'text-amber-600'
+  return 'text-red-600'
+}
+
+const getQualityScoreBg = (score: number) => {
+  if (score >= 80) return 'bg-emerald-100 border-emerald-300'
+  if (score >= 60) return 'bg-amber-100 border-amber-300'
+  return 'bg-red-100 border-red-300'
+}
+
+const getQualityScoreGradient = (score: number) => {
+  if (score >= 80) return 'from-emerald-500 to-green-500'
+  if (score >= 60) return 'from-amber-500 to-yellow-500'
+  return 'from-red-500 to-rose-500'
 }
 
 const handleSubmit = async () => {
@@ -841,6 +914,189 @@ const cancel = () => {
                     <span class="text-sm text-slate-500">
                       + {{ Math.max(0, availableTables.length - 10) + Math.max(0, availableViews.length - 5) }} more items. Select tables in the next step.
                     </span>
+                  </div>
+                </div>
+
+                <!-- Data Quality Scan Section -->
+                <div v-if="connectionStatus === 'success'" class="mt-6 border border-slate-200 rounded-xl overflow-hidden">
+                  <div class="bg-gradient-to-r from-violet-50 to-purple-50 px-4 py-3 border-b border-slate-200">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center">
+                        <svg class="h-5 w-5 text-violet-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                        <h4 class="font-semibold text-slate-800">Data Quality Agent</h4>
+                        <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700 rounded-full">Beta</span>
+                      </div>
+                      <button
+                        v-if="!qualityScanResult"
+                        @click="runDataQualityScan"
+                        :disabled="isScanning"
+                        class="inline-flex items-center px-3 py-1.5 border border-violet-300 shadow-sm text-sm font-medium rounded-lg text-violet-700 bg-white hover:bg-violet-50 disabled:opacity-50 transition-all duration-200"
+                      >
+                        <svg v-if="isScanning" class="animate-spin -ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        <svg v-else class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        {{ isScanning ? 'Scanning...' : 'Scan Data Quality' }}
+                      </button>
+                    </div>
+                    <p class="text-sm text-slate-600 mt-1">
+                      AI-powered data quality analysis to identify issues before migration
+                    </p>
+                  </div>
+
+                  <!-- Scanning indicator -->
+                  <div v-if="isScanning" class="p-6 bg-white">
+                    <div class="flex flex-col items-center justify-center py-4">
+                      <div class="relative">
+                        <div class="h-16 w-16 rounded-full border-4 border-violet-100"></div>
+                        <svg class="animate-spin h-16 w-16 text-violet-600 absolute top-0" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                      <p class="mt-4 text-slate-600 font-medium">Analyzing data quality...</p>
+                      <p class="text-sm text-slate-500">This may take a moment for large databases</p>
+                    </div>
+                  </div>
+
+                  <!-- Scan Error -->
+                  <div v-else-if="qualityScanError" class="p-4 bg-red-50">
+                    <div class="flex items-center text-red-700">
+                      <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span>{{ qualityScanError }}</span>
+                    </div>
+                    <button
+                      @click="runDataQualityScan"
+                      class="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+                    >
+                      Try again
+                    </button>
+                  </div>
+
+                  <!-- Scan Results -->
+                  <div v-else-if="qualityScanResult" class="bg-white">
+                    <!-- Overall Score -->
+                    <div class="p-4 border-b border-slate-100">
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <p class="text-sm text-slate-500 mb-1">Overall Data Quality Score</p>
+                          <div class="flex items-center">
+                            <span :class="['text-3xl font-bold', getQualityScoreColor(qualityScanResult.overall_score)]">
+                              {{ qualityScanResult.overall_score.toFixed(0) }}
+                            </span>
+                            <span class="text-lg text-slate-400 ml-1">/100</span>
+                          </div>
+                        </div>
+                        <div :class="['w-20 h-20 rounded-full flex items-center justify-center border-4', getQualityScoreBg(qualityScanResult.overall_score)]">
+                          <svg v-if="qualityScanResult.overall_score >= 80" class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          <svg v-else-if="qualityScanResult.overall_score >= 60" class="w-10 h-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                          </svg>
+                          <svg v-else class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                        </div>
+                      </div>
+
+                      <!-- Progress Bar -->
+                      <div class="mt-3">
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                          <div
+                            :class="['h-2.5 rounded-full bg-gradient-to-r transition-all duration-500', getQualityScoreGradient(qualityScanResult.overall_score)]"
+                            :style="{ width: `${qualityScanResult.overall_score}%` }"
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Issue Summary -->
+                    <div class="p-4 grid grid-cols-4 gap-4 border-b border-slate-100">
+                      <div class="text-center p-3 rounded-lg bg-red-50">
+                        <p class="text-2xl font-bold text-red-600">{{ qualityScanResult.critical_issues }}</p>
+                        <p class="text-xs text-red-700">Critical</p>
+                      </div>
+                      <div class="text-center p-3 rounded-lg bg-orange-50">
+                        <p class="text-2xl font-bold text-orange-600">{{ qualityScanResult.error_issues }}</p>
+                        <p class="text-xs text-orange-700">Errors</p>
+                      </div>
+                      <div class="text-center p-3 rounded-lg bg-amber-50">
+                        <p class="text-2xl font-bold text-amber-600">{{ qualityScanResult.warning_issues }}</p>
+                        <p class="text-xs text-amber-700">Warnings</p>
+                      </div>
+                      <div class="text-center p-3 rounded-lg bg-blue-50">
+                        <p class="text-2xl font-bold text-blue-600">{{ qualityScanResult.info_issues }}</p>
+                        <p class="text-xs text-blue-700">Info</p>
+                      </div>
+                    </div>
+
+                    <!-- Key Issues List -->
+                    <div v-if="qualityScanResult.issues_by_severity.critical.length > 0 || qualityScanResult.issues_by_severity.error.length > 0" class="p-4">
+                      <h5 class="text-sm font-medium text-slate-700 mb-3">Issues to Review</h5>
+                      <div class="space-y-2 max-h-40 overflow-y-auto">
+                        <div
+                          v-for="(issue, idx) in [...qualityScanResult.issues_by_severity.critical, ...qualityScanResult.issues_by_severity.error].slice(0, 5)"
+                          :key="idx"
+                          class="flex items-start p-2 rounded-lg bg-slate-50 text-sm"
+                        >
+                          <svg class="h-4 w-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                          </svg>
+                          <div>
+                            <span class="font-medium text-slate-700">{{ issue.table_name }}</span>
+                            <span v-if="issue.column_name" class="text-slate-400">.</span>
+                            <span v-if="issue.column_name" class="text-slate-600">{{ issue.column_name }}</span>
+                            <span class="text-slate-500 ml-1">- {{ issue.description }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p v-if="qualityScanResult.total_issues > 5" class="text-xs text-slate-500 mt-2">
+                        + {{ qualityScanResult.total_issues - 5 }} more issues. Full report available after migration.
+                      </p>
+                    </div>
+
+                    <!-- Good to Go Message -->
+                    <div v-else class="p-4 text-center">
+                      <div class="inline-flex items-center px-4 py-2 rounded-full bg-emerald-100 text-emerald-700">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Data quality looks good! Ready to proceed.
+                      </div>
+                    </div>
+
+                    <!-- Scan Again Button -->
+                    <div class="px-4 pb-4 flex justify-end">
+                      <button
+                        @click="runDataQualityScan"
+                        :disabled="isScanning"
+                        class="text-sm text-violet-600 hover:text-violet-800 flex items-center"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Scan Again
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Initial State - Not scanned yet -->
+                  <div v-else class="p-6 bg-white text-center">
+                    <div class="w-12 h-12 mx-auto bg-violet-100 rounded-full flex items-center justify-center mb-3">
+                      <svg class="h-6 w-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                      </svg>
+                    </div>
+                    <p class="text-slate-600">Click "Scan Data Quality" to analyze your source data</p>
+                    <p class="text-sm text-slate-500 mt-1">Identifies nulls, duplicates, integrity issues, and more</p>
                   </div>
                 </div>
               </div>

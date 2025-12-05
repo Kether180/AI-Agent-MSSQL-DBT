@@ -621,7 +621,7 @@ onUnmounted(() => {
                   </div>
                   <h3 class="text-sm font-semibold text-slate-800">{{ $t('dashboard.aiAgents') }}</h3>
                 </div>
-                <span class="px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-cyan-500 to-teal-500 text-white rounded-full">8</span>
+                <span class="px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-cyan-500 to-teal-500 text-white rounded-full">11</span>
               </div>
             </div>
             <div class="p-4 grid grid-cols-2 gap-3">

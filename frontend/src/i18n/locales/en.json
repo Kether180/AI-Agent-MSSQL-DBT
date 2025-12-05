@@ -9,7 +9,7 @@
     "getStarted": "Get Started"
   },
   "hero": {
-    "badge": "8 Specialized AI Agents Working for You",
+    "badge": "11 Specialized AI Agents Working for You",
     "title1": "AI Agents",
     "title2": "That Migrate",
     "title3": "Your Data",
@@ -62,7 +62,7 @@
   },
   "agents": {
     "title": "Meet Our AI Agents",
-    "subtitle": "8 specialized agents working together to automate your entire data migration pipeline",
+    "subtitle": "11 specialized agents working together to automate your entire data migration pipeline",
     "autonomous": "Autonomous AI Agents",
     "items": {
       "extractor": {

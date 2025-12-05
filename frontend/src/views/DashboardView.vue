@@ -662,9 +662,9 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="px-4 pb-4">
-              <button class="w-full text-center text-xs font-medium text-cyan-600 hover:text-cyan-700 py-2 hover:bg-cyan-50 rounded-lg transition-colors">
+              <router-link to="/agents" class="block w-full text-center text-xs font-medium text-cyan-600 hover:text-cyan-700 py-2 hover:bg-cyan-50 rounded-lg transition-colors">
                 {{ $t('dashboard.viewAllAgents') }} →
-              </button>
+              </router-link>
             </div>
           </div>
         </div>

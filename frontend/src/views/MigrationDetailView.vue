@@ -376,6 +376,97 @@ function getStatusBg(status: string): string {
   }
 }
 
+// User-friendly explanations for validation check types
+interface CheckExplanation {
+  title: string
+  explanation: string
+  howToFix: string
+  affectsData: boolean
+}
+
+function getCheckExplanation(checkName: string, checkType: string): CheckExplanation {
+  const explanations: Record<string, CheckExplanation> = {
+    'documentation_completeness': {
+      title: 'Add Documentation (Optional)',
+      explanation: 'Your dbt project would benefit from adding descriptions to columns in the YAML files. Think of it like adding comments to code - helpful for your team but not required to run.',
+      howToFix: 'Later, you can add column descriptions in the schema.yml file. This is a best practice for team collaboration but your migration will work perfectly without it.',
+      affectsData: false
+    },
+    'sql_linting': {
+      title: 'Code Style Suggestion (Optional)',
+      explanation: 'The SQL code uses "SELECT *" which works fine, but listing specific columns (like "SELECT id, name, email") is considered a best practice for tracking changes over time.',
+      howToFix: 'If you want, you can later edit the .sql file to list columns explicitly. This is purely cosmetic - your data migration will work exactly the same either way.',
+      affectsData: false
+    },
+    'column_sql_verification': {
+      title: 'Column Check',
+      explanation: 'We verified that all your original database columns are included in the generated code.',
+      howToFix: 'If any columns are missing, they can be added to the SQL file.',
+      affectsData: false
+    },
+    'data_type_mapping': {
+      title: 'Data Types Converted',
+      explanation: 'We automatically converted your SQL Server data types to work with your target data warehouse (e.g., converting VARCHAR to STRING for BigQuery).',
+      howToFix: 'If you see any unknown types, you may want to review how they were converted.',
+      affectsData: false
+    },
+    'model_exists': {
+      title: 'Model Created',
+      explanation: 'A dbt model file was successfully created for this table.',
+      howToFix: 'If this failed, try re-running the migration.',
+      affectsData: false
+    },
+    'columns_present': {
+      title: 'All Columns Included',
+      explanation: 'All columns from your source table are present in the generated model.',
+      howToFix: 'If columns are missing, they can be added manually.',
+      affectsData: false
+    },
+    'source_reference': {
+      title: 'Source Connection',
+      explanation: 'The model correctly references your source database.',
+      howToFix: 'This should be automatic. Contact support if there are issues.',
+      affectsData: false
+    },
+    'primary_key': {
+      title: 'Primary Key Detected',
+      explanation: 'We found and preserved your primary key columns. Tests will be auto-generated to ensure data integrity.',
+      howToFix: 'No action needed - this is good news!',
+      affectsData: false
+    },
+    'not_null': {
+      title: 'Required Fields Detected',
+      explanation: 'We identified which columns cannot be empty (NOT NULL) and will generate tests accordingly.',
+      howToFix: 'No action needed - tests will be created automatically.',
+      affectsData: false
+    },
+    'foreign_keys': {
+      title: 'Relationships Detected',
+      explanation: 'We found relationships between your tables (foreign keys) and will preserve them.',
+      howToFix: 'No action needed - relationship tests will be created automatically.',
+      affectsData: false
+    }
+  }
+
+  return explanations[checkName] || {
+    title: checkName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    explanation: 'This is a quality check for your generated code.',
+    howToFix: 'Review the details if needed. This is typically optional.',
+    affectsData: false
+  }
+}
+
+const expandedChecks = ref<Set<string>>(new Set())
+
+function toggleCheckExpand(tableCheck: string) {
+  if (expandedChecks.value.has(tableCheck)) {
+    expandedChecks.value.delete(tableCheck)
+  } else {
+    expandedChecks.value.add(tableCheck)
+  }
+  expandedChecks.value = new Set(expandedChecks.value) // Trigger reactivity
+}
+
 async function startDeployment() {
   if (!deployConfig.value.warehouseType) return
 
@@ -1056,6 +1147,27 @@ onUnmounted(() => {
 
             <!-- Validation Results -->
             <div v-else-if="validationResult" class="p-6">
+              <!-- Info Banner for Warnings -->
+              <div v-if="validationResult.summary.warnings > 0 && validationResult.summary.failed === 0" class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 mt-0.5">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-blue-800 mb-1">Your migration is ready!</h4>
+                    <p class="text-sm text-blue-700">
+                      The warnings below are <strong>optional recommendations</strong> to improve code quality.
+                      They don't affect your data and you can safely proceed with deployment.
+                    </p>
+                    <p class="text-xs text-blue-600 mt-2">
+                      Click on any warning to learn more about what it means and how to address it (if you want to).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <!-- Summary Cards Row 1: Tables -->
               <div class="grid grid-cols-4 gap-4 mb-4">
                 <div class="bg-slate-50 rounded-xl p-4 text-center">
@@ -1067,7 +1179,7 @@ onUnmounted(() => {
                   <p class="text-2xl font-bold text-emerald-600">{{ validationResult.summary.passed }}</p>
                 </div>
                 <div class="bg-amber-50 rounded-xl p-4 text-center">
-                  <p class="text-sm text-amber-600 mb-1">Warnings</p>
+                  <p class="text-sm text-amber-600 mb-1">Suggestions</p>
                   <p class="text-2xl font-bold text-amber-600">{{ validationResult.summary.warnings }}</p>
                 </div>
                 <div class="bg-red-50 rounded-xl p-4 text-center">
@@ -1145,7 +1257,7 @@ onUnmounted(() => {
                     </div>
                     <div class="flex items-center gap-2">
                       <span :class="['text-xs font-medium px-2 py-1 rounded-full', table.overall_status === 'passed' ? 'bg-emerald-100 text-emerald-700' : table.overall_status === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700']">
-                        {{ table.overall_status }}
+                        {{ table.overall_status === 'warning' ? 'has suggestions' : table.overall_status }}
                       </span>
                       <svg
                         :class="['w-5 h-5 text-slate-400 transition-transform', expandedTables.has(table.table_name) ? 'rotate-180' : '']"
@@ -1157,19 +1269,68 @@ onUnmounted(() => {
                   </div>
 
                   <!-- Expanded Checks -->
-                  <div v-if="expandedTables.has(table.table_name)" class="border-t border-slate-200 bg-white/70 px-4 py-3 space-y-2">
+                  <div v-if="expandedTables.has(table.table_name)" class="border-t border-slate-200 bg-white/70 px-4 py-3 space-y-3">
                     <div
                       v-for="(check, idx) in table.checks"
                       :key="idx"
-                      class="flex items-start gap-2 text-sm"
+                      class="rounded-lg border border-slate-200 bg-white overflow-hidden"
                     >
-                      <svg :class="['w-4 h-4 mt-0.5 flex-shrink-0', getStatusColor(check.status)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getStatusIcon(check.status)" />
-                      </svg>
-                      <div>
-                        <span class="font-medium text-slate-700">{{ check.name }}</span>
-                        <span class="text-slate-500 ml-2">({{ check.check_type }})</span>
-                        <p class="text-slate-600 text-xs mt-0.5">{{ check.details }}</p>
+                      <!-- Check Header (Clickable) -->
+                      <div
+                        class="flex items-start gap-2 text-sm p-3 cursor-pointer hover:bg-slate-50 transition-colors"
+                        @click="toggleCheckExpand(`${table.table_name}-${idx}`)"
+                      >
+                        <svg :class="['w-4 h-4 mt-0.5 flex-shrink-0', getStatusColor(check.status)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getStatusIcon(check.status)" />
+                        </svg>
+                        <div class="flex-1">
+                          <div class="flex items-center gap-2">
+                            <span class="font-medium text-slate-700">{{ getCheckExplanation(check.name, check.check_type).title }}</span>
+                            <!-- Help icon -->
+                            <svg class="w-4 h-4 text-blue-400 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <p class="text-slate-500 text-xs mt-0.5">{{ check.details }}</p>
+                        </div>
+                        <!-- Expand/Collapse Arrow -->
+                        <svg
+                          :class="['w-4 h-4 text-slate-400 transition-transform', expandedChecks.has(`${table.table_name}-${idx}`) ? 'rotate-180' : '']"
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+
+                      <!-- Expanded Explanation -->
+                      <div
+                        v-if="expandedChecks.has(`${table.table_name}-${idx}`)"
+                        class="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-slate-200"
+                      >
+                        <div class="space-y-3">
+                          <!-- What is this? -->
+                          <div>
+                            <h5 class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">What is this?</h5>
+                            <p class="text-sm text-slate-600">{{ getCheckExplanation(check.name, check.check_type).explanation }}</p>
+                          </div>
+
+                          <!-- What can I do? (only for warnings/failures) -->
+                          <div v-if="check.status !== 'passed'">
+                            <h5 class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">What can I do? (Optional)</h5>
+                            <p class="text-sm text-slate-600">{{ getCheckExplanation(check.name, check.check_type).howToFix }}</p>
+                          </div>
+
+                          <!-- Does this affect my data? -->
+                          <div class="flex items-center gap-2 pt-2 border-t border-slate-200/50">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-xs text-slate-600">
+                              <strong>Does this affect my data?</strong>
+                              {{ getCheckExplanation(check.name, check.check_type).affectsData ? 'Yes, this may require data changes.' : 'No, this is about code quality only. Your source data remains untouched.' }}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

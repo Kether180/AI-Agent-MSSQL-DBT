@@ -129,6 +129,26 @@ func (s *Service) SendInvitationEmail(to, inviterName, organizationName, inviteT
 	return s.SendEmail(to, fmt.Sprintf("You've been invited to join %s on DataMigrate AI", organizationName), htmlBody, textBody)
 }
 
+// SendMigrationCompleteEmail sends a notification when a migration completes successfully
+func (s *Service) SendMigrationCompleteEmail(to, firstName, migrationName string, tableCount int, duration string) error {
+	dashboardURL := fmt.Sprintf("%s/migrations", s.config.FrontendURL)
+
+	htmlBody := s.getMigrationCompleteHTML(firstName, migrationName, tableCount, duration, dashboardURL)
+	textBody := s.getMigrationCompleteText(firstName, migrationName, tableCount, duration, dashboardURL)
+
+	return s.SendEmail(to, fmt.Sprintf("Migration Complete: %s", migrationName), htmlBody, textBody)
+}
+
+// SendMigrationFailedEmail sends a notification when a migration fails
+func (s *Service) SendMigrationFailedEmail(to, firstName, migrationName, errorMessage string) error {
+	dashboardURL := fmt.Sprintf("%s/migrations", s.config.FrontendURL)
+
+	htmlBody := s.getMigrationFailedHTML(firstName, migrationName, errorMessage, dashboardURL)
+	textBody := s.getMigrationFailedText(firstName, migrationName, errorMessage, dashboardURL)
+
+	return s.SendEmail(to, fmt.Sprintf("Migration Failed: %s", migrationName), htmlBody, textBody)
+}
+
 // Email templates
 
 func (s *Service) getPasswordResetHTML(firstName, resetURL string) string {
@@ -345,6 +365,178 @@ DataMigrate AI - MSSQL to dbt Migration Platform
 `, inviterName, organizationName, inviteURL)
 }
 
+func (s *Service) getMigrationCompleteHTML(firstName, migrationName string, tableCount int, duration, dashboardURL string) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Complete</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 28px;">DataMigrate AI</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Migration Successful!</p>
+    </div>
+    <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+        <h2 style="color: #333; margin-top: 0;">Great News, {{.FirstName}}!</h2>
+        <p>Your migration <strong>"{{.MigrationName}}"</strong> has completed successfully.</p>
+
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #166534; margin: 0 0 15px 0; font-size: 16px;">Migration Summary</h3>
+            <table style="width: 100%; font-size: 14px;">
+                <tr>
+                    <td style="padding: 8px 0; color: #666;">Tables Migrated:</td>
+                    <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #166534;">{{.TableCount}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; color: #666;">Duration:</td>
+                    <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #166534;">{{.Duration}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; color: #666;">Status:</td>
+                    <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #166534;">✓ Complete</td>
+                </tr>
+            </table>
+        </div>
+
+        <p>Your dbt models are ready for deployment. You can now:</p>
+        <ul style="color: #666; padding-left: 20px;">
+            <li>Review the generated dbt models</li>
+            <li>Download the project files</li>
+            <li>Deploy directly to your data warehouse</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{.DashboardURL}}" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">View Migration Details</a>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        <p style="color: #999; font-size: 12px; text-align: center;">
+            DataMigrate AI - MSSQL to dbt Migration Platform<br>
+            © 2025 OKO Investments. All rights reserved.
+        </p>
+    </div>
+</body>
+</html>
+`
+	data := map[string]string{
+		"FirstName":     firstName,
+		"MigrationName": migrationName,
+		"TableCount":    fmt.Sprintf("%d", tableCount),
+		"Duration":      duration,
+		"DashboardURL":  dashboardURL,
+	}
+	return executeTemplate(tmpl, data)
+}
+
+func (s *Service) getMigrationCompleteText(firstName, migrationName string, tableCount int, duration, dashboardURL string) string {
+	return fmt.Sprintf(`Migration Complete!
+
+Hi %s,
+
+Great news! Your migration "%s" has completed successfully.
+
+MIGRATION SUMMARY:
+• Tables Migrated: %d
+• Duration: %s
+• Status: Complete
+
+Your dbt models are ready for deployment. You can now:
+- Review the generated dbt models
+- Download the project files
+- Deploy directly to your data warehouse
+
+View migration details: %s
+
+--
+DataMigrate AI - MSSQL to dbt Migration Platform
+© 2025 OKO Investments. All rights reserved.
+`, firstName, migrationName, tableCount, duration, dashboardURL)
+}
+
+func (s *Service) getMigrationFailedHTML(firstName, migrationName, errorMessage, dashboardURL string) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Failed</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 28px;">DataMigrate AI</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Migration Issue</p>
+    </div>
+    <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+        <h2 style="color: #333; margin-top: 0;">Hi {{.FirstName}},</h2>
+        <p>Unfortunately, your migration <strong>"{{.MigrationName}}"</strong> encountered an issue.</p>
+
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #991b1b; margin: 0 0 10px 0; font-size: 16px;">Error Details</h3>
+            <p style="color: #7f1d1d; margin: 0; font-family: monospace; font-size: 13px; word-break: break-word;">{{.ErrorMessage}}</p>
+        </div>
+
+        <p>Here's what you can do:</p>
+        <ul style="color: #666; padding-left: 20px;">
+            <li>Check your database connection settings</li>
+            <li>Verify table permissions and access</li>
+            <li>Review the error message above</li>
+            <li>Try running the migration again</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{.DashboardURL}}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">View Migration Details</a>
+        </div>
+
+        <p style="color: #666; font-size: 14px;">Need help? Contact our support team or use the AI assistant in the app.</p>
+
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        <p style="color: #999; font-size: 12px; text-align: center;">
+            DataMigrate AI - MSSQL to dbt Migration Platform<br>
+            © 2025 OKO Investments. All rights reserved.
+        </p>
+    </div>
+</body>
+</html>
+`
+	data := map[string]string{
+		"FirstName":     firstName,
+		"MigrationName": migrationName,
+		"ErrorMessage":  errorMessage,
+		"DashboardURL":  dashboardURL,
+	}
+	return executeTemplate(tmpl, data)
+}
+
+func (s *Service) getMigrationFailedText(firstName, migrationName, errorMessage, dashboardURL string) string {
+	return fmt.Sprintf(`Migration Issue
+
+Hi %s,
+
+Unfortunately, your migration "%s" encountered an issue.
+
+ERROR DETAILS:
+%s
+
+Here's what you can do:
+- Check your database connection settings
+- Verify table permissions and access
+- Review the error message above
+- Try running the migration again
+
+View migration details: %s
+
+Need help? Contact our support team or use the AI assistant in the app.
+
+--
+DataMigrate AI - MSSQL to dbt Migration Platform
+© 2025 OKO Investments. All rights reserved.
+`, firstName, migrationName, errorMessage, dashboardURL)
+}
+
 func executeTemplate(tmplStr string, data map[string]string) string {
 	tmpl, err := template.New("email").Parse(tmplStr)
 	if err != nil {
@@ -409,6 +601,29 @@ func (s *MockService) SendInvitationEmail(to, inviterName, organizationName, inv
 	fmt.Printf("From: %s\n", inviterName)
 	fmt.Printf("Organization: %s\n", organizationName)
 	fmt.Printf("Invite URL: %s\n", inviteURL)
+	fmt.Printf("%s\n", strings.Repeat("=", 40))
+	return nil
+}
+
+func (s *MockService) SendMigrationCompleteEmail(to, firstName, migrationName string, tableCount int, duration string) error {
+	fmt.Printf("\n=== MOCK MIGRATION COMPLETE EMAIL ===\n")
+	fmt.Printf("To: %s\n", to)
+	fmt.Printf("Name: %s\n", firstName)
+	fmt.Printf("Migration: %s\n", migrationName)
+	fmt.Printf("Tables Migrated: %d\n", tableCount)
+	fmt.Printf("Duration: %s\n", duration)
+	fmt.Printf("Status: SUCCESS\n")
+	fmt.Printf("%s\n", strings.Repeat("=", 40))
+	return nil
+}
+
+func (s *MockService) SendMigrationFailedEmail(to, firstName, migrationName, errorMessage string) error {
+	fmt.Printf("\n=== MOCK MIGRATION FAILED EMAIL ===\n")
+	fmt.Printf("To: %s\n", to)
+	fmt.Printf("Name: %s\n", firstName)
+	fmt.Printf("Migration: %s\n", migrationName)
+	fmt.Printf("Error: %s\n", errorMessage)
+	fmt.Printf("Status: FAILED\n")
 	fmt.Printf("%s\n", strings.Repeat("=", 40))
 	return nil
 }

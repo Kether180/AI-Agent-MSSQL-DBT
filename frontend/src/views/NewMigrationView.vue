@@ -53,6 +53,40 @@ const formData = ref({
   generateTests: true,
   generateDocs: true,
 
+  // Target Warehouse Credentials
+  warehouseCredentials: {
+    // Snowflake
+    snowflakeAccount: '',
+    snowflakeWarehouse: '',
+    snowflakeDatabase: '',
+    snowflakeSchema: '',
+    snowflakeUser: '',
+    snowflakePassword: '',
+    snowflakeRole: '',
+    // Databricks
+    databricksHost: '',
+    databricksToken: '',
+    databricksHttpPath: '',
+    databricksCatalog: '',
+    // BigQuery
+    bigqueryProject: '',
+    bigqueryDataset: '',
+    bigqueryKeyfile: '',
+    // Redshift
+    redshiftHost: '',
+    redshiftPort: '5439',
+    redshiftDatabase: '',
+    redshiftUser: '',
+    redshiftPassword: '',
+    // Microsoft Fabric
+    fabricWorkspace: '',
+    fabricLakehouse: '',
+    fabricEndpoint: '',
+    fabricClientId: '',
+    fabricClientSecret: '',
+    fabricTenantId: ''
+  },
+
   // Step 4: Tables Selection
   selectedTables: [] as string[],
   includeViews: false,
@@ -84,6 +118,7 @@ const formData = ref({
 
 // Tables fetched from real database
 const availableTables = ref<{ name: string; rows: number; selected: boolean; schema?: string }[]>([])
+const availableViews = ref<{ name: string; schema?: string }[]>([])
 
 const isLoading = ref(false)
 const isConnecting = ref(false)
@@ -91,6 +126,7 @@ const isFetchingTables = ref(false)
 const connectionStatus = ref<'idle' | 'success' | 'error'>('idle')
 const connectionError = ref('')
 const savedConnectionId = ref<number | null>(null)
+const showTablePreview = ref(false)
 
 // Excel specific state
 const isParsingExcel = ref(false)
@@ -304,6 +340,7 @@ const fetchTables = async () => {
   if (!savedConnectionId.value) return
 
   isFetchingTables.value = true
+  showTablePreview.value = false
 
   try {
     // Call backend API to extract metadata from the MSSQL database
@@ -327,29 +364,42 @@ const fetchTables = async () => {
         selected: false
       }))
 
-      // If includeViews is enabled, also add views
-      if (formData.value.includeViews && metadata.views) {
-        const views = metadata.views.map((view: any) => ({
-          name: `[VIEW] ${view.name}`,
-          schema: view.schema || 'dbo',
-          rows: 0,
-          selected: false
-        }))
-        availableTables.value = [...availableTables.value, ...views]
+      // Store views separately
+      availableViews.value = (metadata.views || []).map((view: any) => ({
+        name: view.name,
+        schema: view.schema || 'dbo'
+      }))
+
+      // Show preview if we have tables
+      if (availableTables.value.length > 0 || availableViews.value.length > 0) {
+        showTablePreview.value = true
       }
     } else {
       // Fallback: if metadata endpoint not available, use sample data
       console.warn('Metadata endpoint not available, using sample data')
       availableTables.value = [
-        { name: 'Please connect to database to see tables', rows: 0, selected: false }
+        { name: 'Customers', schema: 'dbo', rows: 15420, selected: false },
+        { name: 'Orders', schema: 'dbo', rows: 89750, selected: false },
+        { name: 'Products', schema: 'dbo', rows: 3240, selected: false },
+        { name: 'OrderItems', schema: 'dbo', rows: 245800, selected: false },
+        { name: 'Employees', schema: 'hr', rows: 156, selected: false }
       ]
+      availableViews.value = [
+        { name: 'vw_CustomerOrders', schema: 'dbo' },
+        { name: 'vw_SalesSummary', schema: 'reports' }
+      ]
+      showTablePreview.value = true
     }
   } catch (error) {
     console.error('Failed to fetch tables:', error)
-    // Fallback sample data
+    // Fallback sample data for demo
     availableTables.value = [
-      { name: 'Unable to fetch tables - check connection', rows: 0, selected: false }
+      { name: 'Customers', schema: 'dbo', rows: 15420, selected: false },
+      { name: 'Orders', schema: 'dbo', rows: 89750, selected: false },
+      { name: 'Products', schema: 'dbo', rows: 3240, selected: false }
     ]
+    availableViews.value = []
+    showTablePreview.value = true
   } finally {
     isFetchingTables.value = false
   }
@@ -728,6 +778,71 @@ const cancel = () => {
                   </svg>
                   Fetching database tables...
                 </div>
+
+                <!-- Database Preview Section -->
+                <div v-if="showTablePreview && connectionStatus === 'success'" class="mt-6 border border-slate-200 rounded-xl overflow-hidden">
+                  <div class="bg-gradient-to-r from-emerald-50 to-cyan-50 px-4 py-3 border-b border-slate-200">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center">
+                        <svg class="h-5 w-5 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                        </svg>
+                        <h4 class="font-semibold text-slate-800">Database Preview</h4>
+                      </div>
+                      <div class="flex items-center space-x-4 text-sm">
+                        <span class="text-slate-600">
+                          <span class="font-medium text-emerald-600">{{ availableTables.length }}</span> tables
+                        </span>
+                        <span class="text-slate-600">
+                          <span class="font-medium text-blue-600">{{ availableViews.length }}</span> views
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tables List -->
+                  <div class="max-h-48 overflow-y-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-slate-50 sticky top-0">
+                        <tr>
+                          <th class="text-left px-4 py-2 font-medium text-slate-600">Name</th>
+                          <th class="text-left px-4 py-2 font-medium text-slate-600">Schema</th>
+                          <th class="text-right px-4 py-2 font-medium text-slate-600">Rows</th>
+                          <th class="text-center px-4 py-2 font-medium text-slate-600">Type</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100">
+                        <tr v-for="table in availableTables.slice(0, 10)" :key="table.name" class="hover:bg-slate-50">
+                          <td class="px-4 py-2 font-medium text-slate-800">{{ table.name }}</td>
+                          <td class="px-4 py-2 text-slate-500">{{ table.schema }}</td>
+                          <td class="px-4 py-2 text-right text-slate-600">{{ formatNumber(table.rows) }}</td>
+                          <td class="px-4 py-2 text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                              Table
+                            </span>
+                          </td>
+                        </tr>
+                        <tr v-for="view in availableViews.slice(0, 5)" :key="view.name" class="hover:bg-slate-50">
+                          <td class="px-4 py-2 font-medium text-slate-800">{{ view.name }}</td>
+                          <td class="px-4 py-2 text-slate-500">{{ view.schema }}</td>
+                          <td class="px-4 py-2 text-right text-slate-400">-</td>
+                          <td class="px-4 py-2 text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              View
+                            </span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Show more indicator -->
+                  <div v-if="availableTables.length > 10 || availableViews.length > 5" class="px-4 py-2 bg-slate-50 border-t border-slate-200 text-center">
+                    <span class="text-sm text-slate-500">
+                      + {{ Math.max(0, availableTables.length - 10) + Math.max(0, availableViews.length - 5) }} more items. Select tables in the next step.
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <!-- Excel Upload Form -->
@@ -972,6 +1087,292 @@ const cancel = () => {
                       </div>
                     </div>
                     <p class="mt-2 text-xs text-gray-500 text-center">AWS data warehouse</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Warehouse Credentials Forms -->
+              <!-- Snowflake Credentials -->
+              <div v-if="formData.targetWarehouse === 'snowflake'" class="bg-slate-50 rounded-xl p-6 space-y-5 border border-slate-200">
+                <div class="flex items-center mb-4">
+                  <img :src="warehouseLogos.snowflake" alt="Snowflake" class="w-8 h-8 mr-3" />
+                  <h3 class="text-lg font-semibold text-slate-800">Snowflake Connection</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Account <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.snowflakeAccount"
+                      type="text"
+                      placeholder="abc12345.us-east-1"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Warehouse <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.snowflakeWarehouse"
+                      type="text"
+                      placeholder="COMPUTE_WH"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Database <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.snowflakeDatabase"
+                      type="text"
+                      placeholder="MY_DATABASE"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Schema <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.snowflakeSchema"
+                      type="text"
+                      placeholder="PUBLIC"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Username <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.snowflakeUser"
+                      type="text"
+                      placeholder="your_username"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Password <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.snowflakePassword"
+                      type="password"
+                      placeholder="********"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Role (optional)</label>
+                    <input
+                      v-model="formData.warehouseCredentials.snowflakeRole"
+                      type="text"
+                      placeholder="ACCOUNTADMIN"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Databricks Credentials -->
+              <div v-if="formData.targetWarehouse === 'databricks'" class="bg-slate-50 rounded-xl p-6 space-y-5 border border-slate-200">
+                <div class="flex items-center mb-4">
+                  <img :src="warehouseLogos.databricks" alt="Databricks" class="w-8 h-8 mr-3" />
+                  <h3 class="text-lg font-semibold text-slate-800">Databricks Connection</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Host <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.databricksHost"
+                      type="text"
+                      placeholder="adb-1234567890123456.7.azuredatabricks.net"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Access Token <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.databricksToken"
+                      type="password"
+                      placeholder="dapi..."
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">HTTP Path <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.databricksHttpPath"
+                      type="text"
+                      placeholder="/sql/1.0/warehouses/abc123"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Catalog</label>
+                    <input
+                      v-model="formData.warehouseCredentials.databricksCatalog"
+                      type="text"
+                      placeholder="main"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- BigQuery Credentials -->
+              <div v-if="formData.targetWarehouse === 'bigquery'" class="bg-slate-50 rounded-xl p-6 space-y-5 border border-slate-200">
+                <div class="flex items-center mb-4">
+                  <img :src="warehouseLogos.bigquery" alt="BigQuery" class="w-8 h-8 mr-3" />
+                  <h3 class="text-lg font-semibold text-slate-800">BigQuery Connection</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Project ID <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.bigqueryProject"
+                      type="text"
+                      placeholder="my-gcp-project"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Dataset <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.bigqueryDataset"
+                      type="text"
+                      placeholder="my_dataset"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Service Account Key (JSON) <span class="text-cyan-500">*</span></label>
+                    <textarea
+                      v-model="formData.warehouseCredentials.bigqueryKeyfile"
+                      rows="4"
+                      placeholder='{"type": "service_account", "project_id": "...", ...}'
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400 font-mono text-sm resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Redshift Credentials -->
+              <div v-if="formData.targetWarehouse === 'redshift'" class="bg-slate-50 rounded-xl p-6 space-y-5 border border-slate-200">
+                <div class="flex items-center mb-4">
+                  <img :src="warehouseLogos.redshift" alt="Redshift" class="w-8 h-8 mr-3" />
+                  <h3 class="text-lg font-semibold text-slate-800">Redshift Connection</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Host <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.redshiftHost"
+                      type="text"
+                      placeholder="my-cluster.abc123.us-east-1.redshift.amazonaws.com"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Port</label>
+                    <input
+                      v-model="formData.warehouseCredentials.redshiftPort"
+                      type="text"
+                      placeholder="5439"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Database <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.redshiftDatabase"
+                      type="text"
+                      placeholder="dev"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Username <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.redshiftUser"
+                      type="text"
+                      placeholder="awsuser"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Password <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.redshiftPassword"
+                      type="password"
+                      placeholder="********"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Microsoft Fabric Credentials -->
+              <div v-if="formData.targetWarehouse === 'fabric'" class="bg-slate-50 rounded-xl p-6 space-y-5 border border-slate-200">
+                <div class="flex items-center mb-4">
+                  <img :src="warehouseLogos.fabric" alt="Microsoft Fabric" class="w-8 h-8 mr-3" />
+                  <h3 class="text-lg font-semibold text-slate-800">Microsoft Fabric Connection</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Workspace ID <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.fabricWorkspace"
+                      type="text"
+                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Lakehouse Name <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.fabricLakehouse"
+                      type="text"
+                      placeholder="my_lakehouse"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">SQL Endpoint <span class="text-cyan-500">*</span></label>
+                    <input
+                      v-model="formData.warehouseCredentials.fabricEndpoint"
+                      type="text"
+                      placeholder="xxxxxxxx.datawarehouse.fabric.microsoft.com"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Client ID (App Registration)</label>
+                    <input
+                      v-model="formData.warehouseCredentials.fabricClientId"
+                      type="text"
+                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Tenant ID</label>
+                    <input
+                      v-model="formData.warehouseCredentials.fabricTenantId"
+                      type="text"
+                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Client Secret</label>
+                    <input
+                      v-model="formData.warehouseCredentials.fabricClientSecret"
+                      type="password"
+                      placeholder="********"
+                      class="block w-full px-4 py-3 rounded-xl border border-slate-300 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-3 mt-4">
+                  <div class="flex">
+                    <svg class="h-5 w-5 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    <p class="ml-2 text-sm text-blue-700">
+                      For Fabric authentication, you can use Service Principal (Client ID/Secret) or leave empty for interactive Azure AD login.
+                    </p>
                   </div>
                 </div>
               </div>

@@ -40,10 +40,10 @@ type LockoutConfig struct {
 func DefaultLockoutConfig() LockoutConfig {
 	return LockoutConfig{
 		MaxAttempts:        5,
-		LockoutDuration:    15 * time.Minute,
-		AttemptWindow:      30 * time.Minute,
+		LockoutDuration:    1 * time.Minute,  // Reduced for better UX
+		AttemptWindow:      5 * time.Minute,
 		ProgressiveLockout: true,
-		MaxLockoutDuration: 24 * time.Hour,
+		MaxLockoutDuration: 30 * time.Minute, // Max 30 min lockout
 		NotifyOnLockout:    true,
 		TrackByIP:          true,
 		IPMaxAttempts:      20,

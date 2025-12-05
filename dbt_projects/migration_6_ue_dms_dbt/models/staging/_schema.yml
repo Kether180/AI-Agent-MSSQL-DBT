@@ -1,0 +1,36 @@
+version: 2
+models:
+- name: stg_auth_users
+  description: Staging model for auth_users
+- name: stg_auth_users_plants
+  description: Staging model for auth_users_plants
+- name: stg_cellcarriers
+  description: Staging model for cellcarriers
+- name: stg_config
+  description: Staging model for config
+- name: stg_config_privileged
+  description: Staging model for config_privileged
+- name: stg_contacts
+  description: Staging model for contacts
+- name: stg_files
+  description: Staging model for files
+- name: stg_groups
+  description: Staging model for groups
+- name: stg_locations
+  description: Staging model for locations
+- name: stg_notification
+  description: Staging model for notification
+- name: stg_notificationhistory
+  description: Staging model for notificationhistory
+- name: stg_permanentchannels
+  description: Staging model for permanentchannels
+- name: stg_permanentnodes
+  description: Staging model for permanentnodes
+- name: stg_plants
+  description: Staging model for plants
+- name: stg_points
+  description: Staging model for points
+- name: stg_records
+  description: Staging model for records
+- name: stg_serverqueue
+  description: Staging model for serverqueue

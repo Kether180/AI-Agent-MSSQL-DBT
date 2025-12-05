@@ -19,6 +19,7 @@ const ForgotPasswordView = () => import('@/views/ForgotPasswordView.vue')
 const ResetPasswordView = () => import('@/views/ResetPasswordView.vue')
 const DataPrepAgentView = () => import('@/views/DataPrepAgentView.vue')
 const MLFineTuningView = () => import('@/views/MLFineTuningView.vue')
+const AgentsView = () => import('@/views/AgentsView.vue')
 
 // Route definitions
 const routes: Array<RouteRecordRaw> = [
@@ -133,6 +134,15 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       requiresAuth: true,
       title: 'Documentation - DataMigrate AI'
+    }
+  },
+  {
+    path: '/agents',
+    name: 'Agents',
+    component: AgentsView,
+    meta: {
+      requiresAuth: true,
+      title: 'AI Agents - DataMigrate AI'
     }
   },
   {

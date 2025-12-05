@@ -1,0 +1,1053 @@
+version: 2
+models:
+- name: stg_auth_users
+  description: Staging model for dbo.auth_users
+  columns:
+  - name: user_id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: admin
+    description: Column from source table
+    tests:
+    - not_null
+  - name: pw_hash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: idp
+    description: Column from source table
+    tests:
+    - not_null
+  - name: idp_sub
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_auth_users_plants
+  description: Staging model for dbo.auth_users_plants
+  columns:
+  - name: user_id
+    description: Column from source table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_auth_users')
+        field: user_id
+  - name: plant_id
+    description: Column from source table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_plants')
+        field: id
+- name: stg_cellcarriers
+  description: Staging model for dbo.cellcarriers
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: carriername
+    description: Column from source table
+    tests:
+    - not_null
+  - name: carriercountry
+    description: Column from source table
+    tests:
+    - not_null
+  - name: carriernumberlength
+    description: Column from source table
+    tests:
+    - not_null
+  - name: carriermmsstring
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_config
+  description: Staging model for dbo.config
+  columns:
+  - name: k
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: v
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_config_privileged
+  description: Staging model for dbo.config_privileged
+  columns:
+  - name: k
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: v
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_contacts
+  description: Staging model for dbo.contacts
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: username
+    description: Column from source table
+    tests:
+    - not_null
+  - name: firstname
+    description: Column from source table
+    tests:
+    - not_null
+  - name: lastname
+    description: Column from source table
+    tests:
+    - not_null
+  - name: cellcarrierid
+    description: Column from source table
+    tests:
+    - relationships:
+        to: ref('stg_cellcarriers')
+        field: id
+  - name: lang
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_files
+  description: Staging model for dbo.files
+  columns:
+  - name: name
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: datestamp
+    description: Column from source table
+    tests:
+    - not_null
+  - name: data
+    description: Column from source table
+    tests:
+    - not_null
+  - name: fmode
+    description: Column from source table
+    tests:
+    - not_null
+  - name: fid
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_groups
+  description: Staging model for dbo.groups
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: softdeleted
+    description: Column from source table
+    tests:
+    - not_null
+  - name: imagefiles
+    description: Column from source table
+    tests:
+    - not_null
+  - name: plantid
+    description: Column from source table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_plants')
+        field: id
+  - name: groupname
+    description: Column from source table
+    tests:
+    - not_null
+  - name: grouptype
+    description: Column from source table
+    tests:
+    - not_null
+  - name: groupformat
+    description: Column from source table
+    tests:
+    - not_null
+  - name: groupdisplayfields
+    description: Column from source table
+    tests:
+    - not_null
+  - name: grouporder
+    description: Column from source table
+    tests:
+    - not_null
+  - name: hidealarms
+    description: Column from source table
+    tests:
+    - not_null
+  - name: alarmsonbottom
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updatedtime
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updateduser
+    description: Column from source table
+    tests:
+    - not_null
+  - name: showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: comment
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_locations
+  description: Staging model for dbo.locations
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: softdeleted
+    description: Column from source table
+    tests:
+    - not_null
+  - name: imagefiles
+    description: Column from source table
+    tests:
+    - not_null
+  - name: groupid
+    description: Column from source table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_groups')
+        field: id
+  - name: locationorder
+    description: Column from source table
+    tests:
+    - not_null
+  - name: locationname
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updatedtime
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updateduser
+    description: Column from source table
+    tests:
+    - not_null
+  - name: linkednodes
+    description: Column from source table
+    tests:
+    - not_null
+  - name: showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: comment
+    description: Column from source table
+    tests:
+    - not_null
+  - name: ref_code
+    description: Column from source table
+    tests:
+    - not_null
+  - name: ref_equipmentinfo
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_notification
+  description: Staging model for dbo.notification
+  columns:
+  - name: id
+    description: ID of notification setting.
+    tests:
+    - not_null
+    - unique
+  - name: contact_id
+    description: Contact ID of notification target.
+    tests:
+    - relationships:
+        to: ref('stg_contacts')
+        field: id
+  - name: plant_id
+    description: Plant ID sending the notification.
+    tests:
+    - relationships:
+        to: ref('stg_plants')
+        field: id
+  - name: group_id
+    description: Group ID sending the notification.
+    tests:
+    - relationships:
+        to: ref('stg_groups')
+        field: id
+  - name: location_id
+    description: Location ID sending the notification.
+    tests:
+    - relationships:
+        to: ref('stg_locations')
+        field: id
+  - name: point_id
+    description: Point ID sending the notification.
+    tests:
+    - relationships:
+        to: ref('stg_points')
+        field: id
+  - name: notificationlevel
+    description: Level of notifications for which messages are sent, enum. {None=0,
+      HighAlarmOnly=1, AllAlarms=2, AllRecords=3}
+    tests:
+    - not_null
+  - name: notificationlimit
+    description: Limit of notifications to send within the time interval defined.
+    tests:
+    - not_null
+  - name: notificationlimitinterval
+    description: Time interval for which notificationlimit applies. {None=0, Minutely=1,
+      Hourly=60, Daily=1440, Weekly=10080, Monthly=43200}
+    tests:
+    - not_null
+  - name: jsonconfig
+    description: Notification config in JSON format.
+    tests:
+    - not_null
+  - name: type
+    description: Generic list of notification send methods.
+    tests:
+    - not_null
+  - name: flag_all
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_notificationhistory
+  description: Staging model for dbo.notificationhistory
+  columns:
+  - name: id
+    description: ID of notification.
+    tests:
+    - not_null
+    - unique
+  - name: notification_id
+    description: ID of notification setting.
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_notification')
+        field: id
+  - name: point_id
+    description: Point ID that triggered the notification.
+    tests:
+    - not_null
+  - name: sent_time
+    description: Time that the notification was sent.
+    tests:
+    - not_null
+  - name: sent
+    description: Notification sent.
+    tests:
+    - not_null
+- name: stg_permanentchannels
+  description: Staging model for dbo.permanentchannels
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: nodeid
+    description: Column from source table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_permanentnodes')
+        field: id
+  - name: channelindex
+    description: Column from source table
+    tests:
+    - not_null
+  - name: pointid
+    description: Column from source table
+    tests:
+    - relationships:
+        to: ref('stg_points')
+        field: id
+  - name: updatedtime
+    description: Column from source table
+    tests:
+    - not_null
+  - name: preferred_time_interval
+    description: Column from source table
+    tests:
+    - not_null
+  - name: jsonstore
+    description: Column from source table
+    tests:
+    - not_null
+  - name: status
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_flags
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_sensitivity
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_offset
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_highalarm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_lowalarm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_rrp
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_rrs
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_rra
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_nrba
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_nrda
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_nraa
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_nwba
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_nwda
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_nwaa
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_wrp
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_wrs
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_wra
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_wdm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_wds
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_wda
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_autosensitivityhigh
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_autosensitivitylow
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_averaging
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_alarmrelease
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_flags
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_sensitivity
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_offset
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_highalarm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_lowalarm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_rrp
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_rrs
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_rra
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_nrba
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_nrda
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_nraa
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_nwba
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_nwda
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_nwaa
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_wrp
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_wrs
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_wra
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_wdm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_wds
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_wda
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_autosensitivityhigh
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_autosensitivitylow
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_averaging
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_alarmrelease
+    description: Column from source table
+    tests:
+    - not_null
+  - name: livedb
+    description: Column from source table
+    tests:
+    - not_null
+  - name: livepfs
+    description: Column from source table
+    tests:
+    - not_null
+  - name: livetime
+    description: Column from source table
+    tests:
+    - not_null
+  - name: livesensitivity
+    description: Column from source table
+    tests:
+    - not_null
+  - name: liveoffset
+    description: Column from source table
+    tests:
+    - not_null
+  - name: liveflags
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_alarmdelay
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_tlvl
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_dsu
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_alarmdelay
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_tlvl
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_dsu
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_permanentnodes
+  description: Staging model for dbo.permanentnodes
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: name
+    description: Column from source table
+    tests:
+    - not_null
+  - name: uuid
+    description: Column from source table
+    tests:
+    - not_null
+  - name: editor
+    description: Column from source table
+    tests:
+    - not_null
+  - name: ipaddress
+    description: Column from source table
+    tests:
+    - not_null
+  - name: channelcount
+    description: Column from source table
+    tests:
+    - not_null
+  - name: osmajorrev
+    description: Column from source table
+    tests:
+    - not_null
+  - name: osminorrev
+    description: Column from source table
+    tests:
+    - not_null
+  - name: fwmajorrev
+    description: Column from source table
+    tests:
+    - not_null
+  - name: fwminorrev
+    description: Column from source table
+    tests:
+    - not_null
+  - name: fwbuildrev
+    description: Column from source table
+    tests:
+    - not_null
+  - name: devmajorrev
+    description: Column from source table
+    tests:
+    - not_null
+  - name: devminorrev
+    description: Column from source table
+    tests:
+    - not_null
+  - name: devicetype
+    description: Column from source table
+    tests:
+    - not_null
+  - name: imagefiles
+    description: Column from source table
+    tests:
+    - not_null
+  - name: deleted
+    description: Column from source table
+    tests:
+    - not_null
+  - name: connected
+    description: Column from source table
+    tests:
+    - not_null
+  - name: jsonstore
+    description: Column from source table
+    tests:
+    - not_null
+  - name: status
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_flags
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_readingretention
+    description: Column from source table
+    tests:
+    - not_null
+  - name: actual_wavretention
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_flags
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_readingretention
+    description: Column from source table
+    tests:
+    - not_null
+  - name: desired_wavretention
+    description: Column from source table
+    tests:
+    - not_null
+  - name: time_lastconnect
+    description: Column from source table
+    tests:
+    - not_null
+  - name: time_lastdisconnect
+    description: Column from source table
+    tests:
+    - not_null
+  - name: filetransferinprogress
+    description: Column from source table
+    tests:
+    - not_null
+  - name: filetransferinprogresspercent
+    description: Column from source table
+    tests:
+    - not_null
+  - name: filetransferinprogressname
+    description: Column from source table
+    tests:
+    - not_null
+  - name: filetransferoutprogress
+    description: Column from source table
+    tests:
+    - not_null
+  - name: filetransferoutprogresspercent
+    description: Column from source table
+    tests:
+    - not_null
+  - name: filetransferoutprogressname
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_plants
+  description: Staging model for dbo.plants
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: softdeleted
+    description: Column from source table
+    tests:
+    - not_null
+  - name: imagefiles
+    description: Column from source table
+    tests:
+    - not_null
+  - name: plantname
+    description: Column from source table
+    tests:
+    - not_null
+  - name: plantorder
+    description: Column from source table
+    tests:
+    - not_null
+  - name: editor
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updatedtime
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updateduser
+    description: Column from source table
+    tests:
+    - not_null
+  - name: showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: comment
+    description: Column from source table
+    tests:
+    - not_null
+  - name: application_bearing_showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: application_electrical_showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: application_generic_showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: application_leak_showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: application_steam_showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: application_valve_showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: lists
+    description: Column from source table
+    tests:
+    - not_null
+  - name: altids
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_points
+  description: Staging model for dbo.points
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: softdeleted
+    description: Column from source table
+    tests:
+    - not_null
+  - name: imagefiles
+    description: Column from source table
+    tests:
+    - not_null
+  - name: locationid
+    description: Column from source table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_locations')
+        field: id
+  - name: pointorder
+    description: Column from source table
+    tests:
+    - not_null
+  - name: pointname
+    description: Column from source table
+    tests:
+    - not_null
+  - name: monthrange
+    description: Column from source table
+    tests:
+    - not_null
+  - name: limitdisplaymonths
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updatedtime
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updateduser
+    description: Column from source table
+    tests:
+    - not_null
+  - name: showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: comment
+    description: Column from source table
+    tests:
+    - not_null
+  - name: ref_code
+    description: Column from source table
+    tests:
+    - not_null
+  - name: ref_equipmentinfo
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_records
+  description: Staging model for dbo.records
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: softdeleted
+    description: Column from source table
+    tests:
+    - not_null
+  - name: imagefiles
+    description: Column from source table
+    tests:
+    - not_null
+  - name: pointid
+    description: Column from source table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_points')
+        field: id
+  - name: isbaseline
+    description: Column from source table
+    tests:
+    - not_null
+  - name: datestamp
+    description: Column from source table
+    tests:
+    - not_null
+  - name: db
+    description: Column from source table
+    tests:
+    - not_null
+  - name: frequency
+    description: Column from source table
+    tests:
+    - not_null
+  - name: mode
+    description: Column from source table
+    tests:
+    - not_null
+  - name: sensitivity
+    description: Column from source table
+    tests:
+    - not_null
+  - name: offset
+    description: Column from source table
+    tests:
+    - not_null
+  - name: recordtype
+    description: Column from source table
+    tests:
+    - not_null
+  - name: moduletype
+    description: Column from source table
+    tests:
+    - not_null
+  - name: inspectorid
+    description: Column from source table
+    tests:
+    - not_null
+  - name: meterresponse
+    description: Column from source table
+    tests:
+    - not_null
+  - name: language
+    description: Column from source table
+    tests:
+    - not_null
+  - name: units
+    description: Column from source table
+    tests:
+    - not_null
+  - name: scale
+    description: Column from source table
+    tests:
+    - not_null
+  - name: comment
+    description: Column from source table
+    tests:
+    - not_null
+  - name: serialnumber
+    description: Column from source table
+    tests:
+    - not_null
+  - name: instrument
+    description: Column from source table
+    tests:
+    - not_null
+  - name: lowalarm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: highalarm
+    description: Column from source table
+    tests:
+    - not_null
+  - name: wavfile
+    description: Column from source table
+    tests:
+    - not_null
+  - name: showtrash
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updatedtime
+    description: Column from source table
+    tests:
+    - not_null
+  - name: updateduser
+    description: Column from source table
+    tests:
+    - not_null
+- name: stg_serverqueue
+  description: Staging model for dbo.serverqueue
+  columns:
+  - name: id
+    description: Column from source table
+    tests:
+    - not_null
+    - unique
+  - name: method
+    description: Column from source table
+    tests:
+    - not_null
+  - name: parameters
+    description: Column from source table
+    tests:
+    - not_null
+  - name: timestamp
+    description: Column from source table
+    tests:
+    - not_null

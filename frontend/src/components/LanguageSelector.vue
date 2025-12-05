@@ -4,7 +4,7 @@
       @click="isOpen = !isOpen"
       class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-slate-600 transition-all"
     >
-      <span class="text-lg">{{ currentLocale?.flag }}</span>
+      <span class="text-sm">{{ currentLocale?.flag }}</span>
       <span class="text-sm text-slate-300 hidden sm:inline">{{ currentLocale?.name }}</span>
       <svg
         class="w-4 h-4 text-slate-400 transition-transform"
@@ -34,14 +34,15 @@
             v-for="locale in LOCALES"
             :key="locale.code"
             @click="selectLocale(locale.code)"
-            class="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors"
+            class="w-full flex items-center gap-2 px-4 py-2 hover:bg-slate-700/50 transition-colors"
             :class="{ 'bg-slate-700/30': locale.code === currentLocale?.code }"
           >
-            <span class="text-xl">{{ locale.flag }}</span>
-            <span class="text-sm text-slate-200">{{ locale.name }}</span>
+            <span class="text-sm">{{ locale.flag }}</span>
+            <span class="text-xs font-mono text-slate-400 uppercase w-6">{{ locale.code }}</span>
+            <span class="text-sm text-slate-200 flex-1">{{ locale.name }}</span>
             <svg
               v-if="locale.code === currentLocale?.code"
-              class="w-4 h-4 text-green-400 ml-auto"
+              class="w-4 h-4 text-green-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

@@ -104,6 +104,21 @@
         "title": "Validation Agent",
         "description": "Ensures migration accuracy with row counts, checksums, and data comparison",
         "badge": "Testing"
+      },
+      "executor": {
+        "title": "dbt Executor",
+        "description": "Runs dbt commands, manages dependencies, and handles incremental model builds",
+        "badge": "Execution"
+      },
+      "mlFinetuning": {
+        "title": "ML Fine-Tuning",
+        "description": "Trains and optimizes custom AI models for your specific data patterns",
+        "badge": "AI Training"
+      },
+      "guardian": {
+        "title": "Guardian Agent",
+        "description": "Orchestrates all agents, monitors pipeline health, and ensures safe operations",
+        "badge": "Orchestration"
       }
     }
   },

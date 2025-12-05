@@ -3,13 +3,16 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/datamigrate-ai/backend/internal/aiservice"
 	"github.com/datamigrate-ai/backend/internal/db"
+	"github.com/datamigrate-ai/backend/internal/email"
 	"github.com/datamigrate-ai/backend/internal/middleware"
 	"github.com/datamigrate-ai/backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -657,5 +660,101 @@ func (h *MigrationsHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
+	// Send email notification for completed or failed migrations
+	if req.Status == "completed" || req.Status == "failed" {
+		go sendMigrationEmail(id, req.Status, req.Error)
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Status updated"})
+}
+
+// sendMigrationEmail sends email notification when migration completes or fails
+func sendMigrationEmail(migrationID int64, status string, errorMsg *string) {
+	// Get migration details and user info
+	var migration struct {
+		Name        string         `db:"name"`
+		TablesCount int            `db:"tables_count"`
+		CreatedAt   time.Time      `db:"created_at"`
+		CompletedAt sql.NullTime   `db:"completed_at"`
+		UserID      int64          `db:"user_id"`
+	}
+
+	err := db.DB.Get(&migration, `
+		SELECT name, tables_count, created_at, completed_at, user_id
+		FROM migrations WHERE id = $1
+	`, migrationID)
+	if err != nil {
+		log.Printf("Failed to fetch migration for email notification: %v", err)
+		return
+	}
+
+	// Get user info
+	var user struct {
+		Email     string `db:"email"`
+		FirstName string `db:"first_name"`
+	}
+
+	err = db.DB.Get(&user, `
+		SELECT email, first_name FROM users WHERE id = $1
+	`, migration.UserID)
+	if err != nil {
+		log.Printf("Failed to fetch user for email notification: %v", err)
+		return
+	}
+
+	// Initialize email service
+	emailService := email.NewService()
+	if !emailService.IsConfigured() {
+		// Use mock service for development logging
+		mockService := email.NewMockService()
+		if status == "completed" {
+			duration := "N/A"
+			if migration.CompletedAt.Valid {
+				duration = formatDuration(migration.CompletedAt.Time.Sub(migration.CreatedAt))
+			}
+			mockService.SendMigrationCompleteEmail(user.Email, user.FirstName, migration.Name, migration.TablesCount, duration)
+		} else {
+			errMessage := "Unknown error"
+			if errorMsg != nil {
+				errMessage = *errorMsg
+			}
+			mockService.SendMigrationFailedEmail(user.Email, user.FirstName, migration.Name, errMessage)
+		}
+		return
+	}
+
+	// Send actual email
+	if status == "completed" {
+		duration := "N/A"
+		if migration.CompletedAt.Valid {
+			duration = formatDuration(migration.CompletedAt.Time.Sub(migration.CreatedAt))
+		}
+		err = emailService.SendMigrationCompleteEmail(user.Email, user.FirstName, migration.Name, migration.TablesCount, duration)
+	} else {
+		errMessage := "Unknown error"
+		if errorMsg != nil {
+			errMessage = *errorMsg
+		}
+		err = emailService.SendMigrationFailedEmail(user.Email, user.FirstName, migration.Name, errMessage)
+	}
+
+	if err != nil {
+		log.Printf("Failed to send migration %s email: %v", status, err)
+	} else {
+		log.Printf("Sent migration %s email to %s for migration '%s'", status, user.Email, migration.Name)
+	}
+}
+
+// formatDuration formats a duration into a human-readable string
+func formatDuration(d time.Duration) string {
+	if d < time.Minute {
+		return fmt.Sprintf("%d seconds", int(d.Seconds()))
+	} else if d < time.Hour {
+		mins := int(d.Minutes())
+		secs := int(d.Seconds()) % 60
+		return fmt.Sprintf("%d min %d sec", mins, secs)
+	}
+	hours := int(d.Hours())
+	mins := int(d.Minutes()) % 60
+	return fmt.Sprintf("%d hr %d min", hours, mins)
 }

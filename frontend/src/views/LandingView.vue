@@ -61,9 +61,9 @@
           </div>
         </div>
 
-        <div class="inline-flex items-center px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 mb-8 backdrop-blur-sm">
-          <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
-          <span class="text-slate-300 text-sm">{{ $t('hero.badge') }}</span>
+        <div class="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 mb-8 backdrop-blur-sm max-w-full">
+          <span class="w-2 h-2 min-w-[0.5rem] flex-shrink-0 bg-green-400 rounded-full animate-pulse mr-2"></span>
+          <span class="text-slate-300 text-xs sm:text-sm text-center">{{ $t('hero.badge') }}</span>
         </div>
 
         <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight break-words hyphens-auto">

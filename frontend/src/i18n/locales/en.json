@@ -20,7 +20,10 @@
     "stats": {
       "migrations": "Migrations Completed",
       "uptime": "Uptime SLA",
-      "faster": "Faster Than Manual"
+      "faster": "Faster Than Manual",
+      "accuracy": "Accuracy",
+      "databaseTypes": "Database Types",
+      "aiAssistance": "AI Assistance"
     }
   },
   "features": {
@@ -42,50 +45,72 @@
       "security": {
         "title": "Enterprise Security",
         "description": "SOC 2 compliant with end-to-end encryption and audit logging"
+      },
+      "quality": {
+        "title": "Data Quality AI",
+        "description": "ML-powered data quality checks that detect anomalies, validate patterns, and ensure data integrity."
+      },
+      "multiWarehouse": {
+        "title": "Multi-Warehouse Support",
+        "description": "Migrate to Snowflake, BigQuery, Databricks, Redshift, and more with native connectors."
+      },
+      "biIntegration": {
+        "title": "BI Integration",
+        "description": "Connect your BI tools directly and get AI-assisted query optimization for better insights."
       }
     }
   },
   "agents": {
     "title": "Meet Our AI Agents",
     "subtitle": "8 specialized agents working together to automate your entire data migration pipeline",
+    "autonomous": "Autonomous AI Agents",
     "items": {
       "extractor": {
         "title": "MSSQL Extractor",
-        "description": "Intelligently extracts schemas, relationships, and metadata from your MSSQL databases"
+        "description": "Intelligently extracts schemas, relationships, and metadata from your MSSQL databases",
+        "badge": "Schema Analysis"
       },
       "dbt": {
         "title": "dbt Generator",
-        "description": "Automatically creates production-ready dbt models, tests, and documentation"
+        "description": "Automatically creates production-ready dbt models, tests, and documentation",
+        "badge": "Code Generation"
       },
       "quality": {
         "title": "Data Quality",
-        "description": "Validates data integrity with 50+ quality checks and anomaly detection"
+        "description": "Validates data integrity with 50+ quality checks and anomaly detection",
+        "badge": "Validation"
       },
       "dataprep": {
         "title": "Data Prep",
-        "description": "Cleans, transforms, and prepares your data for the target warehouse"
+        "description": "Cleans, transforms, and prepares your data for the target warehouse",
+        "badge": "Transformation"
       },
       "docs": {
         "title": "Documentation",
-        "description": "Auto-generates comprehensive documentation and data lineage maps"
+        "description": "Auto-generates comprehensive documentation and data lineage maps",
+        "badge": "Auto-Docs"
       },
       "rag": {
         "title": "RAG Service",
-        "description": "Retrieval-augmented generation for intelligent query assistance"
+        "description": "Retrieval-augmented generation for intelligent query assistance",
+        "badge": "Learning"
       },
       "bi": {
         "title": "BI Analytics",
-        "description": "Generates insights, dashboards, and business intelligence reports"
+        "description": "Generates insights, dashboards, and business intelligence reports",
+        "badge": "Insights"
       },
       "validation": {
         "title": "Validation Agent",
-        "description": "Ensures migration accuracy with row counts, checksums, and data comparison"
+        "description": "Ensures migration accuracy with row counts, checksums, and data comparison",
+        "badge": "Testing"
       }
     }
   },
   "benefits": {
     "title": "Why Choose DataMigrate AI?",
     "subtitle": "Transform your data infrastructure with measurable business impact",
+    "roiBadge": "ROI & Business Impact",
     "items": {
       "cost": {
         "title": "Reduce Costs by 70%",
@@ -116,34 +141,366 @@
   "integrations": {
     "title": "Seamless Integrations",
     "subtitle": "Connect your source databases to modern cloud data warehouses",
+    "connectTo": "Connect to",
+    "anyPlatform": "Any Platform",
     "target": "Target Data Warehouses",
     "source": "Source Databases",
+    "sourceDescription": "Connect to your existing databases with secure, read-only access",
     "pipeline": "AI-Powered Migration Pipeline"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Four simple steps to modernize your data infrastructure",
+    "steps": {
+      "connect": {
+        "title": "Connect Source",
+        "description": "Connect your MSSQL, PostgreSQL, MySQL, or Oracle database securely."
+      },
+      "analyze": {
+        "title": "AI Analysis",
+        "description": "Our AI analyzes schema, data patterns, and suggests optimal transformations."
+      },
+      "generate": {
+        "title": "Generate DBT",
+        "description": "Auto-generate DBT models, documentation, and tests for your pipeline."
+      },
+      "deploy": {
+        "title": "Deploy & Monitor",
+        "description": "Deploy to your warehouse with continuous monitoring and quality checks."
+      }
+    }
   },
   "security": {
     "title": "Enterprise-Grade Security",
+    "builtIn": "Built-In",
     "subtitle": "Your data is protected with industry-leading security measures",
+    "securityScore": "Security Score",
     "items": {
       "encryption": "End-to-end AES-256 encryption",
+      "encryptionDesc": "AES-256 encryption for data at rest and TLS 1.3 for data in transit.",
       "soc2": "SOC 2 Type II certified",
+      "soc2Desc": "Audited security controls with continuous monitoring and compliance.",
       "gdpr": "GDPR compliant",
+      "gdprDesc": "Built-in PII detection, data masking, and compliance reporting.",
       "audit": "Complete audit logging",
       "rbac": "Role-based access control",
+      "rbacDesc": "Granular permissions with SSO integration and audit logging.",
       "mfa": "Multi-factor authentication"
+    },
+    "metrics": {
+      "encryption": "Encryption",
+      "accessControl": "Access Control",
+      "vulnerability": "Vulnerability Protection",
+      "auditLogging": "Audit Logging"
     }
   },
   "cta": {
-    "title": "Ready to Modernize Your Data?",
+    "title": "Ready to Modernize Your",
+    "titleHighlight": "Data Infrastructure?",
     "subtitle": "Join hundreds of companies that have successfully migrated with DataMigrate AI",
     "button": "Start Free Trial",
+    "contactSales": "Contact Sales",
     "note": "No credit card required"
   },
   "footer": {
+    "tagline": "AI-powered database migrations for the modern data stack.",
     "product": "Product",
     "company": "Company",
     "resources": "Resources",
     "legal": "Legal",
+    "documentation": "Documentation",
+    "about": "About Okoinvestments",
+    "blog": "Blog",
+    "contact": "Contact",
+    "careers": "Careers",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "dataProcessing": "Data Processing",
     "copyright": "All rights reserved.",
     "madeBy": "A product by"
+  },
+  "dashboard": {
+    "welcomeBack": "Welcome back",
+    "subtitle": "Here's what's happening with your migrations today.",
+    "totalMigrations": "Total Migrations",
+    "completed": "Completed",
+    "running": "Running",
+    "successRate": "Success Rate",
+    "recentMigrations": "Recent Migrations",
+    "viewAll": "View all",
+    "loading": "Loading migrations...",
+    "noMigrations": "No migrations yet",
+    "getStarted": "Get started by creating your first migration.",
+    "createMigration": "Create Migration",
+    "created": "Created",
+    "inProgress": "In Progress",
+    "quickActions": "Quick Actions",
+    "newMigration": "New Migration",
+    "startNewMigration": "Start a new database migration",
+    "viewAllMigrations": "Browse all migrations",
+    "documentation": "Documentation",
+    "learnHow": "Learn how to use DataMigrate AI",
+    "settings": "Settings",
+    "manageConnections": "Manage connections & API keys",
+    "aiAgents": "AI Agents",
+    "agents": "Agents",
+    "dataPrepAI": "DataPrep AI",
+    "cleanPrepare": "Clean & prepare data for ML",
+    "profiling": "Profiling",
+    "dedup": "Dedup",
+    "outliers": "Outliers",
+    "mlFineTuning": "ML Fine-Tuning",
+    "trainCustom": "Train custom AI models",
+    "training": "Training",
+    "optimize": "Optimize",
+    "deploy": "Deploy",
+    "dataQuality": "Data Quality",
+    "validateReconcile": "Validate & reconcile data",
+    "validation": "Validation",
+    "biAnalytics": "BI Analytics",
+    "insightsDashboards": "Insights & dashboards",
+    "anomalies": "Anomalies",
+    "forecast": "Forecast",
+    "nlp": "NLP",
+    "status": {
+      "completed": "Completed",
+      "running": "Running",
+      "failed": "Failed",
+      "pending": "Pending"
+    }
+  },
+  "chat": {
+    "title": "AI Support Assistant",
+    "subtitle": "Always here to help",
+    "welcomeMessage": "Hello! I'm your AI Support Assistant. How can I help you with DataMigrate AI today?",
+    "placeholder": "Ask about migrations, dbt, agents...",
+    "clearChat": "Clear chat",
+    "requestCallback": "Request Callback",
+    "emailUs": "Email Us",
+    "offlineMode": "Using offline mode - responses may be limited"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signInToAccount": "Sign in to your account",
+    "signingIn": "Signing in...",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "email": "Email address",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "dontHaveAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "invalidCredentials": "Please enter valid credentials",
+    "loginFailed": "Login failed. Please check your credentials.",
+    "unexpectedError": "An unexpected error occurred",
+    "forgotPasswordTitle": "Forgot Password?",
+    "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link",
+    "sendResetLink": "Send Reset Link",
+    "sending": "Sending...",
+    "resetLinkSent": "If an account exists with this email, you will receive a password reset link shortly.",
+    "checkInbox": "Check your inbox and spam folder for the reset link. The link expires in 1 hour.",
+    "rememberPassword": "Remember your password?",
+    "backToLogin": "Back to login",
+    "invalidEmail": "Please enter a valid email address",
+    "resetPasswordTitle": "Reset Your Password",
+    "resetPasswordSubtitle": "Enter your new password below",
+    "newPassword": "New password (min 8 characters)",
+    "confirmPassword": "Confirm new password",
+    "resetPassword": "Reset Password",
+    "resetting": "Resetting...",
+    "passwordResetSuccess": "Your password has been reset successfully!",
+    "redirectingToLogin": "Redirecting to login...",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordsMatch": "Passwords match",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "invalidResetToken": "Invalid or missing reset token. Please request a new password reset.",
+    "resetFailed": "Failed to reset password. The link may have expired.",
+    "copyright": "© 2025 OKO Investments. All rights reserved.",
+    "builtBy": "Built by Alexander Garcia Angus"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account information and security settings",
+    "profileInfo": "Profile Information",
+    "updatePersonalInfo": "Update your personal information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "emailAddress": "Email Address",
+    "company": "Company",
+    "jobTitle": "Job Title",
+    "jobTitlePlaceholder": "e.g. Data Engineer, CTO",
+    "timezone": "Timezone",
+    "language": "Language",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "profileUpdated": "Profile updated successfully!",
+    "changePassword": "Change Password",
+    "keepAccountSecure": "Update your password to keep your account secure",
+    "currentPassword": "Current Password",
+    "newPasswordLabel": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "updating": "Updating...",
+    "passwordUpdated": "Password updated successfully!",
+    "passwordMinSix": "Password must be at least 6 characters",
+    "recentActivity": "Recent Activity",
+    "yourRecentActivity": "Your recent account activity",
+    "teamMember": "Team Member"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings and preferences",
+    "databaseConnections": "Database Connections",
+    "manageMssqlConnections": "Manage your MSSQL database connections",
+    "addConnection": "Add Connection",
+    "noConnections": "No connections",
+    "getStartedConnection": "Get started by adding a database connection.",
+    "loadingConnections": "Loading connections...",
+    "test": "Test",
+    "delete": "Delete",
+    "testing": "Testing...",
+    "connected": "connected",
+    "disconnected": "disconnected",
+    "error": "error",
+    "connectionSuccessful": "Connection successful!",
+    "connectionDeleted": "Connection deleted",
+    "apiKeys": "API Keys",
+    "manageApiKeys": "Manage API keys for programmatic access",
+    "generateApiKey": "Generate API Key",
+    "noApiKeys": "No API keys",
+    "generateApiKeyAccess": "Generate an API key for programmatic access.",
+    "loadingApiKeys": "Loading API keys...",
+    "created": "Created",
+    "lastUsed": "Last used",
+    "never": "Never",
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "revoke": "Revoke",
+    "apiKeyRevoked": "API key revoked",
+    "apiKeyActivated": "API key activated",
+    "apiKeyDeactivated": "API key deactivated",
+    "notifications": "Notifications",
+    "configureNotifications": "Configure how you want to be notified",
+    "migrationComplete": "Migration Complete",
+    "migrationCompleteDesc": "Get notified when a migration completes successfully",
+    "migrationFailed": "Migration Failed",
+    "migrationFailedDesc": "Get notified when a migration fails",
+    "dailyReport": "Daily Report",
+    "dailyReportDesc": "Receive a daily summary of migrations",
+    "weeklyReport": "Weekly Report",
+    "weeklyReportDesc": "Receive a weekly summary of migrations",
+    "notificationsSaved": "Notification preferences saved",
+    "dangerZone": "Danger Zone",
+    "dangerZoneDesc": "Irreversible and destructive actions",
+    "deleteAllMigrations": "Delete All Migrations",
+    "deleteAllMigrationsDesc": "Permanently delete all migration history and data",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDesc": "Permanently delete your account and all data",
+    "deleteAll": "Delete All",
+    "addDbConnection": "Add Database Connection",
+    "connectionName": "Connection Name",
+    "databaseType": "Database Type",
+    "host": "Host",
+    "port": "Port",
+    "databaseName": "Database Name",
+    "useWindowsAuth": "Use Windows Authentication",
+    "username": "Username",
+    "cancel": "Cancel",
+    "adding": "Adding...",
+    "connectionCreated": "Connection created successfully",
+    "apiKeyCreated": "API Key Created",
+    "copyKeyNow": "Copy this key now. You won't be able to see it again!",
+    "copy": "Copy",
+    "done": "Done",
+    "keyName": "Key Name",
+    "rateLimit": "Rate Limit (requests/hour)",
+    "generating": "Generating...",
+    "generateKey": "Generate Key",
+    "copiedToClipboard": "Copied to clipboard!",
+    "confirmDeleteConnection": "Are you sure you want to delete this connection?",
+    "confirmRevokeApiKey": "Are you sure you want to revoke this API key? This action cannot be undone.",
+    "fillAllFields": "Please fill in all required fields",
+    "enterApiKeyName": "Please enter a name for the API key"
+  },
+  "docs": {
+    "title": "Documentation",
+    "subtitle": "Everything you need to know about DataMigrate AI",
+    "searchPlaceholder": "Search documentation...",
+    "readDocumentation": "Read Documentation",
+    "gettingStarted": {
+      "title": "Getting Started",
+      "description": "Learn how to set up and configure DataMigrate AI for your first migration.",
+      "topics": {
+        "quickStart": "Quick Start Guide",
+        "installation": "Installation",
+        "firstMigration": "First Migration",
+        "configuration": "Configuration"
+      }
+    },
+    "databaseConnections": {
+      "title": "Database Connections",
+      "description": "Configure and manage your MSSQL database connections securely.",
+      "topics": {
+        "connectionSetup": "Connection Setup",
+        "windowsAuth": "Windows Auth",
+        "connectionTesting": "Connection Testing",
+        "security": "Security"
+      }
+    },
+    "migrationGuide": {
+      "title": "Migration Guide",
+      "description": "Step-by-step guide to migrating your MSSQL databases to dbt projects.",
+      "topics": {
+        "tableSelection": "Table Selection",
+        "schemaMapping": "Schema Mapping",
+        "dataTypes": "Data Types",
+        "relationships": "Relationships"
+      }
+    },
+    "apiReference": {
+      "title": "API Reference",
+      "description": "Complete API documentation for integrating with DataMigrate AI.",
+      "topics": {
+        "authentication": "Authentication",
+        "endpoints": "Endpoints",
+        "rateLimits": "Rate Limits",
+        "webhooks": "Webhooks"
+      }
+    },
+    "bestPractices": {
+      "title": "Best Practices",
+      "description": "Guidelines for optimizing your data migrations and dbt projects.",
+      "topics": {
+        "performance": "Performance",
+        "errorHandling": "Error Handling",
+        "testing": "Testing",
+        "deployment": "Deployment"
+      }
+    },
+    "troubleshooting": {
+      "title": "Troubleshooting",
+      "description": "Common issues and solutions for DataMigrate AI.",
+      "topics": {
+        "connectionIssues": "Connection Issues",
+        "migrationErrors": "Migration Errors",
+        "performance": "Performance",
+        "faqs": "FAQs"
+      }
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "migrations": "Migrations",
+    "documentation": "Documentation",
+    "viewNotifications": "View notifications",
+    "openUserMenu": "Open user menu",
+    "openMainMenu": "Open main menu",
+    "yourProfile": "Your Profile",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "viewProfile": "View profile"
   }
 }

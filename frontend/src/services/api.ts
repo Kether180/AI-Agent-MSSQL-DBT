@@ -291,12 +291,13 @@ class ApiService {
   }
 
   // AI Support Chat
-  async sendChatMessage(message: string, conversationHistory: { role: 'user' | 'assistant'; content: string }[]) {
+  async sendChatMessage(message: string, conversationHistory: { role: 'user' | 'assistant'; content: string }[], language: string = 'en') {
     return this.request<{ response: string; sources?: string[] }>('/chat', {
       method: 'POST',
       body: {
         message,
-        history: conversationHistory
+        history: conversationHistory,
+        language
       },
     })
   }

@@ -107,15 +107,15 @@
           </div>
           <div class="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 backdrop-blur-sm">
             <div class="text-3xl font-bold text-white">99.9%</div>
-            <div class="text-slate-400 text-sm">{{ $t('benefits.items.errors.title').split(' ').slice(-1)[0] || 'Accuracy' }}</div>
+            <div class="text-slate-400 text-sm">{{ $t('hero.stats.accuracy') }}</div>
           </div>
           <div class="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 backdrop-blur-sm">
             <div class="text-3xl font-bold text-white">50+</div>
-            <div class="text-slate-400 text-sm">Database Types</div>
+            <div class="text-slate-400 text-sm">{{ $t('hero.stats.databaseTypes') }}</div>
           </div>
           <div class="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 backdrop-blur-sm">
             <div class="text-3xl font-bold text-white">24/7</div>
-            <div class="text-slate-400 text-sm">AI Assistance</div>
+            <div class="text-slate-400 text-sm">{{ $t('hero.stats.aiAssistance') }}</div>
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@
             <svg class="w-5 h-5 text-emerald-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
-            <span class="text-emerald-300 text-sm font-medium">ROI & Business Impact</span>
+            <span class="text-emerald-300 text-sm font-medium">{{ $t('benefits.roiBadge') }}</span>
           </div>
           <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
             {{ $t('benefits.title') }}
@@ -239,7 +239,7 @@
             <span class="text-blue-300 text-sm font-medium">{{ $t('integrations.title') }}</span>
           </div>
           <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">
-            Connect to <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Any Platform</span>
+            {{ $t('integrations.connectTo') }} <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{{ $t('integrations.anyPlatform') }}</span>
           </h2>
           <p class="text-slate-400 max-w-2xl mx-auto">
             {{ $t('integrations.subtitle') }}
@@ -358,7 +358,7 @@
         <!-- Source Databases -->
         <div class="text-center mb-8">
           <h3 class="text-xl font-semibold text-white mb-2">{{ $t('integrations.source') }}</h3>
-          <p class="text-slate-500 text-sm">Connect to your existing databases with secure, read-only access</p>
+          <p class="text-slate-500 text-sm">{{ $t('integrations.sourceDescription') }}</p>
         </div>
 
         <div class="flex flex-wrap justify-center gap-3">
@@ -456,8 +456,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">Data Quality AI</h3>
-            <p class="text-slate-400">ML-powered data quality checks that detect anomalies, validate patterns, and ensure data integrity.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('features.items.quality.title') }}</h3>
+            <p class="text-slate-400">{{ $t('features.items.quality.description') }}</p>
           </div>
 
           <!-- Feature 4 -->
@@ -467,8 +467,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">Multi-Warehouse Support</h3>
-            <p class="text-slate-400">Migrate to Snowflake, BigQuery, Databricks, Redshift, and more with native connectors.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('features.items.multiWarehouse.title') }}</h3>
+            <p class="text-slate-400">{{ $t('features.items.multiWarehouse.description') }}</p>
           </div>
 
           <!-- Feature 5 -->
@@ -489,8 +489,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">BI Integration</h3>
-            <p class="text-slate-400">Connect your BI tools directly and get AI-assisted query optimization for better insights.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('features.items.biIntegration.title') }}</h3>
+            <p class="text-slate-400">{{ $t('features.items.biIntegration.description') }}</p>
           </div>
         </div>
       </div>
@@ -509,7 +509,7 @@
             <svg class="w-5 h-5 text-cyan-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span class="text-cyan-300 text-sm font-medium">Autonomous AI Agents</span>
+            <span class="text-cyan-300 text-sm font-medium">{{ $t('agents.autonomous') }}</span>
           </div>
           <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
             {{ $t('agents.title') }}
@@ -530,7 +530,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.extractor.title') }}</h3>
-                <span class="text-xs text-blue-400 font-medium">Schema Analysis</span>
+                <span class="text-xs text-blue-400 font-medium">{{ $t('agents.items.extractor.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.extractor.description') }}</p>
@@ -546,7 +546,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.dataprep.title') }}</h3>
-                <span class="text-xs text-purple-400 font-medium">Transformation</span>
+                <span class="text-xs text-purple-400 font-medium">{{ $t('agents.items.dataprep.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.dataprep.description') }}</p>
@@ -562,7 +562,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.dbt.title') }}</h3>
-                <span class="text-xs text-orange-400 font-medium">Code Generation</span>
+                <span class="text-xs text-orange-400 font-medium">{{ $t('agents.items.dbt.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.dbt.description') }}</p>
@@ -578,7 +578,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.quality.title') }}</h3>
-                <span class="text-xs text-green-400 font-medium">Validation</span>
+                <span class="text-xs text-green-400 font-medium">{{ $t('agents.items.quality.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.quality.description') }}</p>
@@ -594,7 +594,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.docs.title') }}</h3>
-                <span class="text-xs text-cyan-400 font-medium">Auto-Docs</span>
+                <span class="text-xs text-cyan-400 font-medium">{{ $t('agents.items.docs.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.docs.description') }}</p>
@@ -610,7 +610,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.rag.title') }}</h3>
-                <span class="text-xs text-pink-400 font-medium">Learning</span>
+                <span class="text-xs text-pink-400 font-medium">{{ $t('agents.items.rag.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.rag.description') }}</p>
@@ -626,7 +626,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.bi.title') }}</h3>
-                <span class="text-xs text-indigo-400 font-medium">Insights</span>
+                <span class="text-xs text-indigo-400 font-medium">{{ $t('agents.items.bi.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.bi.description') }}</p>
@@ -642,7 +642,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">{{ $t('agents.items.validation.title') }}</h3>
-                <span class="text-xs text-amber-400 font-medium">Testing</span>
+                <span class="text-xs text-amber-400 font-medium">{{ $t('agents.items.validation.badge') }}</span>
               </div>
             </div>
             <p class="text-slate-400 text-sm">{{ $t('agents.items.validation.description') }}</p>
@@ -656,10 +656,10 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
           <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
-            How It Works
+            {{ $t('howItWorks.title') }}
           </h2>
           <p class="text-xl text-slate-400 max-w-2xl mx-auto">
-            Four simple steps to modernize your data infrastructure
+            {{ $t('howItWorks.subtitle') }}
           </p>
         </div>
 
@@ -669,8 +669,8 @@
             <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white mb-6 shadow-lg shadow-purple-500/30">
               1
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">Connect Source</h3>
-            <p class="text-slate-400">Connect your MSSQL, PostgreSQL, MySQL, or Oracle database securely.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('howItWorks.steps.connect.title') }}</h3>
+            <p class="text-slate-400">{{ $t('howItWorks.steps.connect.description') }}</p>
             <div class="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-purple-500 to-transparent"></div>
           </div>
 
@@ -679,8 +679,8 @@
             <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl font-bold text-white mb-6 shadow-lg shadow-pink-500/30">
               2
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">AI Analysis</h3>
-            <p class="text-slate-400">Our AI analyzes schema, data patterns, and suggests optimal transformations.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('howItWorks.steps.analyze.title') }}</h3>
+            <p class="text-slate-400">{{ $t('howItWorks.steps.analyze.description') }}</p>
             <div class="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-pink-500 to-transparent"></div>
           </div>
 
@@ -689,8 +689,8 @@
             <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-pink-500 to-orange-600 flex items-center justify-center text-2xl font-bold text-white mb-6 shadow-lg shadow-orange-500/30">
               3
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">Generate DBT</h3>
-            <p class="text-slate-400">Auto-generate DBT models, documentation, and tests for your pipeline.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('howItWorks.steps.generate.title') }}</h3>
+            <p class="text-slate-400">{{ $t('howItWorks.steps.generate.description') }}</p>
             <div class="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-orange-500 to-transparent"></div>
           </div>
 
@@ -699,8 +699,8 @@
             <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-orange-500 to-green-600 flex items-center justify-center text-2xl font-bold text-white mb-6 shadow-lg shadow-green-500/30">
               4
             </div>
-            <h3 class="text-xl font-semibold text-white mb-3">Deploy & Monitor</h3>
-            <p class="text-slate-400">Deploy to your warehouse with continuous monitoring and quality checks.</p>
+            <h3 class="text-xl font-semibold text-white mb-3">{{ $t('howItWorks.steps.deploy.title') }}</h3>
+            <p class="text-slate-400">{{ $t('howItWorks.steps.deploy.description') }}</p>
           </div>
         </div>
       </div>
@@ -718,7 +718,7 @@
           <div>
             <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
               {{ $t('security.title') }}<br>
-              <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Built-In</span>
+              <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{{ $t('security.builtIn') }}</span>
             </h2>
             <p class="text-xl text-slate-400 mb-8">
               {{ $t('security.subtitle') }}
@@ -733,7 +733,7 @@
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-white">{{ $t('security.items.encryption') }}</h4>
-                  <p class="text-slate-400">AES-256 encryption for data at rest and TLS 1.3 for data in transit.</p>
+                  <p class="text-slate-400">{{ $t('security.items.encryptionDesc') }}</p>
                 </div>
               </div>
 
@@ -745,7 +745,7 @@
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-white">{{ $t('security.items.soc2') }}</h4>
-                  <p class="text-slate-400">Audited security controls with continuous monitoring and compliance.</p>
+                  <p class="text-slate-400">{{ $t('security.items.soc2Desc') }}</p>
                 </div>
               </div>
 
@@ -757,7 +757,7 @@
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-white">{{ $t('security.items.gdpr') }}</h4>
-                  <p class="text-slate-400">Built-in PII detection, data masking, and compliance reporting.</p>
+                  <p class="text-slate-400">{{ $t('security.items.gdprDesc') }}</p>
                 </div>
               </div>
 
@@ -769,7 +769,7 @@
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-white">{{ $t('security.items.rbac') }}</h4>
-                  <p class="text-slate-400">Granular permissions with SSO integration and audit logging.</p>
+                  <p class="text-slate-400">{{ $t('security.items.rbacDesc') }}</p>
                 </div>
               </div>
             </div>
@@ -778,7 +778,7 @@
           <!-- Security Metrics Visual -->
           <div class="bg-slate-900/50 rounded-2xl border border-slate-700/50 p-8 backdrop-blur-sm">
             <div class="text-center mb-8">
-              <h3 class="text-2xl font-bold text-white mb-2">Security Score</h3>
+              <h3 class="text-2xl font-bold text-white mb-2">{{ $t('security.securityScore') }}</h3>
               <div class="text-6xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                 A+
               </div>
@@ -787,7 +787,7 @@
             <div class="space-y-4">
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-slate-400">Encryption</span>
+                  <span class="text-slate-400">{{ $t('security.metrics.encryption') }}</span>
                   <span class="text-green-400">100%</span>
                 </div>
                 <div class="h-2 bg-slate-700 rounded-full">
@@ -797,7 +797,7 @@
 
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-slate-400">Access Control</span>
+                  <span class="text-slate-400">{{ $t('security.metrics.accessControl') }}</span>
                   <span class="text-green-400">98%</span>
                 </div>
                 <div class="h-2 bg-slate-700 rounded-full">
@@ -807,7 +807,7 @@
 
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-slate-400">Vulnerability Protection</span>
+                  <span class="text-slate-400">{{ $t('security.metrics.vulnerability') }}</span>
                   <span class="text-green-400">99%</span>
                 </div>
                 <div class="h-2 bg-slate-700 rounded-full">
@@ -817,7 +817,7 @@
 
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-slate-400">Audit Logging</span>
+                  <span class="text-slate-400">{{ $t('security.metrics.auditLogging') }}</span>
                   <span class="text-green-400">100%</span>
                 </div>
                 <div class="h-2 bg-slate-700 rounded-full">
@@ -836,7 +836,7 @@
         <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
           {{ $t('cta.title') }}<br>
           <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Data Infrastructure?
+            {{ $t('cta.titleHighlight') }}
           </span>
         </h2>
         <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
@@ -857,7 +857,7 @@
             href="mailto:contact@datamigrate.ai"
             class="px-8 py-4 text-slate-300 hover:text-white transition-colors font-medium"
           >
-            Contact Sales
+            {{ $t('cta.contactSales') }}
           </a>
         </div>
         <p class="text-slate-500 text-sm mt-4">{{ $t('cta.note') }}</p>
@@ -878,7 +878,7 @@
               <span class="text-xl font-bold text-white">DataMigrate AI</span>
             </div>
             <p class="text-slate-400 text-sm mb-2">
-              AI-powered database migrations for the modern data stack.
+              {{ $t('footer.tagline') }}
             </p>
             <p class="text-slate-500 text-xs">
               {{ $t('footer.madeBy') }} <span class="text-slate-400 font-medium">Okoinvestments ApS</span>
@@ -891,27 +891,27 @@
               <li><a href="#features" class="hover:text-white transition-colors">{{ $t('nav.features') }}</a></li>
               <li><a href="#agents" class="hover:text-white transition-colors">{{ $t('nav.agents') }}</a></li>
               <li><a href="#security" class="hover:text-white transition-colors">{{ $t('nav.security') }}</a></li>
-              <li><router-link to="/docs" class="hover:text-white transition-colors">Documentation</router-link></li>
+              <li><router-link to="/docs" class="hover:text-white transition-colors">{{ $t('footer.documentation') }}</router-link></li>
             </ul>
           </div>
 
           <div>
             <h4 class="text-white font-semibold mb-4">{{ $t('footer.company') }}</h4>
             <ul class="space-y-2 text-slate-400 text-sm">
-              <li><a href="#" class="hover:text-white transition-colors">About Okoinvestments</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
-              <li><a href="mailto:contact@okoinvestments.com" class="hover:text-white transition-colors">Contact</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">{{ $t('footer.about') }}</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">{{ $t('footer.blog') }}</a></li>
+              <li><a href="mailto:contact@okoinvestments.com" class="hover:text-white transition-colors">{{ $t('footer.contact') }}</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">{{ $t('footer.careers') }}</a></li>
             </ul>
           </div>
 
           <div>
             <h4 class="text-white font-semibold mb-4">{{ $t('footer.legal') }}</h4>
             <ul class="space-y-2 text-slate-400 text-sm">
-              <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">GDPR</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Data Processing</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">{{ $t('footer.privacy') }}</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">{{ $t('footer.terms') }}</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">{{ $t('security.items.gdpr') }}</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">{{ $t('footer.dataProcessing') }}</a></li>
             </ul>
           </div>
         </div>

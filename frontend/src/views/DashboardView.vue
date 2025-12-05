@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useMigrationsStore } from '@/stores/migrations'
 import { api } from '@/services/api'
 import type { DashboardStats } from '@/types'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
 const migrationsStore = useMigrationsStore()
@@ -70,17 +72,29 @@ const fetchDashboardData = async () => {
 }
 
 const getStatusBadge = (status: string): { class: string; text: string } => {
-  const badges: Record<string, { class: string; text: string }> = {
-    completed: { class: 'bg-green-100 text-green-800', text: 'Completed' },
-    running: { class: 'bg-blue-100 text-blue-800', text: 'Running' },
-    failed: { class: 'bg-red-100 text-red-800', text: 'Failed' },
-    pending: { class: 'bg-yellow-100 text-yellow-800', text: 'Pending' }
+  const badges: Record<string, { class: string; textKey: string }> = {
+    completed: { class: 'bg-green-100 text-green-800', textKey: 'dashboard.status.completed' },
+    running: { class: 'bg-blue-100 text-blue-800', textKey: 'dashboard.status.running' },
+    failed: { class: 'bg-red-100 text-red-800', textKey: 'dashboard.status.failed' },
+    pending: { class: 'bg-yellow-100 text-yellow-800', textKey: 'dashboard.status.pending' }
   }
-  return badges[status] ?? badges.pending!
+  const badge = badges[status] ?? badges.pending!
+  return { class: badge.class, text: t(badge.textKey) }
+}
+
+const localeMap: Record<string, string> = {
+  'en': 'en-US',
+  'da': 'da-DK',
+  'de': 'de-DE',
+  'es': 'es-ES',
+  'pt': 'pt-PT',
+  'no': 'nb-NO',
+  'sv': 'sv-SE'
 }
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
+  const browserLocale = localeMap[locale.value] || 'en-US'
+  return new Date(dateString).toLocaleDateString(browserLocale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -112,10 +126,10 @@ onMounted(() => {
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-8">
           <h1 class="text-3xl font-bold text-white animate-fade-in">
-            Welcome back, <span class="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">{{ userName }}</span>!
+            {{ $t('dashboard.welcomeBack') }}, <span class="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">{{ userName }}</span>!
           </h1>
           <p class="mt-2 text-slate-300">
-            Here's what's happening with your migrations today.
+            {{ $t('dashboard.subtitle') }}
           </p>
         </div>
       </div>
@@ -136,7 +150,7 @@ onMounted(() => {
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-semibold text-slate-500 truncate">
-                    Total Migrations
+                    {{ $t('dashboard.totalMigrations') }}
                   </dt>
                   <dd>
                     <div class="text-3xl font-bold text-slate-800 mt-1">
@@ -162,7 +176,7 @@ onMounted(() => {
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-semibold text-slate-500 truncate">
-                    Completed
+                    {{ $t('dashboard.completed') }}
                   </dt>
                   <dd>
                     <div class="text-3xl font-bold text-emerald-600 mt-1">
@@ -188,7 +202,7 @@ onMounted(() => {
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-semibold text-slate-500 truncate">
-                    Running
+                    {{ $t('dashboard.running') }}
                   </dt>
                   <dd>
                     <div class="text-3xl font-bold text-blue-600 mt-1">
@@ -214,7 +228,7 @@ onMounted(() => {
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-semibold text-slate-500 truncate">
-                    Success Rate
+                    {{ $t('dashboard.successRate') }}
                   </dt>
                   <dd>
                     <div :class="['text-3xl font-bold mt-1', successRateColor]">
@@ -241,14 +255,14 @@ onMounted(() => {
                   </svg>
                 </div>
                 <h3 class="text-lg font-semibold text-slate-800">
-                  Recent Migrations
+                  {{ $t('dashboard.recentMigrations') }}
                 </h3>
               </div>
               <router-link
                 to="/migrations"
                 class="inline-flex items-center text-sm font-medium text-cyan-600 hover:text-cyan-700 transition-colors"
               >
-                View all
+                {{ $t('dashboard.viewAll') }}
                 <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
@@ -267,7 +281,7 @@ onMounted(() => {
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
               </svg>
             </div>
-            <p class="mt-4 text-sm text-gray-500 font-medium">Loading migrations...</p>
+            <p class="mt-4 text-sm text-gray-500 font-medium">{{ $t('dashboard.loading') }}</p>
           </div>
 
           <!-- Empty State -->
@@ -277,8 +291,8 @@ onMounted(() => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
               </svg>
             </div>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900">No migrations yet</h3>
-            <p class="mt-2 text-sm text-gray-500">Get started by creating your first migration.</p>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900">{{ $t('dashboard.noMigrations') }}</h3>
+            <p class="mt-2 text-sm text-gray-500">{{ $t('dashboard.getStarted') }}</p>
             <div class="mt-6">
               <router-link
                 to="/migrations/new"
@@ -287,7 +301,7 @@ onMounted(() => {
                 <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                Create Migration
+                {{ $t('dashboard.createMigration') }}
               </router-link>
             </div>
           </div>
@@ -306,7 +320,7 @@ onMounted(() => {
                     {{ migration.name }}
                   </h4>
                   <p class="mt-1 text-sm text-gray-500">
-                    Created {{ formatDate(migration.created_at) }}
+                    {{ $t('dashboard.created') }} {{ formatDate(migration.created_at) }}
                   </p>
                 </div>
                 <div class="ml-4 flex-shrink-0 flex items-center">
@@ -327,7 +341,7 @@ onMounted(() => {
               <!-- Progress Bar (if running) -->
               <div v-if="migration.status === 'running' && migration.progress" class="mt-3">
                 <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-medium text-blue-600">In Progress</span>
+                  <span class="text-xs font-medium text-blue-600">{{ $t('dashboard.inProgress') }}</span>
                   <span class="text-xs font-semibold text-blue-600">{{ migration.progress }}%</span>
                 </div>
                 <div class="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
@@ -350,7 +364,7 @@ onMounted(() => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ $t('dashboard.quickActions') }}</h3>
         </div>
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <router-link
@@ -365,8 +379,8 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">New Migration</h3>
-                  <p class="mt-1 text-sm text-gray-500">Start a new database migration</p>
+                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $t('dashboard.newMigration') }}</h3>
+                  <p class="mt-1 text-sm text-gray-500">{{ $t('dashboard.startNewMigration') }}</p>
                 </div>
               </div>
             </div>
@@ -385,8 +399,8 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">View All</h3>
-                  <p class="mt-1 text-sm text-gray-500">Browse all migrations</p>
+                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">{{ $t('dashboard.viewAll') }}</h3>
+                  <p class="mt-1 text-sm text-gray-500">{{ $t('dashboard.viewAllMigrations') }}</p>
                 </div>
               </div>
             </div>
@@ -405,8 +419,8 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Documentation</h3>
-                  <p class="mt-1 text-sm text-gray-500">Learn how to use DataMigrate AI</p>
+                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">{{ $t('dashboard.documentation') }}</h3>
+                  <p class="mt-1 text-sm text-gray-500">{{ $t('dashboard.learnHow') }}</p>
                 </div>
               </div>
             </div>
@@ -426,8 +440,8 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">Settings</h3>
-                  <p class="mt-1 text-sm text-gray-500">Manage connections & API keys</p>
+                  <h3 class="text-lg font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">{{ $t('dashboard.settings') }}</h3>
+                  <p class="mt-1 text-sm text-gray-500">{{ $t('dashboard.manageConnections') }}</p>
                 </div>
               </div>
             </div>
@@ -444,8 +458,8 @@ onMounted(() => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-slate-800">AI Agents</h3>
-          <span class="ml-3 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-cyan-500 to-teal-500 text-white">8 Agents</span>
+          <h3 class="text-lg font-semibold text-slate-800">{{ $t('dashboard.aiAgents') }}</h3>
+          <span class="ml-3 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-cyan-500 to-teal-500 text-white">8 {{ $t('dashboard.agents') }}</span>
         </div>
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <!-- DataPrep AI Agent -->
@@ -461,14 +475,14 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-orange-600 transition-colors">DataPrep AI</h3>
-                  <p class="mt-1 text-sm text-slate-500">Clean & prepare data for ML</p>
+                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-orange-600 transition-colors">{{ $t('dashboard.dataPrepAI') }}</h3>
+                  <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.cleanPrepare') }}</p>
                 </div>
               </div>
               <div class="mt-4 flex flex-wrap gap-2">
-                <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">Profiling</span>
-                <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">Dedup</span>
-                <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">Outliers</span>
+                <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">{{ $t('dashboard.profiling') }}</span>
+                <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">{{ $t('dashboard.dedup') }}</span>
+                <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">{{ $t('dashboard.outliers') }}</span>
               </div>
             </div>
             <div class="h-1 bg-gradient-to-r from-orange-500 to-amber-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -487,14 +501,14 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">ML Fine-Tuning</h3>
-                  <p class="mt-1 text-sm text-slate-500">Train custom AI models</p>
+                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">{{ $t('dashboard.mlFineTuning') }}</h3>
+                  <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.trainCustom') }}</p>
                 </div>
               </div>
               <div class="mt-4 flex flex-wrap gap-2">
-                <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">Training</span>
-                <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">Optimize</span>
-                <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">Deploy</span>
+                <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">{{ $t('dashboard.training') }}</span>
+                <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">{{ $t('dashboard.optimize') }}</span>
+                <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">{{ $t('dashboard.deploy') }}</span>
               </div>
             </div>
             <div class="h-1 bg-gradient-to-r from-indigo-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -510,13 +524,13 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-emerald-600 transition-colors">Data Quality</h3>
-                  <p class="mt-1 text-sm text-slate-500">Validate & reconcile data</p>
+                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-emerald-600 transition-colors">{{ $t('dashboard.dataQuality') }}</h3>
+                  <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.validateReconcile') }}</p>
                 </div>
               </div>
               <div class="mt-4 flex flex-wrap gap-2">
-                <span class="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">Validation</span>
-                <span class="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">Profiling</span>
+                <span class="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">{{ $t('dashboard.validation') }}</span>
+                <span class="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">{{ $t('dashboard.profiling') }}</span>
                 <span class="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">99.9%</span>
               </div>
             </div>
@@ -533,14 +547,14 @@ onMounted(() => {
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">BI Analytics</h3>
-                  <p class="mt-1 text-sm text-slate-500">Insights & dashboards</p>
+                  <h3 class="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">{{ $t('dashboard.biAnalytics') }}</h3>
+                  <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.insightsDashboards') }}</p>
                 </div>
               </div>
               <div class="mt-4 flex flex-wrap gap-2">
-                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">Anomalies</span>
-                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">Forecast</span>
-                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">NLP</span>
+                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">{{ $t('dashboard.anomalies') }}</span>
+                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">{{ $t('dashboard.forecast') }}</span>
+                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">{{ $t('dashboard.nlp') }}</span>
               </div>
             </div>
             <div class="h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>

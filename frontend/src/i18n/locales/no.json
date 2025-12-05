@@ -20,7 +20,10 @@
     "stats": {
       "migrations": "Migreringer Fullført",
       "uptime": "Oppetids SLA",
-      "faster": "Raskere Enn Manuelt"
+      "faster": "Raskere Enn Manuelt",
+      "accuracy": "Nøyaktighet",
+      "databaseTypes": "Databasetyper",
+      "aiAssistance": "AI-Assistanse"
     }
   },
   "features": {
@@ -42,50 +45,72 @@
       "security": {
         "title": "Bedriftssikkerhet",
         "description": "SOC 2 kompatibel med ende-til-ende kryptering og revisjonslogging"
+      },
+      "quality": {
+        "title": "Datakvalitets-AI",
+        "description": "ML-drevne datakvalitetskontroller som oppdager anomalier, validerer mønstre og sikrer dataintegritet."
+      },
+      "multiWarehouse": {
+        "title": "Multi-Warehouse Støtte",
+        "description": "Migrer til Snowflake, BigQuery, Databricks, Redshift og mer med native tilkoblinger."
+      },
+      "biIntegration": {
+        "title": "BI-Integrasjon",
+        "description": "Koble BI-verktøyene dine direkte og få AI-assistert spørringsoptimalisering."
       }
     }
   },
   "agents": {
     "title": "Møt Våre AI Agenter",
     "subtitle": "8 spesialiserte agenter som jobber sammen for å automatisere hele din datamigreringspipeline",
+    "autonomous": "Autonome AI Agenter",
     "items": {
       "extractor": {
         "title": "MSSQL Ekstraktor",
-        "description": "Ekstraherer intelligent skjemaer, relasjoner og metadata fra dine MSSQL-databaser"
+        "description": "Ekstraherer intelligent skjemaer, relasjoner og metadata fra dine MSSQL-databaser",
+        "badge": "Skjemaanalyse"
       },
       "dbt": {
         "title": "dbt Generator",
-        "description": "Oppretter automatisk produksjonsklare dbt-modeller, tester og dokumentasjon"
+        "description": "Oppretter automatisk produksjonsklare dbt-modeller, tester og dokumentasjon",
+        "badge": "Kodegenerering"
       },
       "quality": {
         "title": "Datakvalitet",
-        "description": "Validerer dataintegritet med 50+ kvalitetskontroller og anomalideteksjon"
+        "description": "Validerer dataintegritet med 50+ kvalitetskontroller og anomalideteksjon",
+        "badge": "Validering"
       },
       "dataprep": {
         "title": "Dataforberedelse",
-        "description": "Renser, transformerer og forbereder dataene dine for mål-warehouse"
+        "description": "Renser, transformerer og forbereder dataene dine for mål-warehouse",
+        "badge": "Transformasjon"
       },
       "docs": {
         "title": "Dokumentasjon",
-        "description": "Auto-genererer omfattende dokumentasjon og datalinjekart"
+        "description": "Auto-genererer omfattende dokumentasjon og datalinjekart",
+        "badge": "Auto-Docs"
       },
       "rag": {
         "title": "RAG Tjeneste",
-        "description": "Gjenfinningsforsterket generering for intelligent spørringsassistanse"
+        "description": "Gjenfinningsforsterket generering for intelligent spørringsassistanse",
+        "badge": "Læring"
       },
       "bi": {
         "title": "BI Analytics",
-        "description": "Genererer innsikt, dashboards og forretningsintelligensrapporter"
+        "description": "Genererer innsikt, dashboards og forretningsintelligensrapporter",
+        "badge": "Innsikt"
       },
       "validation": {
         "title": "Valideringsagent",
-        "description": "Sikrer migrasjonsnøyaktighet med radtellinger, sjekksummer og datasammenligning"
+        "description": "Sikrer migrasjonsnøyaktighet med radtellinger, sjekksummer og datasammenligning",
+        "badge": "Testing"
       }
     }
   },
   "benefits": {
     "title": "Hvorfor Velge DataMigrate AI?",
     "subtitle": "Transformer din datainfrastruktur med målbar forretningsverdi",
+    "roiBadge": "ROI og Forretningsverdi",
     "items": {
       "cost": {
         "title": "Reduser Kostnader med 70%",
@@ -116,34 +141,142 @@
   "integrations": {
     "title": "Sømløse Integrasjoner",
     "subtitle": "Koble kildedatabasene dine til moderne sky data warehouses",
+    "connectTo": "Koble til",
+    "anyPlatform": "Enhver Plattform",
     "target": "Mål Data Warehouses",
     "source": "Kildedatabaser",
+    "sourceDescription": "Koble til dine eksisterende databaser med sikker, skrivebeskyttet tilgang",
     "pipeline": "AI-Drevet Migreringspipeline"
+  },
+  "howItWorks": {
+    "title": "Hvordan Det Fungerer",
+    "subtitle": "Fire enkle steg for å modernisere din datainfrastruktur",
+    "steps": {
+      "connect": {
+        "title": "Koble Kilde",
+        "description": "Koble din MSSQL, PostgreSQL, MySQL eller Oracle database sikkert."
+      },
+      "analyze": {
+        "title": "AI-Analyse",
+        "description": "Vår AI analyserer skjema, datamønstre og foreslår optimale transformasjoner."
+      },
+      "generate": {
+        "title": "Generer DBT",
+        "description": "Auto-generer DBT-modeller, dokumentasjon og tester for din pipeline."
+      },
+      "deploy": {
+        "title": "Distribuer og Overvåk",
+        "description": "Distribuer til ditt warehouse med kontinuerlig overvåking og kvalitetskontroller."
+      }
+    }
   },
   "security": {
     "title": "Bedriftsklasse Sikkerhet",
+    "builtIn": "Innebygd",
     "subtitle": "Dataene dine er beskyttet med bransjeledende sikkerhetstiltak",
+    "securityScore": "Sikkerhetspoengsum",
     "items": {
       "encryption": "Ende-til-ende AES-256 kryptering",
+      "encryptionDesc": "AES-256-kryptering for data i hvile og TLS 1.3 for data under overføring.",
       "soc2": "SOC 2 Type II sertifisert",
+      "soc2Desc": "Reviderte sikkerhetskontroller med kontinuerlig overvåking og samsvar.",
       "gdpr": "GDPR kompatibel",
+      "gdprDesc": "Innebygd PII-deteksjon, datamaskering og samsvarsrapportering.",
       "audit": "Komplett revisjonslogging",
       "rbac": "Rollebasert tilgangskontroll",
+      "rbacDesc": "Granulære tillatelser med SSO-integrasjon og revisjonslogging.",
       "mfa": "Multifaktorautentisering"
+    },
+    "metrics": {
+      "encryption": "Kryptering",
+      "accessControl": "Tilgangskontroll",
+      "vulnerability": "Sårbarhetsbeskyttelse",
+      "auditLogging": "Revisjonslogging"
     }
   },
   "cta": {
-    "title": "Klar til å Modernisere Dataene Dine?",
+    "title": "Klar til å Modernisere Din",
+    "titleHighlight": "Datainfrastruktur?",
     "subtitle": "Bli med hundrevis av selskaper som har migrert vellykket med DataMigrate AI",
     "button": "Start Gratis Prøveperiode",
+    "contactSales": "Kontakt Salg",
     "note": "Ingen kredittkort påkrevd"
   },
   "footer": {
+    "tagline": "AI-drevne databasemigreringer for den moderne data stack.",
     "product": "Produkt",
     "company": "Selskap",
     "resources": "Ressurser",
     "legal": "Juridisk",
+    "documentation": "Dokumentasjon",
+    "about": "Om Okoinvestments",
+    "blog": "Blogg",
+    "contact": "Kontakt",
+    "careers": "Karriere",
+    "privacy": "Personvernerklæring",
+    "terms": "Tjenestevilkår",
+    "dataProcessing": "Databehandling",
     "copyright": "Alle rettigheter reservert.",
     "madeBy": "Et produkt av"
+  },
+  "dashboard": {
+    "welcomeBack": "Velkommen tilbake",
+    "subtitle": "Her er hva som skjer med migreringene dine i dag.",
+    "totalMigrations": "Totalt Migreringer",
+    "completed": "Fullført",
+    "running": "Kjører",
+    "successRate": "Suksessrate",
+    "recentMigrations": "Nylige Migreringer",
+    "viewAll": "Se alle",
+    "loading": "Laster migreringer...",
+    "noMigrations": "Ingen migreringer ennå",
+    "getStarted": "Kom i gang ved å opprette din første migrering.",
+    "createMigration": "Opprett Migrering",
+    "created": "Opprettet",
+    "inProgress": "Pågår",
+    "quickActions": "Hurtighandlinger",
+    "newMigration": "Ny Migrering",
+    "startNewMigration": "Start en ny databasemigrering",
+    "viewAllMigrations": "Bla gjennom alle migreringer",
+    "documentation": "Dokumentasjon",
+    "learnHow": "Lær hvordan du bruker DataMigrate AI",
+    "settings": "Innstillinger",
+    "manageConnections": "Administrer tilkoblinger og API-nøkler",
+    "aiAgents": "AI-Agenter",
+    "agents": "Agenter",
+    "dataPrepAI": "DataPrep AI",
+    "cleanPrepare": "Rens og klargjør data for ML",
+    "profiling": "Profilering",
+    "dedup": "Dedup",
+    "outliers": "Outliers",
+    "mlFineTuning": "ML Finjustering",
+    "trainCustom": "Tren tilpassede AI-modeller",
+    "training": "Trening",
+    "optimize": "Optimaliser",
+    "deploy": "Distribuer",
+    "dataQuality": "Datakvalitet",
+    "validateReconcile": "Valider og avstem data",
+    "validation": "Validering",
+    "biAnalytics": "BI Analytics",
+    "insightsDashboards": "Innsikt og dashboards",
+    "anomalies": "Anomalier",
+    "forecast": "Prognose",
+    "nlp": "NLP",
+    "status": {
+      "completed": "Fullført",
+      "running": "Kjører",
+      "failed": "Mislyktes",
+      "pending": "Venter"
+    }
+  },
+  "chat": {
+    "title": "AI Support-assistent",
+    "subtitle": "Alltid her for å hjelpe",
+    "welcomeMessage": "Hei! Jeg er din AI Support-assistent. Hvordan kan jeg hjelpe deg med DataMigrate AI i dag?",
+    "placeholder": "Spør om migreringer, dbt, agenter...",
+    "clearChat": "Tøm chat",
+    "requestCallback": "Be om tilbakeringing",
+    "emailUs": "Send oss e-post",
+    "offlineMode": "Offline-modus - svarene kan være begrenset"
   }
 }

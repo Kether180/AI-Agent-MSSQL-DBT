@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { api } from '@/services/api'
 import { marked } from 'marked'
 
@@ -9,11 +10,30 @@ marked.setOptions({
   gfm: true
 })
 
+const { t, locale } = useI18n()
+
 const isChatOpen = ref(false)
 const message = ref('')
-const chatMessages = ref<{ role: 'user' | 'assistant'; content: string }[]>([
-  { role: 'assistant', content: 'Hello! I\'m your AI Support Assistant. How can I help you with DataMigrate AI today?' }
-])
+const chatMessages = ref<{ role: 'user' | 'assistant'; content: string }[]>([])
+
+// Initialize chat with translated welcome message
+const initializeChat = () => {
+  chatMessages.value = [
+    { role: 'assistant', content: t('chat.welcomeMessage') }
+  ]
+}
+
+// Initialize on mount
+onMounted(() => {
+  initializeChat()
+})
+
+// Watch for locale changes - reset chat to use new language
+watch(locale, () => {
+  // Reset chat when language changes so the AI responds in the new language
+  initializeChat()
+  hasError.value = false
+})
 const isLoading = ref(false)
 const hasError = ref(false)
 const chatContainer = ref<HTMLElement | null>(null)
@@ -60,8 +80,8 @@ const sendMessage = async () => {
     // Get conversation history (exclude the welcome message for API)
     const history = chatMessages.value.slice(1, -1) // Exclude welcome and current message
 
-    // Call the real API
-    const response = await api.sendChatMessage(userMessage, history)
+    // Call the real API with the current locale
+    const response = await api.sendChatMessage(userMessage, history, locale.value)
 
     chatMessages.value.push({
       role: 'assistant',
@@ -119,9 +139,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
 }
 
 const clearChat = () => {
-  chatMessages.value = [
-    { role: 'assistant', content: 'Hello! I\'m your AI Support Assistant. How can I help you with DataMigrate AI today?' }
-  ]
+  initializeChat()
   hasError.value = false
 }
 
@@ -180,8 +198,8 @@ Our support team typically responds within 2-4 business hours.`
                 </svg>
               </div>
               <div>
-                <h3 class="text-white font-semibold">AI Support Assistant</h3>
-                <p class="text-cyan-100 text-xs">Always here to help</p>
+                <h3 class="text-white font-semibold">{{ $t('chat.title') }}</h3>
+                <p class="text-cyan-100 text-xs">{{ $t('chat.subtitle') }}</p>
               </div>
             </div>
             <div class="flex items-center space-x-1">
@@ -189,7 +207,7 @@ Our support team typically responds within 2-4 business hours.`
               <button
                 @click="clearChat"
                 class="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                title="Clear chat"
+                :title="$t('chat.clearChat')"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -214,7 +232,7 @@ Our support team typically responds within 2-4 business hours.`
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
-            Using offline mode - responses may be limited
+            {{ $t('chat.offlineMode') }}
           </p>
         </div>
 
@@ -258,23 +276,23 @@ Our support team typically responds within 2-4 business hours.`
           <button
             @click="requestCallback"
             class="flex items-center text-xs text-slate-600 hover:text-cyan-600 transition-colors"
-            title="Request a callback"
+            :title="$t('chat.requestCallback')"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
             </svg>
-            Request Callback
+            {{ $t('chat.requestCallback') }}
           </button>
           <span class="text-slate-300">|</span>
           <a
             href="mailto:support@datamigrate.ai?subject=Support%20Request"
             class="flex items-center text-xs text-slate-600 hover:text-cyan-600 transition-colors"
-            title="Email support"
+            :title="$t('chat.emailUs')"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
-            Email Us
+            {{ $t('chat.emailUs') }}
           </a>
         </div>
 
@@ -285,7 +303,7 @@ Our support team typically responds within 2-4 business hours.`
               v-model="message"
               @keypress="handleKeyPress"
               type="text"
-              placeholder="Ask about migrations, dbt, agents..."
+              :placeholder="$t('chat.placeholder')"
               class="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
               :disabled="isLoading"
             />
@@ -328,7 +346,7 @@ Our support team typically responds within 2-4 business hours.`
 
       <!-- Tooltip (only when chat is closed) -->
       <span v-if="!isChatOpen" class="absolute right-20 bg-slate-800 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg">
-        AI Support Assistant
+        {{ $t('chat.title') }}
         <span class="absolute right-[-6px] top-1/2 -translate-y-1/2 border-8 border-transparent border-l-slate-800"></span>
       </span>
     </button>

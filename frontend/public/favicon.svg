@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#2563EB"/>
+
+  <!-- Database icon (stacked cylinders) -->
+  <ellipse cx="32" cy="20" rx="14" ry="5" fill="#fff" opacity="0.9"/>
+  <rect x="18" y="20" width="28" height="12" fill="#fff" opacity="0.9"/>
+  <ellipse cx="32" cy="32" rx="14" ry="5" fill="#fff" opacity="0.9"/>
+  <rect x="18" y="32" width="28" height="10" fill="#fff" opacity="0.9"/>
+  <ellipse cx="32" cy="42" rx="14" ry="5" fill="#fff" opacity="0.9"/>
+
+  <!-- AI sparkle/neural indicator -->
+  <circle cx="48" cy="16" r="6" fill="#60A5FA"/>
+  <path d="M48 12 L48 20 M44 16 L52 16" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Arrow indicating transformation -->
+  <path d="M20 50 L32 56 L44 50" fill="none" stroke="#60A5FA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

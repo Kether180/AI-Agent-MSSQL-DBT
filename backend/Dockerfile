@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.22-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
@@ -8,13 +8,13 @@ RUN apk add --no-cache git
 
 # Copy go mod files
 COPY go.mod go.sum* ./
-RUN go mod download
+RUN GOTOOLCHAIN=auto go mod download
 
 # Copy source code
 COPY . .
 
 # Build the binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server
+RUN GOTOOLCHAIN=auto CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server
 
 # Production stage
 FROM alpine:3.19

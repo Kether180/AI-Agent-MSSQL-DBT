@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import LanguageSelector from '@/components/LanguageSelector.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -98,6 +99,9 @@ const getUserInitials = () => {
 
         <!-- Desktop User Menu -->
         <div class="hidden sm:ml-6 sm:flex sm:items-center">
+          <!-- Language Selector -->
+          <LanguageSelector />
+
           <!-- Notifications -->
           <button
             class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200"
@@ -222,16 +226,19 @@ const getUserInitials = () => {
 
         <!-- Mobile User Menu -->
         <div class="pt-4 pb-3 border-t border-slate-700">
-          <div class="flex items-center px-4">
-            <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-medium shadow-lg">
-                {{ getUserInitials() }}
+          <div class="flex items-center justify-between px-4">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-medium shadow-lg">
+                  {{ getUserInitials() }}
+                </div>
+              </div>
+              <div class="ml-3">
+                <div class="text-base font-medium text-white">{{ user?.email }}</div>
+                <div class="text-sm font-medium text-slate-400">View profile</div>
               </div>
             </div>
-            <div class="ml-3">
-              <div class="text-base font-medium text-white">{{ user?.email }}</div>
-              <div class="text-sm font-medium text-slate-400">View profile</div>
-            </div>
+            <LanguageSelector />
           </div>
           <div class="mt-3 space-y-1">
             <button

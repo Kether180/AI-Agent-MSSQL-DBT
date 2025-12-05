@@ -20,7 +20,10 @@
     "stats": {
       "migrations": "Migrações Concluídas",
       "uptime": "SLA de Disponibilidade",
-      "faster": "Mais Rápido Que Manual"
+      "faster": "Mais Rápido Que Manual",
+      "accuracy": "Precisão",
+      "databaseTypes": "Tipos de Banco de Dados",
+      "aiAssistance": "Assistência IA"
     }
   },
   "features": {
@@ -42,50 +45,72 @@
       "security": {
         "title": "Segurança Empresarial",
         "description": "Conformidade SOC 2 com criptografia de ponta a ponta e registro de auditoria"
+      },
+      "quality": {
+        "title": "IA de Qualidade de Dados",
+        "description": "Verificações de qualidade de dados com ML que detectam anomalias, validam padrões e garantem a integridade dos dados."
+      },
+      "multiWarehouse": {
+        "title": "Suporte Multi-Warehouse",
+        "description": "Migre para Snowflake, BigQuery, Databricks, Redshift e mais com conectores nativos."
+      },
+      "biIntegration": {
+        "title": "Integração BI",
+        "description": "Conecte suas ferramentas BI diretamente e obtenha otimização de consultas assistida por IA."
       }
     }
   },
   "agents": {
     "title": "Conheça Nossos Agentes IA",
     "subtitle": "8 agentes especializados trabalhando juntos para automatizar todo o seu pipeline de migração de dados",
+    "autonomous": "Agentes IA Autônomos",
     "items": {
       "extractor": {
         "title": "Extrator MSSQL",
-        "description": "Extrai inteligentemente esquemas, relacionamentos e metadados dos seus bancos de dados MSSQL"
+        "description": "Extrai inteligentemente esquemas, relacionamentos e metadados dos seus bancos de dados MSSQL",
+        "badge": "Análise de Esquema"
       },
       "dbt": {
         "title": "Gerador dbt",
-        "description": "Cria automaticamente modelos dbt prontos para produção, testes e documentação"
+        "description": "Cria automaticamente modelos dbt prontos para produção, testes e documentação",
+        "badge": "Geração de Código"
       },
       "quality": {
         "title": "Qualidade de Dados",
-        "description": "Valida a integridade dos dados com mais de 50 verificações de qualidade e detecção de anomalias"
+        "description": "Valida a integridade dos dados com mais de 50 verificações de qualidade e detecção de anomalias",
+        "badge": "Validação"
       },
       "dataprep": {
         "title": "Preparação de Dados",
-        "description": "Limpa, transforma e prepara seus dados para o warehouse de destino"
+        "description": "Limpa, transforma e prepara seus dados para o warehouse de destino",
+        "badge": "Transformação"
       },
       "docs": {
         "title": "Documentação",
-        "description": "Gera automaticamente documentação abrangente e mapas de linhagem de dados"
+        "description": "Gera automaticamente documentação abrangente e mapas de linhagem de dados",
+        "badge": "Auto-Docs"
       },
       "rag": {
         "title": "Serviço RAG",
-        "description": "Geração aumentada por recuperação para assistência inteligente de consultas"
+        "description": "Geração aumentada por recuperação para assistência inteligente de consultas",
+        "badge": "Aprendizado"
       },
       "bi": {
         "title": "Analytics BI",
-        "description": "Gera insights, dashboards e relatórios de business intelligence"
+        "description": "Gera insights, dashboards e relatórios de business intelligence",
+        "badge": "Insights"
       },
       "validation": {
         "title": "Agente de Validação",
-        "description": "Garante a precisão da migração com contagem de linhas, checksums e comparação de dados"
+        "description": "Garante a precisão da migração com contagem de linhas, checksums e comparação de dados",
+        "badge": "Testes"
       }
     }
   },
   "benefits": {
     "title": "Por Que Escolher DataMigrate AI?",
     "subtitle": "Transforme sua infraestrutura de dados com impacto empresarial mensurável",
+    "roiBadge": "ROI e Impacto nos Negócios",
     "items": {
       "cost": {
         "title": "Reduza Custos em 70%",
@@ -116,34 +141,142 @@
   "integrations": {
     "title": "Integrações Sem Problemas",
     "subtitle": "Conecte seus bancos de dados de origem a modernos data warehouses na nuvem",
+    "connectTo": "Conecte a",
+    "anyPlatform": "Qualquer Plataforma",
     "target": "Data Warehouses de Destino",
     "source": "Bancos de Dados de Origem",
+    "sourceDescription": "Conecte aos seus bancos de dados existentes com acesso seguro somente leitura",
     "pipeline": "Pipeline de Migração Impulsionado por IA"
+  },
+  "howItWorks": {
+    "title": "Como Funciona",
+    "subtitle": "Quatro passos simples para modernizar sua infraestrutura de dados",
+    "steps": {
+      "connect": {
+        "title": "Conectar Origem",
+        "description": "Conecte seu banco de dados MSSQL, PostgreSQL, MySQL ou Oracle de forma segura."
+      },
+      "analyze": {
+        "title": "Análise IA",
+        "description": "Nossa IA analisa esquemas, padrões de dados e sugere transformações ideais."
+      },
+      "generate": {
+        "title": "Gerar DBT",
+        "description": "Auto-gere modelos DBT, documentação e testes para seu pipeline."
+      },
+      "deploy": {
+        "title": "Implantar e Monitorar",
+        "description": "Implante no seu warehouse com monitoramento contínuo e verificações de qualidade."
+      }
+    }
   },
   "security": {
     "title": "Segurança de Nível Empresarial",
+    "builtIn": "Integrada",
     "subtitle": "Seus dados são protegidos com medidas de segurança líderes do setor",
+    "securityScore": "Pontuação de Segurança",
     "items": {
       "encryption": "Criptografia AES-256 de ponta a ponta",
+      "encryptionDesc": "Criptografia AES-256 para dados em repouso e TLS 1.3 para dados em trânsito.",
       "soc2": "Certificado SOC 2 Tipo II",
+      "soc2Desc": "Controles de segurança auditados com monitoramento e conformidade contínuos.",
       "gdpr": "Conformidade GDPR",
+      "gdprDesc": "Detecção de PII integrada, mascaramento de dados e relatórios de conformidade.",
       "audit": "Registro de auditoria completo",
       "rbac": "Controle de acesso baseado em funções",
+      "rbacDesc": "Permissões granulares com integração SSO e registro de auditoria.",
       "mfa": "Autenticação multifator"
+    },
+    "metrics": {
+      "encryption": "Criptografia",
+      "accessControl": "Controle de Acesso",
+      "vulnerability": "Proteção contra Vulnerabilidades",
+      "auditLogging": "Registro de Auditoria"
     }
   },
   "cta": {
-    "title": "Pronto para Modernizar Seus Dados?",
+    "title": "Pronto para Modernizar Sua",
+    "titleHighlight": "Infraestrutura de Dados?",
     "subtitle": "Junte-se a centenas de empresas que migraram com sucesso com DataMigrate AI",
     "button": "Iniciar Teste Grátis",
+    "contactSales": "Contatar Vendas",
     "note": "Não é necessário cartão de crédito"
   },
   "footer": {
+    "tagline": "Migrações de banco de dados impulsionadas por IA para o stack de dados moderno.",
     "product": "Produto",
     "company": "Empresa",
     "resources": "Recursos",
     "legal": "Legal",
+    "documentation": "Documentação",
+    "about": "Sobre Okoinvestments",
+    "blog": "Blog",
+    "contact": "Contato",
+    "careers": "Carreiras",
+    "privacy": "Política de Privacidade",
+    "terms": "Termos de Serviço",
+    "dataProcessing": "Processamento de Dados",
     "copyright": "Todos os direitos reservados.",
     "madeBy": "Um produto de"
+  },
+  "dashboard": {
+    "welcomeBack": "Bem-vindo de volta",
+    "subtitle": "Veja o que está acontecendo com suas migrações hoje.",
+    "totalMigrations": "Total de Migrações",
+    "completed": "Concluídas",
+    "running": "Em Execução",
+    "successRate": "Taxa de Sucesso",
+    "recentMigrations": "Migrações Recentes",
+    "viewAll": "Ver todas",
+    "loading": "Carregando migrações...",
+    "noMigrations": "Nenhuma migração ainda",
+    "getStarted": "Comece criando sua primeira migração.",
+    "createMigration": "Criar Migração",
+    "created": "Criada",
+    "inProgress": "Em Progresso",
+    "quickActions": "Ações Rápidas",
+    "newMigration": "Nova Migração",
+    "startNewMigration": "Iniciar uma nova migração de banco de dados",
+    "viewAllMigrations": "Explorar todas as migrações",
+    "documentation": "Documentação",
+    "learnHow": "Aprenda a usar o DataMigrate AI",
+    "settings": "Configurações",
+    "manageConnections": "Gerenciar conexões e chaves API",
+    "aiAgents": "Agentes IA",
+    "agents": "Agentes",
+    "dataPrepAI": "DataPrep IA",
+    "cleanPrepare": "Limpar e preparar dados para ML",
+    "profiling": "Perfilamento",
+    "dedup": "Dedup",
+    "outliers": "Outliers",
+    "mlFineTuning": "ML Ajuste Fino",
+    "trainCustom": "Treinar modelos IA personalizados",
+    "training": "Treinamento",
+    "optimize": "Otimizar",
+    "deploy": "Implantar",
+    "dataQuality": "Qualidade de Dados",
+    "validateReconcile": "Validar e reconciliar dados",
+    "validation": "Validação",
+    "biAnalytics": "BI Analytics",
+    "insightsDashboards": "Insights e dashboards",
+    "anomalies": "Anomalias",
+    "forecast": "Previsão",
+    "nlp": "NLP",
+    "status": {
+      "completed": "Concluída",
+      "running": "Em Execução",
+      "failed": "Falhou",
+      "pending": "Pendente"
+    }
+  },
+  "chat": {
+    "title": "Assistente de Suporte IA",
+    "subtitle": "Sempre aqui para ajudar",
+    "welcomeMessage": "Olá! Sou seu Assistente de Suporte IA. Como posso ajudá-lo com DataMigrate AI hoje?",
+    "placeholder": "Pergunte sobre migrações, dbt, agentes...",
+    "clearChat": "Limpar chat",
+    "requestCallback": "Solicitar chamada",
+    "emailUs": "Envie-nos um email",
+    "offlineMode": "Modo offline - as respostas podem ser limitadas"
   }
 }

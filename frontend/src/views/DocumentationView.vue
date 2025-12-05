@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
 
 const searchQuery = ref('')
 const activeSection = ref<string | null>(null)
@@ -65,15 +65,36 @@ const docSectionConfigs: DocSection[] = [
   }
 ]
 
+// Helper to get topics array from translations
+const getTopics = (translationKey: string): string[] => {
+  const topics = tm(`docs.${translationKey}.topics`) as unknown
+  if (Array.isArray(topics)) {
+    return topics.map((topic: unknown) => typeof topic === 'string' ? topic : String(topic))
+  }
+  return []
+}
+
+// Helper to get steps array from translations
+const getSteps = (translationKey: string): DocStep[] => {
+  const steps = tm(`docs.${translationKey}.steps`) as unknown
+  if (Array.isArray(steps)) {
+    return steps.map((step: { title?: unknown; description?: unknown }) => ({
+      title: typeof step.title === 'string' ? step.title : String(step.title || ''),
+      description: typeof step.description === 'string' ? step.description : String(step.description || '')
+    }))
+  }
+  return []
+}
+
 // Build sections dynamically from translations
 const docSections = computed(() => {
   return docSectionConfigs.map(config => ({
     ...config,
     title: t(`docs.${config.translationKey}.title`),
     description: t(`docs.${config.translationKey}.description`),
-    topics: t(`docs.${config.translationKey}.topics`) as unknown as string[],
+    topics: getTopics(config.translationKey),
     overview: t(`docs.${config.translationKey}.overview`),
-    steps: t(`docs.${config.translationKey}.steps`) as unknown as DocStep[]
+    steps: getSteps(config.translationKey)
   }))
 })
 

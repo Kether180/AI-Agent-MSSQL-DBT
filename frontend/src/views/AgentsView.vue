@@ -1,8 +1,21 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { aiService } from '../services/api'
 
 const { t } = useI18n()
+
+// Live health data from API
+const liveHealthData = ref<Record<string, { status: string; importable: boolean; error?: string }>>({})
+const healthCheckLoading = ref(false)
+const healthCheckError = ref<string | null>(null)
+
+// Supervisor metrics
+const supervisorMetrics = ref<{
+  total_requests: number
+  routing_decisions: Record<string, number>
+  average_confidence: number
+} | null>(null)
 
 type ProductionStatus = 'production' | 'beta' | 'coming-soon'
 
@@ -91,18 +104,18 @@ const agents = ref<Agent[]>([
   {
     id: 'validation',
     name: 'Validation Agent',
-    description: 'Ensures migration accuracy with row counts, checksums, and data comparison',
-    longDescription: 'The Validation Agent ensures your migration is complete and accurate. It compares row counts between source and target, calculates checksums, and performs sample data comparisons. The agent can run reconciliation reports post-migration.',
-    badge: 'Testing',
+    description: 'Self-healing validation with Actor-Critic pattern for automatic error recovery',
+    longDescription: 'The Validation Agent implements the Actor-Critic self-healing pattern from "Building Applications with AI Agents" (O\'Reilly, 2025). It validates migrations against a quality rubric (schema completeness, data type accuracy, referential integrity, dbt syntax, test coverage, documentation). When issues are detected, it automatically regenerates and re-validates up to 3 times.',
+    badge: 'Actor-Critic',
     color: 'amber',
     icon: 'clipboard-check',
-    status: 'idle',
+    status: 'active',
     productionStatus: 'beta',
-    completionPercent: 50,
-    lastRun: '2024-12-05T06:00:00',
+    completionPercent: 65,
+    lastRun: new Date().toISOString(),
     processedItems: 89000,
-    capabilities: ['Row count validation', 'Checksum comparison', 'Sample data verification', 'Reconciliation reports', 'Delta detection'],
-    techStack: ['pandas', 'hashlib', 'pyodbc']
+    capabilities: ['Actor-Critic self-healing', 'Quality rubric scoring', 'Automatic regeneration', 'Row count validation', 'dbt syntax validation', 'Test coverage analysis'],
+    techStack: ['LangGraph', 'pandas', 'pyodbc']
   },
   {
     id: 'rag-service',
@@ -187,18 +200,18 @@ const agents = ref<Agent[]>([
   {
     id: 'guardian',
     name: 'Guardian Agent',
-    description: 'Orchestrates all agents, monitors pipeline health, and ensures safe operations',
-    longDescription: 'The Guardian Agent is the orchestrator that manages all other agents. It monitors system health, handles failures gracefully, and ensures safe operations. The agent implements guardrails to prevent dangerous operations and maintains audit logs.',
-    badge: 'Orchestration',
+    description: 'Orchestrates all agents, monitors pipeline health, and ensures safe operations with MAESTRO security framework',
+    longDescription: 'The Guardian Agent is the orchestrator that manages all other agents. It implements the MAESTRO 7-layer security framework from "Building Applications with AI Agents" (O\'Reilly, 2025). Features include input sanitization, output filtering, rate limiting, prompt injection prevention, and comprehensive audit logging.',
+    badge: 'Security',
     color: 'violet',
     icon: 'shield-exclamation',
-    status: 'idle',
-    productionStatus: 'coming-soon',
-    completionPercent: 5,
-    lastRun: null,
+    status: 'active',
+    productionStatus: 'beta',
+    completionPercent: 40,
+    lastRun: new Date().toISOString(),
     processedItems: 0,
-    capabilities: ['Agent orchestration', 'Health monitoring', 'Failure recovery', 'Guardrails enforcement', 'Audit logging'],
-    techStack: ['LangGraph', 'Redis', 'Celery']
+    capabilities: ['MAESTRO 7-layer security', 'Input sanitization', 'Prompt injection prevention', 'Rate limiting', 'Audit logging', 'Security assessment'],
+    techStack: ['LangGraph', 'Pydantic', 'FastAPI']
   }
 ])
 
@@ -302,21 +315,95 @@ const closeDetail = () => {
   selectedAgent.value = null
 }
 
-// Simulate agent status updates
+// Fetch live health data from API
+const fetchHealthData = async () => {
+  healthCheckLoading.value = true
+  healthCheckError.value = null
+  try {
+    const response = await aiService.getAgentsHealth()
+    // Map API response to our health data format
+    if (response.agents) {
+      const healthMap: Record<string, { status: string; importable: boolean; error?: string }> = {}
+      for (const [id, data] of Object.entries(response.agents)) {
+        healthMap[id] = {
+          status: data.health?.status || 'unknown',
+          importable: data.health?.importable || false,
+          error: data.health?.error
+        }
+      }
+      liveHealthData.value = healthMap
+    }
+  } catch (error: any) {
+    healthCheckError.value = error.message || 'Failed to fetch health data'
+    console.error('Failed to fetch agent health:', error)
+  } finally {
+    healthCheckLoading.value = false
+  }
+}
+
+// Fetch supervisor metrics
+const fetchSupervisorMetrics = async () => {
+  try {
+    const response = await aiService.getSupervisorMetrics()
+    supervisorMetrics.value = {
+      total_requests: response.total_requests,
+      routing_decisions: response.routing_decisions,
+      average_confidence: response.average_confidence
+    }
+  } catch (error) {
+    console.error('Failed to fetch supervisor metrics:', error)
+  }
+}
+
+// Get live status for an agent
+const getLiveStatus = (agentId: string): 'healthy' | 'unhealthy' | 'degraded' | 'unknown' => {
+  const idMap: Record<string, string> = {
+    'mssql-extractor': 'mssql_extractor',
+    'dbt-generator': 'dbt_generator',
+    'dbt-executor': 'dbt_executor',
+    'data-quality': 'data_quality_agent',
+    'validation': 'validation_agent',
+    'rag-service': 'rag_service',
+    'guardian': 'guardian_agent',
+    'dataprep': 'dataprep_agent',
+    'documentation': 'documentation_agent',
+    'bi-analytics': 'bi_agent',
+    'ml-finetuning': 'ml_finetuning_agent'
+  }
+  const apiId = idMap[agentId]
+  if (apiId && liveHealthData.value[apiId]) {
+    return liveHealthData.value[apiId].status as any
+  }
+  return 'unknown'
+}
+
+// Simulate agent status updates and fetch live data
 let statusInterval: number | null = null
+let healthInterval: number | null = null
 onMounted(() => {
+  // Fetch initial health data
+  fetchHealthData()
+  fetchSupervisorMetrics()
+
+  // Update processed items simulation
   statusInterval = window.setInterval(() => {
-    // Randomly update processed items for active agents
     agents.value.forEach(agent => {
       if (agent.status === 'active' || agent.status === 'processing') {
         agent.processedItems += Math.floor(Math.random() * 10)
       }
     })
   }, 3000)
+
+  // Refresh health data every 30 seconds
+  healthInterval = window.setInterval(() => {
+    fetchHealthData()
+    fetchSupervisorMetrics()
+  }, 30000)
 })
 
 onUnmounted(() => {
   if (statusInterval) clearInterval(statusInterval)
+  if (healthInterval) clearInterval(healthInterval)
 })
 </script>
 

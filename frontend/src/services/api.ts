@@ -662,6 +662,103 @@ class AIServiceApi {
     }>(`/agents/${agentId}/test`)
   }
 
+  // Supervisor Routing (Manager Coordination Pattern)
+  async routeQuery(query: string, context?: Record<string, unknown>) {
+    return this.request<{
+      primary_agent: string
+      category: string
+      confidence: number
+      secondary_agents: string[]
+      reasoning: string
+      requires_chain: boolean
+      chain_order?: string[]
+    }>('/supervisor/route', {
+      method: 'POST',
+      body: { query, context },
+    })
+  }
+
+  async getSupervisorMetrics() {
+    return this.request<{
+      total_requests: number
+      routing_decisions: Record<string, number>
+      average_confidence: number
+      chain_invocations: number
+      fallback_count: number
+      fallback_rate: number
+      timestamp: string
+    }>('/supervisor/metrics')
+  }
+
+  async getSupervisorAgents() {
+    return this.request<{
+      agents: Array<{
+        name: string
+        category: string
+        patterns: string[]
+        routing_count: number
+      }>
+      categories: string[]
+      timestamp: string
+    }>('/supervisor/agents')
+  }
+
+  async resetSupervisorMetrics() {
+    return this.request<{
+      status: string
+      message: string
+      timestamp: string
+    }>('/supervisor/reset-metrics', {
+      method: 'POST',
+    })
+  }
+
+  // Security Endpoints (MAESTRO Framework)
+  async getMaestroAssessment() {
+    return this.request<{
+      assessment_id: string
+      overall_score: number
+      overall_status: string
+      layers: Record<string, {
+        score: number
+        status: string
+        checks: Array<{
+          name: string
+          status: string
+          details?: string
+        }>
+      }>
+      recommendations: string[]
+      assessed_at: string
+    }>('/security/maestro-assessment')
+  }
+
+  async getSecurityStats(periodHours: number = 24) {
+    return this.request<{
+      period_hours: number
+      total_events: number
+      blocked_requests: number
+      sanitized_inputs: number
+      rate_limit_hits: number
+      anomalies_detected: number
+      timestamp: string
+    }>(`/security/stats?period_hours=${periodHours}`)
+  }
+
+  async getAuditLogs(limit: number = 100) {
+    return this.request<{
+      logs: Array<{
+        timestamp: string
+        event_type: string
+        severity: string
+        description: string
+        user_id?: number
+        details?: Record<string, unknown>
+      }>
+      count: number
+    }>(`/security/audit-logs?limit=${limit}`)
+  }
+
   // Data Quality Scanning
   async scanDataQuality(connection: {
     host: string

@@ -41,6 +41,10 @@ from .dbt_executor import (
 )
 from .data_quality_agent import DataQualityAgent, scan_source_data_quality
 from .guardian_agent import GuardianAgent, get_guardian, SecurityException
+from .supervisor import (
+    ManagerCoordinationSupervisor, get_supervisor, route_query,
+    RoutingDecision, AgentType, AgentCategory
+)
 
 # Try to import anthropic for Claude AI chat
 try:
@@ -730,6 +734,160 @@ async def get_audit_logs(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get audit logs: {str(e)}"
+        )
+
+
+# =============================================================================
+# SUPERVISOR ENDPOINTS - Manager Coordination Pattern
+# Based on "Building Applications with AI Agents" (O'Reilly, 2025)
+# =============================================================================
+
+class SupervisorRouteRequest(BaseModel):
+    """Request to route a query through the supervisor"""
+    query: str
+    context: Optional[Dict[str, Any]] = None
+
+
+class SupervisorRouteResponse(BaseModel):
+    """Response from supervisor routing decision"""
+    primary_agent: str
+    category: str
+    confidence: float
+    secondary_agents: List[str]
+    reasoning: str
+    requires_chain: bool
+    chain_order: Optional[List[str]] = None
+
+
+@app.post("/supervisor/route", response_model=SupervisorRouteResponse)
+async def route_request_to_agent(request: SupervisorRouteRequest):
+    """
+    Route a query to the appropriate specialist agent using the Manager
+    Coordination pattern.
+
+    The Supervisor analyzes the query and determines:
+    1. Primary agent to handle the request
+    2. Confidence level in the routing decision
+    3. Secondary agents that might be helpful
+    4. Whether a workflow chain is needed
+
+    Based on: "Building Applications with AI Agents" (O'Reilly, 2025)
+    Chapter: Multi-Agent Coordination Patterns
+
+    Args:
+        request: Query and optional context
+
+    Returns:
+        Routing decision with agent assignments
+    """
+    try:
+        decision = route_query(request.query, request.context)
+
+        return SupervisorRouteResponse(
+            primary_agent=decision.primary_agent.value,
+            category=decision.category.value,
+            confidence=decision.confidence,
+            secondary_agents=[a.value for a in decision.secondary_agents],
+            reasoning=decision.reasoning,
+            requires_chain=decision.requires_chain,
+            chain_order=[a.value for a in decision.chain_order] if decision.chain_order else None
+        )
+    except Exception as e:
+        logger.error(f"Supervisor routing failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Routing failed: {str(e)}"
+        )
+
+
+@app.get("/supervisor/metrics")
+async def get_supervisor_metrics():
+    """
+    Get supervisor routing metrics.
+
+    Returns statistics on:
+    - Total requests routed
+    - Routing decisions by agent
+    - Average routing confidence
+    - Chain invocations
+    - Fallback rate
+
+    Returns:
+        Supervisor performance metrics
+    """
+    try:
+        supervisor = get_supervisor()
+        metrics = supervisor.get_metrics()
+
+        return {
+            **metrics,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Supervisor metrics failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get supervisor metrics: {str(e)}"
+        )
+
+
+@app.get("/supervisor/agents")
+async def get_supervisor_agent_info():
+    """
+    Get information about all agents known to the supervisor.
+
+    Returns:
+        List of agents with their categories and routing patterns
+    """
+    try:
+        supervisor = get_supervisor()
+
+        agents_info = []
+        for agent_type in AgentType:
+            try:
+                info = supervisor.get_agent_info(agent_type)
+                agents_info.append(info)
+            except Exception:
+                # Skip agents that fail
+                continue
+
+        return {
+            "agents": agents_info,
+            "categories": [c.value for c in AgentCategory],
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Supervisor agent info failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get agent info: {str(e)}"
+        )
+
+
+@app.post("/supervisor/reset-metrics")
+async def reset_supervisor_metrics():
+    """
+    Reset supervisor routing metrics.
+
+    Use this to clear metrics for a fresh measurement period.
+
+    Returns:
+        Confirmation of reset
+    """
+    try:
+        supervisor = get_supervisor()
+        supervisor.reset_metrics()
+
+        return {
+            "status": "success",
+            "message": "Supervisor metrics reset",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Supervisor reset failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to reset metrics: {str(e)}"
         )
 
 

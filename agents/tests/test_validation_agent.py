@@ -14,11 +14,16 @@ class TestValidationAgent:
     """Test suite for Validation Agent"""
 
     @pytest.fixture
-    def validator(self):
+    def validator(self, tmp_path):
         """Create a ValidationAgent instance"""
         from agents.validation_agent import ValidationAgent
 
-        return ValidationAgent()
+        # Create a minimal project structure
+        project_path = tmp_path / "test_project"
+        project_path.mkdir(parents=True, exist_ok=True)
+        (project_path / "models").mkdir(parents=True, exist_ok=True)
+
+        return ValidationAgent(project_path=str(project_path))
 
     @pytest.fixture
     def valid_dbt_project(self, tmp_path, mock_mssql_metadata):

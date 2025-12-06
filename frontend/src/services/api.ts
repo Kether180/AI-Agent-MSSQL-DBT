@@ -577,6 +577,91 @@ class AIServiceApi {
     }>(`/migrations/${migrationId}/deployments`)
   }
 
+  // Agent Health & Monitoring
+  async getAgentsHealth() {
+    return this.request<{
+      overall_status: 'healthy' | 'degraded' | 'unhealthy'
+      healthy_agents: number
+      total_agents: number
+      timestamp: string
+      agents: Record<string, {
+        name: string
+        file: string
+        class: string
+        status: 'production' | 'beta' | 'alpha'
+        completion: number
+        description: string
+        health: {
+          status: 'healthy' | 'unhealthy' | 'degraded'
+          importable: boolean
+          last_check: string
+          error?: string
+        }
+      }>
+      dependencies: {
+        anthropic_api: {
+          available: boolean
+          client_initialized: boolean
+        }
+      }
+    }>('/agents/health')
+  }
+
+  async getAgentsStatus() {
+    return this.request<{
+      agents: Array<{
+        id: string
+        name: string
+        status: 'production' | 'beta' | 'alpha'
+        completion: number
+        description: string
+        file: string
+      }>
+      summary: {
+        total: number
+        production: number
+        beta: number
+        alpha: number
+        average_completion: number
+      }
+      timestamp: string
+    }>('/agents/status')
+  }
+
+  async getAgentDetails(agentId: string) {
+    return this.request<{
+      id: string
+      name: string
+      file: string
+      class: string
+      status: 'production' | 'beta' | 'alpha'
+      completion: number
+      description: string
+      health: {
+        status: 'healthy' | 'unhealthy' | 'degraded'
+        importable: boolean
+        last_check: string
+        error?: string
+      }
+      timestamp: string
+    }>(`/agents/${agentId}`)
+  }
+
+  async testAgent(agentId: string) {
+    return this.request<{
+      agent_id: string
+      tests: Array<{
+        name: string
+        status: 'passed' | 'failed'
+        message: string
+      }>
+      passed: number
+      failed: number
+      overall_status: 'passed' | 'partial' | 'failed'
+      timestamp: string
+    }>(`/agents/${agentId}/test`)
+  }
+
   // Data Quality Scanning
   async scanDataQuality(connection: {
     host: string

@@ -116,21 +116,19 @@ const activityLog = ref([
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
-    <!-- Header with gradient -->
-    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl">
-      <div class="px-4 sm:px-6 lg:px-8">
-        <div class="py-8">
-          <div class="flex items-center">
-            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 mr-4 shadow-lg shadow-indigo-500/25">
-              <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Top Header Bar - Sticky -->
+    <div class="border-b border-gray-200 bg-white/80 backdrop-blur-xl sticky top-0 z-30 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-2 shadow-lg shadow-indigo-500/25">
+              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
             </div>
             <div>
-              <h1 class="text-3xl font-bold text-white">{{ t('profile.title') }}</h1>
-              <p class="mt-1 text-slate-300">
-                {{ t('profile.subtitle') }}
-              </p>
+              <h1 class="text-lg font-bold text-slate-800">{{ t('profile.title') }}</h1>
+              <p class="text-xs text-slate-500">{{ t('profile.subtitle') }}</p>
             </div>
           </div>
         </div>

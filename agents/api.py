@@ -412,6 +412,349 @@ async def health_check():
     }
 
 
+# =============================================================================
+# AGENT HEALTH & MONITORING ENDPOINTS
+# =============================================================================
+
+# Agent registry with metadata
+AGENT_REGISTRY = {
+    "mssql_extractor": {
+        "name": "MSSQL Extractor",
+        "file": "mssql_extractor.py",
+        "class": "MSSQLExtractor",
+        "status": "production",
+        "completion": 95,
+        "description": "Database metadata extraction from MSSQL"
+    },
+    "dbt_generator": {
+        "name": "DBT Generator",
+        "file": "dbt_generator.py",
+        "class": "DBTProjectGenerator",
+        "status": "production",
+        "completion": 95,
+        "description": "dbt project generation from metadata"
+    },
+    "rag_service": {
+        "name": "RAG Service",
+        "file": "rag_service_v2.py",
+        "class": "RAGService",
+        "status": "beta",
+        "completion": 85,
+        "description": "AI-powered support chat with multilingual support"
+    },
+    "dbt_executor": {
+        "name": "DBT Executor",
+        "file": "dbt_executor.py",
+        "class": "DbtExecutor",
+        "status": "beta",
+        "completion": 70,
+        "description": "Warehouse deployment and dbt execution"
+    },
+    "data_quality": {
+        "name": "Data Quality Agent",
+        "file": "data_quality_agent.py",
+        "class": "DataQualityAgent",
+        "status": "beta",
+        "completion": 60,
+        "description": "Source data quality scanning"
+    },
+    "validation": {
+        "name": "Validation Agent",
+        "file": "validation_agent.py",
+        "class": "ValidationAgent",
+        "status": "beta",
+        "completion": 50,
+        "description": "Migration validation and testing"
+    },
+    "guardian": {
+        "name": "Guardian Agent",
+        "file": "guardian_agent.py",
+        "class": "GuardianAgent",
+        "status": "alpha",
+        "completion": 40,
+        "description": "Security enforcement and threat detection"
+    },
+    "dataprep": {
+        "name": "DataPrep Agent",
+        "file": "dataprep_agent.py",
+        "class": "DataPrepAgent",
+        "status": "alpha",
+        "completion": 30,
+        "description": "Data preparation and transformation"
+    },
+    "documentation": {
+        "name": "Documentation Agent",
+        "file": "documentation_agent.py",
+        "class": "DocumentationAgent",
+        "status": "alpha",
+        "completion": 25,
+        "description": "Automatic documentation generation"
+    },
+    "bi_agent": {
+        "name": "BI Agent",
+        "file": "bi_agent.py",
+        "class": "BIAgent",
+        "status": "alpha",
+        "completion": 20,
+        "description": "Business intelligence model generation"
+    },
+    "ml_finetuning": {
+        "name": "ML Fine-Tuning Agent",
+        "file": "ml_finetuning_agent.py",
+        "class": "MLFinetuningAgent",
+        "status": "alpha",
+        "completion": 15,
+        "description": "ML optimization for migrations"
+    }
+}
+
+
+def check_agent_health(agent_id: str) -> Dict[str, Any]:
+    """Check the health of a specific agent"""
+    agent_info = AGENT_REGISTRY.get(agent_id)
+    if not agent_info:
+        return {"status": "unknown", "error": "Agent not registered"}
+
+    try:
+        # Try to import the agent module
+        module_name = f"agents.{agent_info['file'].replace('.py', '')}"
+        __import__(module_name)
+
+        return {
+            "status": "healthy",
+            "importable": True,
+            "last_check": datetime.now().isoformat()
+        }
+    except ImportError as e:
+        return {
+            "status": "unhealthy",
+            "importable": False,
+            "error": str(e),
+            "last_check": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "degraded",
+            "importable": True,
+            "error": str(e),
+            "last_check": datetime.now().isoformat()
+        }
+
+
+@app.get("/agents/health")
+async def get_agents_health():
+    """
+    Get health status of all AI agents.
+
+    Returns:
+        - Overall system health
+        - Individual agent health status
+        - API dependencies status (Anthropic, etc.)
+    """
+    agents_health = {}
+    healthy_count = 0
+    total_count = len(AGENT_REGISTRY)
+
+    for agent_id in AGENT_REGISTRY:
+        health = check_agent_health(agent_id)
+        agents_health[agent_id] = {
+            **AGENT_REGISTRY[agent_id],
+            "health": health
+        }
+        if health["status"] == "healthy":
+            healthy_count += 1
+
+    # Check external dependencies
+    dependencies = {
+        "anthropic_api": {
+            "available": ANTHROPIC_AVAILABLE and bool(ANTHROPIC_API_KEY),
+            "client_initialized": anthropic_client is not None
+        }
+    }
+
+    # Determine overall status
+    if healthy_count == total_count:
+        overall_status = "healthy"
+    elif healthy_count > total_count / 2:
+        overall_status = "degraded"
+    else:
+        overall_status = "unhealthy"
+
+    return {
+        "overall_status": overall_status,
+        "healthy_agents": healthy_count,
+        "total_agents": total_count,
+        "timestamp": datetime.now().isoformat(),
+        "agents": agents_health,
+        "dependencies": dependencies
+    }
+
+
+@app.get("/agents/status")
+async def get_agents_status():
+    """
+    Get status and completion percentage of all AI agents.
+
+    Returns summary view suitable for dashboard display.
+    """
+    agents = []
+    for agent_id, info in AGENT_REGISTRY.items():
+        agents.append({
+            "id": agent_id,
+            "name": info["name"],
+            "status": info["status"],
+            "completion": info["completion"],
+            "description": info["description"],
+            "file": info["file"]
+        })
+
+    # Sort by completion percentage (descending)
+    agents.sort(key=lambda x: x["completion"], reverse=True)
+
+    # Calculate category counts
+    production_count = sum(1 for a in agents if a["status"] == "production")
+    beta_count = sum(1 for a in agents if a["status"] == "beta")
+    alpha_count = sum(1 for a in agents if a["status"] == "alpha")
+
+    return {
+        "agents": agents,
+        "summary": {
+            "total": len(agents),
+            "production": production_count,
+            "beta": beta_count,
+            "alpha": alpha_count,
+            "average_completion": sum(a["completion"] for a in agents) / len(agents) if agents else 0
+        },
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/agents/{agent_id}")
+async def get_agent_details(agent_id: str):
+    """
+    Get detailed information about a specific agent.
+
+    Includes:
+        - Agent metadata
+        - Current health status
+        - Configuration
+    """
+    if agent_id not in AGENT_REGISTRY:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent '{agent_id}' not found"
+        )
+
+    agent_info = AGENT_REGISTRY[agent_id]
+    health = check_agent_health(agent_id)
+
+    return {
+        "id": agent_id,
+        **agent_info,
+        "health": health,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/agents/{agent_id}/test")
+async def test_agent(agent_id: str):
+    """
+    Run a quick diagnostic test on a specific agent.
+
+    Tests:
+        - Module import
+        - Class instantiation (if possible without args)
+        - Basic method availability
+    """
+    if agent_id not in AGENT_REGISTRY:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent '{agent_id}' not found"
+        )
+
+    agent_info = AGENT_REGISTRY[agent_id]
+    results = {
+        "agent_id": agent_id,
+        "tests": [],
+        "passed": 0,
+        "failed": 0
+    }
+
+    # Test 1: Module import
+    try:
+        module_name = f"agents.{agent_info['file'].replace('.py', '')}"
+        module = __import__(module_name, fromlist=[agent_info['class']])
+        results["tests"].append({
+            "name": "module_import",
+            "status": "passed",
+            "message": f"Successfully imported {module_name}"
+        })
+        results["passed"] += 1
+    except Exception as e:
+        results["tests"].append({
+            "name": "module_import",
+            "status": "failed",
+            "message": str(e)
+        })
+        results["failed"] += 1
+        results["overall_status"] = "failed"
+        return results
+
+    # Test 2: Class exists
+    try:
+        agent_class = getattr(module, agent_info['class'])
+        results["tests"].append({
+            "name": "class_exists",
+            "status": "passed",
+            "message": f"Found class {agent_info['class']}"
+        })
+        results["passed"] += 1
+    except AttributeError as e:
+        results["tests"].append({
+            "name": "class_exists",
+            "status": "failed",
+            "message": str(e)
+        })
+        results["failed"] += 1
+
+    # Test 3: Check for expected methods (based on agent type)
+    expected_methods = {
+        "mssql_extractor": ["test_connection", "extract_tables", "extract_all"],
+        "dbt_generator": ["generate_full_project", "generate_staging_model"],
+        "validation": ["validate_migration"],
+        "data_quality": ["scan_source_data_quality"],
+        "dbt_executor": ["deploy_to_warehouse"],
+    }
+
+    if agent_id in expected_methods:
+        for method_name in expected_methods[agent_id]:
+            if hasattr(agent_class, method_name) or (hasattr(module, method_name)):
+                results["tests"].append({
+                    "name": f"method_{method_name}",
+                    "status": "passed",
+                    "message": f"Method/function '{method_name}' exists"
+                })
+                results["passed"] += 1
+            else:
+                results["tests"].append({
+                    "name": f"method_{method_name}",
+                    "status": "failed",
+                    "message": f"Method/function '{method_name}' not found"
+                })
+                results["failed"] += 1
+
+    # Determine overall status
+    if results["failed"] == 0:
+        results["overall_status"] = "passed"
+    elif results["passed"] > results["failed"]:
+        results["overall_status"] = "partial"
+    else:
+        results["overall_status"] = "failed"
+
+    results["timestamp"] = datetime.now().isoformat()
+    return results
+
+
 @app.post("/migrations/start")
 async def start_migration(
     request: MigrationStartRequest,

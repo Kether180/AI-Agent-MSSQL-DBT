@@ -703,76 +703,77 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-cyan-50">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl">
-      <div class="px-4 sm:px-6 lg:px-8">
-        <div class="py-6">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <button
-                @click="goBack"
-                class="mr-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
-              >
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
+    <!-- Top Header Bar - Sticky -->
+    <div class="border-b border-gray-200 bg-white/80 backdrop-blur-xl sticky top-0 z-30 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center space-x-4">
+            <button
+              @click="goBack"
+              class="p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+            </button>
+            <div class="flex items-center space-x-3">
+              <div class="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl p-2 shadow-lg shadow-cyan-500/25">
+                <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
                 </svg>
-              </button>
+              </div>
               <div>
-                <h1 class="text-3xl font-bold text-white">
-                  Migration <span class="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">Details</span>
-                </h1>
-                <p class="mt-1 text-sm text-slate-300">
-                  View and manage your migration progress
-                </p>
+                <h1 class="text-lg font-bold text-slate-800">Migration Details</h1>
+                <p class="text-xs text-slate-500">View and manage your migration</p>
               </div>
             </div>
+          </div>
 
-            <!-- Action Buttons -->
-            <div class="flex gap-3">
-              <button
-                v-if="migration?.status === 'pending'"
-                @click="handleStart"
-                class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Start Migration
-              </button>
-              <button
-                v-if="migration?.status === 'running'"
-                @click="handleStop"
-                class="px-5 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:from-red-600 hover:to-rose-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                </svg>
-                Stop Migration
-              </button>
-              <button
-                v-if="migration?.status === 'failed'"
-                @click="handleRetry"
-                class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Retry Migration
-              </button>
-              <button
-                v-if="migration?.status !== 'running'"
-                @click="handleDelete"
-                class="px-4 py-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-slate-600 hover:text-white flex items-center gap-2 transition-all duration-200"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Delete
-              </button>
-            </div>
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-3">
+            <button
+              v-if="migration?.status === 'pending'"
+              @click="handleStart"
+              class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 flex items-center gap-2 shadow-lg shadow-cyan-500/25 hover:shadow-xl transition-all duration-200 text-sm font-medium"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Start
+            </button>
+            <button
+              v-if="migration?.status === 'running'"
+              @click="handleStop"
+              class="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:from-red-600 hover:to-rose-700 flex items-center gap-2 shadow-lg shadow-red-500/25 hover:shadow-xl transition-all duration-200 text-sm font-medium"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+              Stop
+            </button>
+            <button
+              v-if="migration?.status === 'failed'"
+              @click="handleRetry"
+              class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 flex items-center gap-2 shadow-lg shadow-amber-500/25 hover:shadow-xl transition-all duration-200 text-sm font-medium"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Retry
+            </button>
+            <button
+              v-if="migration?.status !== 'running'"
+              @click="handleDelete"
+              class="px-3 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-red-50 hover:border-red-200 hover:text-red-600 flex items-center gap-2 transition-all duration-200 text-sm"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete
+            </button>
           </div>
         </div>
       </div>

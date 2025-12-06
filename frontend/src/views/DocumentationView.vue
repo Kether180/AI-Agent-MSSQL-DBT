@@ -144,7 +144,7 @@ const getColorClasses = (color: string, type: 'bg' | 'text' | 'border' | 'ring' 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
     <!-- Top Header Bar -->
-    <div class="border-b border-gray-200 bg-white/80 backdrop-blur-xl sticky top-0 z-40 shadow-sm">
+    <div class="border-b border-gray-200 bg-white/80 backdrop-blur-xl sticky top-0 z-30 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center space-x-4">

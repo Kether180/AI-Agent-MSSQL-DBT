@@ -150,22 +150,27 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-cyan-50">
-    <!-- Header with gradient -->
-    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl">
-      <div class="px-4 sm:px-6 lg:px-8">
-        <div class="py-8 flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-white">Migrations</h1>
-            <p class="mt-2 text-slate-300">
-              Manage your MSSQL to dbt migrations
-            </p>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
+    <!-- Top Header Bar - Sticky -->
+    <div class="border-b border-gray-200 bg-white/80 backdrop-blur-xl sticky top-0 z-30 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl p-2 shadow-lg shadow-cyan-500/25">
+              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-lg font-bold text-slate-800">Migrations</h1>
+              <p class="text-xs text-slate-500">Manage your MSSQL to dbt migrations</p>
+            </div>
           </div>
           <button
             @click="createNewMigration"
-            class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-lg text-sm font-medium rounded-xl text-white bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-200 hover:shadow-xl hover:scale-105"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-white bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 shadow-lg shadow-cyan-500/25 hover:shadow-xl transition-all duration-200"
           >
-            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
             New Migration
@@ -175,8 +180,9 @@ onMounted(() => {
     </div>
 
     <div class="px-4 sm:px-6 lg:px-8 py-8">
+      <div class="max-w-7xl mx-auto">
       <!-- Filters -->
-      <div class="bg-white shadow-lg rounded-xl border border-gray-100 p-6 mb-6">
+      <div class="bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl border border-slate-200/50 p-6 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Search -->
           <div>
@@ -220,7 +226,7 @@ onMounted(() => {
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="bg-white shadow-lg rounded-xl border border-gray-100 p-16 text-center">
+      <div v-if="isLoading" class="bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl border border-slate-200/50 p-16 text-center">
         <div class="relative">
           <div class="absolute inset-0 flex items-center justify-center">
             <div class="h-16 w-16 rounded-full border-4 border-cyan-100"></div>
@@ -234,7 +240,7 @@ onMounted(() => {
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="filteredMigrations.length === 0" class="bg-white shadow-lg rounded-xl border border-gray-100 p-16 text-center">
+      <div v-else-if="filteredMigrations.length === 0" class="bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl border border-slate-200/50 p-16 text-center">
         <div class="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 flex items-center justify-center">
           <svg class="h-12 w-12 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
@@ -262,7 +268,7 @@ onMounted(() => {
         <div
           v-for="migration in filteredMigrations"
           :key="migration.id"
-          class="migration-card bg-white overflow-hidden shadow-md rounded-xl border border-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group"
+          class="migration-card bg-white/80 backdrop-blur-sm overflow-hidden shadow-lg rounded-2xl border border-slate-200/50 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group"
           @click="viewMigration(migration)"
         >
           <!-- Status gradient bar at top -->
@@ -382,6 +388,7 @@ onMounted(() => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   </div>

@@ -40,7 +40,11 @@ from .dbt_executor import (
     DeploymentResult, DeploymentStatus, deploy_to_warehouse
 )
 from .data_quality_agent import DataQualityAgent, scan_source_data_quality
-from .guardian_agent import GuardianAgent, get_guardian, SecurityException
+from .guardian_agent import (
+    GuardianAgent, get_guardian, SecurityException,
+    ComplianceLogger, get_compliance_logger, ComplianceEventType,
+    log_agent_action, log_ai_generation
+)
 from .supervisor import (
     ManagerCoordinationSupervisor, get_supervisor, route_query,
     RoutingDecision, AgentType, AgentCategory
@@ -734,6 +738,152 @@ async def get_audit_logs(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get audit logs: {str(e)}"
+        )
+
+
+# =============================================================================
+# EU AI ACT COMPLIANCE ENDPOINTS - Article 12 Recordkeeping
+# =============================================================================
+
+class ComplianceQueryRequest(BaseModel):
+    """Request to query compliance logs"""
+    event_type: Optional[str] = None
+    agent_id: Optional[str] = None
+    user_id: Optional[int] = None
+    organization_id: Optional[int] = None
+    migration_id: Optional[int] = None
+    since: Optional[str] = None  # ISO8601 timestamp
+    until: Optional[str] = None  # ISO8601 timestamp
+    success_only: Optional[bool] = None
+    limit: int = 100
+
+
+@app.get("/compliance/logs")
+async def get_compliance_logs(
+    event_type: Optional[str] = None,
+    agent_id: Optional[str] = None,
+    user_id: Optional[int] = None,
+    organization_id: Optional[int] = None,
+    migration_id: Optional[int] = None,
+    limit: int = 100
+):
+    """
+    Query EU AI Act Article 12 compliance logs.
+
+    Provides access to the structured audit trail required for regulatory compliance.
+    All AI system operations are logged with privacy-preserving hashes.
+
+    Args:
+        event_type: Filter by event type (agent_action, security_event, user_action, ai_generation)
+        agent_id: Filter by agent (mssql_extractor, dbt_generator, etc.)
+        user_id: Filter by user ID
+        organization_id: Filter by organization
+        migration_id: Filter by migration
+        limit: Maximum logs to return (default 100)
+
+    Returns:
+        Compliance logs with metadata
+    """
+    try:
+        compliance_logger = get_compliance_logger()
+
+        # Convert event_type string to enum if provided
+        event_type_enum = None
+        if event_type:
+            try:
+                event_type_enum = ComplianceEventType(event_type)
+            except ValueError:
+                pass  # Invalid type, will be ignored
+
+        logs = compliance_logger.query_logs(
+            event_type=event_type_enum,
+            agent_id=agent_id,
+            user_id=user_id,
+            organization_id=organization_id,
+            migration_id=migration_id,
+            limit=limit
+        )
+
+        return {
+            "logs": logs,
+            "count": len(logs),
+            "compliance_framework": "EU AI Act Article 12"
+        }
+    except Exception as e:
+        logger.error(f"Compliance logs query failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to query compliance logs: {str(e)}"
+        )
+
+
+@app.get("/compliance/stats")
+async def get_compliance_stats():
+    """
+    Get EU AI Act compliance logging statistics.
+
+    Returns metrics on logged events for compliance monitoring.
+    """
+    try:
+        compliance_logger = get_compliance_logger()
+        stats = compliance_logger.get_compliance_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Compliance stats failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get compliance stats: {str(e)}"
+        )
+
+
+@app.get("/compliance/export")
+async def export_compliance_audit(
+    organization_id: Optional[int] = None,
+    since: Optional[str] = None,
+    until: Optional[str] = None
+):
+    """
+    Export compliance logs for regulatory audit.
+
+    Generates a structured export suitable for EU AI Act Article 12 compliance audits.
+    Includes metadata about the export and all relevant log entries.
+
+    Args:
+        organization_id: Filter by organization
+        since: Start date (ISO8601 format)
+        until: End date (ISO8601 format)
+
+    Returns:
+        Structured audit export with metadata
+    """
+    try:
+        compliance_logger = get_compliance_logger()
+
+        # Parse dates if provided
+        since_dt = None
+        until_dt = None
+        if since:
+            since_dt = datetime.fromisoformat(since.replace('Z', '+00:00'))
+        if until:
+            until_dt = datetime.fromisoformat(until.replace('Z', '+00:00'))
+
+        export_data = compliance_logger.export_for_audit(
+            organization_id=organization_id,
+            since=since_dt,
+            until=until_dt
+        )
+
+        return export_data
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid date format: {str(e)}"
+        )
+    except Exception as e:
+        logger.error(f"Compliance export failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to export compliance data: {str(e)}"
         )
 
 

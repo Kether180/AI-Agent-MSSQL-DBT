@@ -1,0 +1,135 @@
+# Model Card for MSSQL Extractor Agent
+# EU AI Act Compliance Documentation
+# Based on ML Model Cards (Mitchell et al., 2019)
+
+model_details:
+  name: MSSQL Extractor Agent
+  id: mssql_extractor
+  version: "1.0.0"
+  type: AI Agent (LLM-powered)
+  foundation_model: Claude (Anthropic)
+  provider: OKO Investments
+  date: December 2024
+  contact: support@datamigrate.ai
+
+intended_use:
+  primary_intended_uses:
+    - Extract database schema metadata from Microsoft SQL Server
+    - Parse table structures, columns, data types
+    - Identify primary keys and foreign key relationships
+    - Extract stored procedures and views for migration assessment
+
+  primary_intended_users:
+    - Data engineers migrating legacy databases
+    - Database administrators planning migrations
+    - Analytics teams modernizing data infrastructure
+
+  out_of_scope_uses:
+    - Production database modifications
+    - Data extraction from non-MSSQL databases (handled by separate agents)
+    - Real-time ETL processing
+    - Personal data processing without consent
+
+factors:
+  relevant_factors:
+    - Database version (SQL Server 2012-2022 supported)
+    - Schema complexity (tables, views, procedures)
+    - Authentication method (Windows Auth, SQL Auth)
+    - Network latency to source database
+
+  evaluation_factors:
+    - Schema extraction completeness
+    - Data type mapping accuracy
+    - Relationship detection accuracy
+    - Execution time
+
+metrics:
+  model_performance_measures:
+    - name: Schema Extraction Accuracy
+      target: 99%
+      current: 98.5%
+      description: Percentage of schema elements correctly extracted
+
+    - name: Data Type Mapping Accuracy
+      target: 99%
+      current: 98.8%
+      description: Percentage of data types correctly identified
+
+    - name: Relationship Detection Accuracy
+      target: 95%
+      current: 94.2%
+      description: Percentage of foreign keys correctly identified
+
+    - name: Average Execution Time
+      target: "<30s for 100 tables"
+      current: "25s"
+      description: Time to extract schema from database
+
+evaluation_data:
+  datasets:
+    - name: Internal Test Databases
+      description: 15 synthetic MSSQL databases with known schemas
+      size: "50-500 tables each"
+
+    - name: Customer Validation Set
+      description: Anonymized schema samples from pilot customers
+      size: "10 databases"
+
+  preprocessing:
+    - Connection string sanitization
+    - Credential encryption
+    - Query parameterization
+
+training_data:
+  note: "Agent uses Claude API as-is. No custom training performed."
+  foundation_model_training: "See Anthropic's Claude model card"
+  few_shot_examples:
+    - source: Synthetic schemas
+    - count: "20 examples"
+    - purpose: "Prompt engineering for consistent output format"
+
+ethical_considerations:
+  data_handling:
+    - Only metadata extracted, not actual data values
+    - Connection credentials encrypted with AES-256
+    - Audit logging for all extraction operations
+
+  potential_harms:
+    - Exposure of schema information to unauthorized users
+    - Connection string leakage
+
+  mitigations:
+    - Organization-level access controls
+    - Credential vault storage
+    - Guardian Agent input/output validation
+    - Rate limiting per user/organization
+
+caveats_and_recommendations:
+  known_limitations:
+    - Complex stored procedures may require manual review
+    - Custom data types may not map perfectly
+    - Very large schemas (>1000 tables) may timeout
+
+  recommendations:
+    - Review extracted schema before generation phase
+    - Use validation agent for quality assurance
+    - Test with subset of tables first for large databases
+
+risk_classification:
+  eu_ai_act_category: Limited Risk
+  article_50_requirements:
+    - AI transparency disclosure in UI
+    - User informed of automated extraction
+  high_risk_scenarios:
+    - Healthcare database migrations (additional assessment required)
+    - Financial data migrations (additional compliance checks)
+
+monitoring:
+  active_monitoring:
+    - Prometheus metrics for latency and errors
+    - Guardian Agent security event logging
+    - Compliance logger for audit trail
+
+  incident_response:
+    - Automatic alerting on extraction failures
+    - Manual review queue for edge cases

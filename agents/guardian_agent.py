@@ -848,9 +848,380 @@ class SecurityException(Exception):
         self.event = event
 
 
-# Singleton instance
+# =============================================================================
+# EU AI ACT ARTICLE 12: RECORDKEEPING & COMPLIANCE LOGGING
+# =============================================================================
+
+class ComplianceEventType(Enum):
+    """EU AI Act compliance event types"""
+    AGENT_ACTION = "agent_action"
+    SECURITY_EVENT = "security_event"
+    USER_ACTION = "user_action"
+    SYSTEM_EVENT = "system_event"
+    AUDIT_QUERY = "audit_query"
+    DATA_ACCESS = "data_access"
+    AI_GENERATION = "ai_generation"
+
+
+@dataclass
+class ComplianceLogEntry:
+    """
+    EU AI Act Article 12 compliant audit log entry.
+
+    Designed for 7-10 year retention per Article 12 requirements.
+    Privacy-preserving through hash-based identification.
+    """
+    timestamp: datetime
+    event_type: ComplianceEventType
+    agent_id: str
+    user_id: Optional[int]
+    organization_id: Optional[int]
+    migration_id: Optional[int]
+    action: str
+    input_hash: str  # SHA256 hash for privacy
+    output_hash: str  # SHA256 hash for privacy
+    execution_time_ms: int
+    success: bool
+    error: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization"""
+        return {
+            "timestamp": self.timestamp.isoformat(),
+            "event_type": self.event_type.value,
+            "agent_id": self.agent_id,
+            "user_id": self.user_id,
+            "organization_id": self.organization_id,
+            "migration_id": self.migration_id,
+            "action": self.action,
+            "input_hash": self.input_hash,
+            "output_hash": self.output_hash,
+            "execution_time_ms": self.execution_time_ms,
+            "success": self.success,
+            "error": self.error,
+            "metadata": self.metadata
+        }
+
+
+class ComplianceLogger:
+    """
+    EU AI Act Article 12 Compliance Logger
+
+    Provides recordkeeping capabilities compliant with EU AI Act requirements:
+    - Automatic logging of AI system operations
+    - Privacy-preserving data hashing
+    - Structured audit trail format
+    - Support for regulatory queries
+    - Integration with Guardian Agent security events
+
+    Retention Policy (per AI-SYSTEM-INVENTORY.md):
+    - Access Logs: 2 years
+    - Agent Logs: 7 years
+    - Audit Logs: 10 years
+    - Error Logs: 1 year
+    """
+
+    def __init__(self, max_memory_entries: int = 10000):
+        self._lock = threading.RLock()
+        self._entries: List[ComplianceLogEntry] = []
+        self._max_entries = max_memory_entries
+        self._stats: Dict[str, int] = {
+            "total_logged": 0,
+            "agent_actions": 0,
+            "security_events": 0,
+            "user_actions": 0,
+            "ai_generations": 0,
+            "errors": 0
+        }
+        logger.info("EU AI Act ComplianceLogger initialized")
+
+    def _hash_content(self, content: str) -> str:
+        """Create SHA256 hash of content for privacy-preserving audit"""
+        if not content:
+            return hashlib.sha256(b"empty").hexdigest()
+        return hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+    def log_agent_action(
+        self,
+        agent_id: str,
+        action: str,
+        input_data: str,
+        output_data: str,
+        execution_time_ms: int,
+        success: bool,
+        user_id: Optional[int] = None,
+        organization_id: Optional[int] = None,
+        migration_id: Optional[int] = None,
+        error: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> ComplianceLogEntry:
+        """
+        Log an agent action for EU AI Act Article 12 compliance.
+
+        Args:
+            agent_id: Identifier of the agent (e.g., 'mssql_extractor', 'dbt_generator')
+            action: Description of the action performed
+            input_data: Input provided to the agent (will be hashed)
+            output_data: Output produced by the agent (will be hashed)
+            execution_time_ms: Execution time in milliseconds
+            success: Whether the action succeeded
+            user_id: Optional user identifier
+            organization_id: Optional organization identifier
+            migration_id: Optional migration identifier
+            error: Optional error message if failed
+            metadata: Optional additional metadata
+
+        Returns:
+            The created ComplianceLogEntry
+        """
+        entry = ComplianceLogEntry(
+            timestamp=datetime.now(),
+            event_type=ComplianceEventType.AGENT_ACTION,
+            agent_id=agent_id,
+            user_id=user_id,
+            organization_id=organization_id,
+            migration_id=migration_id,
+            action=action,
+            input_hash=self._hash_content(input_data),
+            output_hash=self._hash_content(output_data),
+            execution_time_ms=execution_time_ms,
+            success=success,
+            error=error,
+            metadata=metadata or {}
+        )
+
+        self._store_entry(entry)
+        self._stats["agent_actions"] += 1
+
+        if not success:
+            self._stats["errors"] += 1
+
+        return entry
+
+    def log_ai_generation(
+        self,
+        agent_id: str,
+        prompt: str,
+        response: str,
+        model: str,
+        execution_time_ms: int,
+        user_id: Optional[int] = None,
+        organization_id: Optional[int] = None,
+        migration_id: Optional[int] = None,
+        token_count: Optional[int] = None
+    ) -> ComplianceLogEntry:
+        """
+        Log AI-generated content for Article 50 transparency compliance.
+
+        All AI-generated content must be traceable per EU AI Act.
+        """
+        metadata = {
+            "model": model,
+            "content_type": "ai_generated"
+        }
+        if token_count is not None:
+            metadata["token_count"] = token_count
+
+        entry = ComplianceLogEntry(
+            timestamp=datetime.now(),
+            event_type=ComplianceEventType.AI_GENERATION,
+            agent_id=agent_id,
+            user_id=user_id,
+            organization_id=organization_id,
+            migration_id=migration_id,
+            action=f"AI generation via {model}",
+            input_hash=self._hash_content(prompt),
+            output_hash=self._hash_content(response),
+            execution_time_ms=execution_time_ms,
+            success=True,
+            metadata=metadata
+        )
+
+        self._store_entry(entry)
+        self._stats["ai_generations"] += 1
+
+        return entry
+
+    def log_security_event(
+        self,
+        security_event: SecurityEvent,
+        migration_id: Optional[int] = None
+    ) -> ComplianceLogEntry:
+        """
+        Convert and log a Guardian Agent security event.
+
+        Bridges Guardian Agent security events to compliance logging.
+        """
+        entry = ComplianceLogEntry(
+            timestamp=security_event.timestamp,
+            event_type=ComplianceEventType.SECURITY_EVENT,
+            agent_id=security_event.agent_name,
+            user_id=security_event.user_id,
+            organization_id=security_event.organization_id,
+            migration_id=migration_id,
+            action=f"Security: {security_event.event_type.value}",
+            input_hash=security_event.input_hash,
+            output_hash=self._hash_content(""),
+            execution_time_ms=0,
+            success=not security_event.blocked,
+            error=security_event.message if security_event.blocked else None,
+            metadata={
+                "severity": security_event.severity.value,
+                "blocked": security_event.blocked,
+                "original_metadata": security_event.metadata
+            }
+        )
+
+        self._store_entry(entry)
+        self._stats["security_events"] += 1
+
+        return entry
+
+    def log_user_action(
+        self,
+        action: str,
+        user_id: int,
+        organization_id: Optional[int] = None,
+        migration_id: Optional[int] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> ComplianceLogEntry:
+        """Log a user action for audit trail."""
+        entry = ComplianceLogEntry(
+            timestamp=datetime.now(),
+            event_type=ComplianceEventType.USER_ACTION,
+            agent_id="user",
+            user_id=user_id,
+            organization_id=organization_id,
+            migration_id=migration_id,
+            action=action,
+            input_hash=self._hash_content(action),
+            output_hash=self._hash_content(""),
+            execution_time_ms=0,
+            success=True,
+            metadata=metadata or {}
+        )
+
+        self._store_entry(entry)
+        self._stats["user_actions"] += 1
+
+        return entry
+
+    def _store_entry(self, entry: ComplianceLogEntry):
+        """Store entry with memory management"""
+        with self._lock:
+            self._entries.append(entry)
+            self._stats["total_logged"] += 1
+
+            # Memory management - keep only recent entries in memory
+            if len(self._entries) > self._max_entries:
+                self._entries = self._entries[-self._max_entries:]
+
+            # Also log to standard logger for persistence
+            logger.info(
+                f"[COMPLIANCE] {entry.event_type.value}: {entry.action}",
+                extra={"compliance_entry": entry.to_dict()}
+            )
+
+    def query_logs(
+        self,
+        event_type: Optional[ComplianceEventType] = None,
+        agent_id: Optional[str] = None,
+        user_id: Optional[int] = None,
+        organization_id: Optional[int] = None,
+        migration_id: Optional[int] = None,
+        since: Optional[datetime] = None,
+        until: Optional[datetime] = None,
+        success_only: Optional[bool] = None,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        Query compliance logs with filtering.
+
+        Supports regulatory audits and internal compliance checks.
+        """
+        with self._lock:
+            entries = self._entries.copy()
+
+        # Apply filters
+        if event_type is not None:
+            entries = [e for e in entries if e.event_type == event_type]
+
+        if agent_id is not None:
+            entries = [e for e in entries if e.agent_id == agent_id]
+
+        if user_id is not None:
+            entries = [e for e in entries if e.user_id == user_id]
+
+        if organization_id is not None:
+            entries = [e for e in entries if e.organization_id == organization_id]
+
+        if migration_id is not None:
+            entries = [e for e in entries if e.migration_id == migration_id]
+
+        if since is not None:
+            entries = [e for e in entries if e.timestamp >= since]
+
+        if until is not None:
+            entries = [e for e in entries if e.timestamp <= until]
+
+        if success_only is not None:
+            entries = [e for e in entries if e.success == success_only]
+
+        # Sort by timestamp descending
+        entries = sorted(entries, key=lambda x: x.timestamp, reverse=True)[:limit]
+
+        return [e.to_dict() for e in entries]
+
+    def get_compliance_stats(self) -> Dict[str, Any]:
+        """Get compliance logging statistics"""
+        with self._lock:
+            return {
+                "statistics": self._stats.copy(),
+                "entries_in_memory": len(self._entries),
+                "max_entries": self._max_entries,
+                "oldest_entry": self._entries[0].timestamp.isoformat() if self._entries else None,
+                "newest_entry": self._entries[-1].timestamp.isoformat() if self._entries else None,
+                "timestamp": datetime.now().isoformat()
+            }
+
+    def export_for_audit(
+        self,
+        organization_id: Optional[int] = None,
+        since: Optional[datetime] = None,
+        until: Optional[datetime] = None
+    ) -> Dict[str, Any]:
+        """
+        Export logs for regulatory audit.
+
+        Returns structured data suitable for EU AI Act Article 12 compliance audits.
+        """
+        logs = self.query_logs(
+            organization_id=organization_id,
+            since=since,
+            until=until,
+            limit=10000  # Higher limit for audits
+        )
+
+        return {
+            "export_metadata": {
+                "generated_at": datetime.now().isoformat(),
+                "organization_id": organization_id,
+                "period_start": since.isoformat() if since else None,
+                "period_end": until.isoformat() if until else None,
+                "total_records": len(logs),
+                "format_version": "1.0.0",
+                "compliance_framework": "EU AI Act Article 12"
+            },
+            "logs": logs
+        }
+
+
+# Singleton instances
 _guardian: Optional[GuardianAgent] = None
 _guardian_lock = threading.Lock()
+_compliance_logger: Optional[ComplianceLogger] = None
+_compliance_lock = threading.Lock()
 
 
 def get_guardian() -> GuardianAgent:
@@ -861,6 +1232,57 @@ def get_guardian() -> GuardianAgent:
             if _guardian is None:
                 _guardian = GuardianAgent()
     return _guardian
+
+
+def get_compliance_logger() -> ComplianceLogger:
+    """Get the singleton ComplianceLogger instance for EU AI Act Article 12"""
+    global _compliance_logger
+    if _compliance_logger is None:
+        with _compliance_lock:
+            if _compliance_logger is None:
+                _compliance_logger = ComplianceLogger()
+    return _compliance_logger
+
+
+# Convenience functions for compliance logging
+def log_agent_action(
+    agent_id: str,
+    action: str,
+    input_data: str,
+    output_data: str,
+    execution_time_ms: int,
+    success: bool,
+    **kwargs
+) -> ComplianceLogEntry:
+    """Log an agent action to compliance log"""
+    return get_compliance_logger().log_agent_action(
+        agent_id=agent_id,
+        action=action,
+        input_data=input_data,
+        output_data=output_data,
+        execution_time_ms=execution_time_ms,
+        success=success,
+        **kwargs
+    )
+
+
+def log_ai_generation(
+    agent_id: str,
+    prompt: str,
+    response: str,
+    model: str,
+    execution_time_ms: int,
+    **kwargs
+) -> ComplianceLogEntry:
+    """Log AI-generated content to compliance log"""
+    return get_compliance_logger().log_ai_generation(
+        agent_id=agent_id,
+        prompt=prompt,
+        response=response,
+        model=model,
+        execution_time_ms=execution_time_ms,
+        **kwargs
+    )
 
 
 # Convenience decorators

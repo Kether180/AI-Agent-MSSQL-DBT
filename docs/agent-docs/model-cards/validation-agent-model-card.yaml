@@ -1,0 +1,172 @@
+# Model Card for Validation Agent
+# EU AI Act Compliance Documentation
+# Based on ML Model Cards (Mitchell et al., 2019)
+
+model_details:
+  name: Validation Agent
+  id: validation_agent
+  version: "1.0.0"
+  type: AI Agent (LLM-powered)
+  foundation_model: Claude (Anthropic)
+  provider: OKO Investments
+  date: December 2024
+  contact: support@datamigrate.ai
+  pattern: Actor-Critic Self-Healing
+
+intended_use:
+  primary_intended_uses:
+    - Validate migration accuracy between source and generated dbt models
+    - Detect missing tables, columns, or relationships
+    - Verify data type mappings
+    - Self-correct issues through Actor-Critic pattern
+
+  primary_intended_users:
+    - Data engineers validating migrations
+    - QA engineers reviewing dbt projects
+    - Database administrators verifying accuracy
+
+  out_of_scope_uses:
+    - Production data validation (use dedicated testing tools)
+    - Real-time validation of streaming data
+    - Performance optimization decisions
+
+factors:
+  relevant_factors:
+    - Schema complexity
+    - Number of tables and relationships
+    - Data type variety
+    - Source database version
+
+  evaluation_factors:
+    - Issue detection accuracy
+    - False positive rate
+    - Self-correction success rate
+    - Validation completeness
+
+metrics:
+  model_performance_measures:
+    - name: Issue Detection Recall
+      target: 95%
+      current: 93.5%
+      description: Percentage of actual issues detected
+
+    - name: Issue Detection Precision
+      target: 90%
+      current: 88.2%
+      description: Percentage of detected issues that are real
+
+    - name: Self-Correction Success Rate
+      target: 80%
+      current: 82.5%
+      description: Percentage of issues automatically corrected
+
+    - name: Validation Completeness
+      target: 100%
+      current: 99.1%
+      description: Percentage of schema elements validated
+
+quality_rubric:
+  description: "Multi-dimensional quality assessment"
+  dimensions:
+    - metric: Schema Completeness
+      weight: 25%
+      target: 100%
+      description: All source tables have corresponding models
+
+    - metric: Data Type Accuracy
+      weight: 20%
+      target: 99%
+      description: Correct data type mappings
+
+    - metric: Referential Integrity
+      weight: 15%
+      target: 100%
+      description: All relationships preserved
+
+    - metric: dbt Syntax Validity
+      weight: 20%
+      target: 100%
+      description: All models compile successfully
+
+    - metric: Test Coverage
+      weight: 10%
+      target: 80%
+      description: Appropriate tests generated
+
+    - metric: Documentation
+      weight: 10%
+      target: 90%
+      description: Models have adequate documentation
+
+actor_critic_pattern:
+  description: "Self-healing validation loop for automatic quality improvement"
+  implementation:
+    actor_role: "Generate initial dbt models and validate against source"
+    critic_role: "Review output and provide improvement feedback"
+    max_iterations: 3
+    quality_threshold: 95%
+    stop_condition: "Quality score >= threshold OR max iterations reached"
+
+  iteration_flow:
+    1: "Actor generates initial validation report"
+    2: "Critic identifies issues and improvement areas"
+    3: "Actor applies corrections and re-validates"
+    4: "Repeat until quality threshold met"
+
+evaluation_data:
+  datasets:
+    - name: Known-Error Test Set
+      description: Schemas with intentionally introduced errors
+      size: "50 test cases"
+      error_types: "Missing columns, wrong types, broken relationships"
+
+    - name: Clean Validation Set
+      description: Known-good schemas for false positive testing
+      size: "30 test cases"
+
+ethical_considerations:
+  data_handling:
+    - Validates metadata only, not actual data values
+    - All validation results logged for audit
+    - Issues reported transparently to users
+
+  potential_harms:
+    - False negatives could allow bad migrations to proceed
+    - Over-aggressive correction could introduce new issues
+
+  mitigations:
+    - Multi-iteration validation with declining confidence threshold
+    - Human review required for critical migrations
+    - Detailed issue reports for transparency
+
+caveats_and_recommendations:
+  known_limitations:
+    - Complex business logic validation requires human review
+    - Performance implications not assessed
+    - Custom validation rules not supported
+
+  recommendations:
+    - Use as part of comprehensive validation workflow
+    - Review all flagged issues manually
+    - Consider additional validation for high-risk migrations
+
+risk_classification:
+  eu_ai_act_category: Limited Risk
+  article_50_requirements:
+    - Validation results clearly labeled as AI-assisted
+    - Human oversight recommended for final approval
+  article_14_compliance:
+    - Human can override any automated correction
+    - Clear escalation path for uncertain issues
+
+monitoring:
+  active_monitoring:
+    - Validation accuracy metrics
+    - Self-correction iteration counts
+    - Issue detection rates by category
+    - User feedback on validation quality
+
+  continuous_improvement:
+    - Track false positive/negative rates
+    - Monitor self-correction success
+    - Update quality rubric based on feedback

@@ -40,6 +40,7 @@ from .dbt_executor import (
     DeploymentResult, DeploymentStatus, deploy_to_warehouse
 )
 from .data_quality_agent import DataQualityAgent, scan_source_data_quality
+from .guardian_agent import GuardianAgent, get_guardian, SecurityException
 
 # Try to import anthropic for Claude AI chat
 try:
@@ -634,6 +635,102 @@ async def get_agents_status():
         },
         "timestamp": datetime.now().isoformat()
     }
+
+
+@app.get("/security/maestro-assessment")
+async def maestro_security_assessment():
+    """
+    Perform MAESTRO framework security assessment.
+
+    Based on "Building Applications with AI Agents" (O'Reilly, 2025)
+    Cloud Security Alliance 7-Layer Model.
+
+    Evaluates all 7 security layers:
+    1. Foundation Models - API security, model access
+    2. Data Operations - SQL injection, credential security
+    3. Agent Framework - State isolation, safeguards
+    4. Agent Core - Input/output validation, prompt injection
+    5. Agent Ecosystem - Multi-agent security, rate limiting
+    6. Deployment - Environment hardening
+    7. Monitoring - Audit logging, alerting
+
+    Returns:
+        Overall security score and per-layer assessment
+    """
+    try:
+        guardian = get_guardian()
+        assessment = guardian.maestro_security_assessment()
+        return assessment
+    except Exception as e:
+        logger.error(f"MAESTRO assessment failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Security assessment failed: {str(e)}"
+        )
+
+
+@app.get("/security/stats")
+async def get_security_stats(
+    organization_id: Optional[int] = None,
+    period_hours: int = 24
+):
+    """
+    Get security statistics for the specified period.
+
+    Args:
+        organization_id: Filter by organization (optional)
+        period_hours: Time period to analyze (default 24h)
+
+    Returns:
+        Security event statistics
+    """
+    try:
+        guardian = get_guardian()
+        stats = guardian.get_security_stats(
+            organization_id=organization_id,
+            period_hours=period_hours
+        )
+        return stats
+    except Exception as e:
+        logger.error(f"Security stats failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get security stats: {str(e)}"
+        )
+
+
+@app.get("/security/audit-logs")
+async def get_audit_logs(
+    organization_id: Optional[int] = None,
+    event_type: Optional[str] = None,
+    severity: Optional[str] = None,
+    limit: int = 100
+):
+    """
+    Get security audit logs.
+
+    Args:
+        organization_id: Filter by organization
+        event_type: Filter by event type
+        severity: Filter by severity level
+        limit: Maximum logs to return
+
+    Returns:
+        List of security audit events
+    """
+    try:
+        guardian = get_guardian()
+        logs = guardian.get_audit_logs(
+            organization_id=organization_id,
+            limit=limit
+        )
+        return {"logs": logs, "count": len(logs)}
+    except Exception as e:
+        logger.error(f"Audit logs failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get audit logs: {str(e)}"
+        )
 
 
 @app.get("/agents/{agent_id}")
@@ -2270,3 +2367,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

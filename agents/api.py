@@ -27,7 +27,14 @@ import uvicorn
 # Import our agents
 from .mssql_extractor import MSSQLExtractor, extract_mssql_metadata
 from .dbt_generator import DBTProjectGenerator, create_dbt_project
-from .validation_agent import ValidationAgent, validate_migration, enhance_schema_yml, SourceConnectionInfo
+from .validation_agent import (
+    ValidationAgent,
+    validate_migration,
+    enhance_schema_yml,
+    SourceConnectionInfo,
+    validate_with_actor_critic,
+    ActorCriticValidator
+)
 from .dbt_executor import (
     DbtExecutor, WarehouseConnection, WarehouseType,
     DeploymentResult, DeploymentStatus, deploy_to_warehouse
@@ -1024,6 +1031,33 @@ class ValidationResponse(BaseModel):
     syntax_validated: bool = False
 
 
+class ActorCriticRequest(BaseModel):
+    """Actor-Critic validation request"""
+    quality_threshold: float = 0.95
+    max_iterations: int = 3
+    auto_fix: bool = True
+    # Optional source connection
+    source_host: Optional[str] = None
+    source_port: Optional[int] = 1433
+    source_database: Optional[str] = None
+    source_username: Optional[str] = None
+    source_password: Optional[str] = None
+
+
+class ActorCriticResponse(BaseModel):
+    """Actor-Critic validation results"""
+    migration_id: int
+    status: str  # 'approved', 'fixed', 'manual_review'
+    final_score: float
+    iterations: int
+    issues_found: List[str]
+    issues_fixed: List[str]
+    passed: bool
+    needs_manual_review: bool
+    quality_rubric: Dict[str, Any]
+    validation_report: Optional[Dict[str, Any]] = None
+
+
 @app.post("/migrations/{migration_id}/validate", response_model=ValidationResponse)
 async def validate_migration_endpoint(migration_id: int, request: ValidationRequest = None):
     """
@@ -1154,6 +1188,99 @@ async def validate_migration_endpoint(migration_id: int, request: ValidationRequ
         raise HTTPException(
             status_code=500,
             detail=f"Validation failed: {str(e)}"
+        )
+
+
+@app.post("/migrations/{migration_id}/validate-actor-critic", response_model=ActorCriticResponse)
+async def validate_with_actor_critic_endpoint(
+    migration_id: int,
+    request: ActorCriticRequest = None
+):
+    """
+    Validate migration using Actor-Critic self-healing pattern.
+
+    Based on "Building Applications with AI Agents" (O'Reilly, 2025).
+
+    This endpoint:
+    1. Validates migration against quality rubric
+    2. Automatically attempts to fix common issues
+    3. Re-validates until threshold met or max iterations reached
+
+    Quality Rubric:
+    - Schema completeness (25%): All tables have models
+    - Data type accuracy (20%): Correct type mappings
+    - Referential integrity (15%): FK relationships preserved
+    - dbt syntax validity (20%): Models compile
+    - Test coverage (10%): Tests generated
+    - Documentation coverage (10%): Descriptions added
+
+    Returns:
+    - approved: Quality threshold met
+    - fixed: Issues found and auto-fixed
+    - manual_review: Needs human intervention
+    """
+    if request is None:
+        request = ActorCriticRequest()
+
+    project_path = find_migration_project_path(migration_id)
+    if not project_path:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No dbt project found for migration {migration_id}"
+        )
+
+    state = get_migration(migration_id)
+    if not state or not state.metadata:
+        raise HTTPException(
+            status_code=400,
+            detail="Source metadata not available. Run migration first."
+        )
+
+    try:
+        # Set up source connection if provided
+        source_connection = None
+        if request.source_host and request.source_database:
+            source_connection = SourceConnectionInfo(
+                host=request.source_host,
+                port=request.source_port or 1433,
+                database=request.source_database,
+                username=request.source_username or "",
+                password=request.source_password or ""
+            )
+
+        # Run Actor-Critic validation
+        result = validate_with_actor_critic(
+            project_path=str(project_path),
+            source_metadata=state.metadata,
+            quality_threshold=request.quality_threshold,
+            max_iterations=request.max_iterations,
+            auto_fix=request.auto_fix,
+            source_connection=source_connection
+        )
+
+        logger.info(
+            f"Migration {migration_id}: Actor-Critic validation complete. "
+            f"Status={result['status']}, Score={result['final_score']:.2%}"
+        )
+
+        return ActorCriticResponse(
+            migration_id=migration_id,
+            status=result['status'],
+            final_score=result['final_score'],
+            iterations=result['iterations'],
+            issues_found=result['issues_found'],
+            issues_fixed=result['issues_fixed'],
+            passed=result['passed'],
+            needs_manual_review=result['needs_manual_review'],
+            quality_rubric=ActorCriticValidator.QUALITY_RUBRIC,
+            validation_report=result.get('validation_report')
+        )
+
+    except Exception as e:
+        logger.error(f"Actor-Critic validation failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Actor-Critic validation failed: {str(e)}"
         )
 
 

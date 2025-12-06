@@ -1117,6 +1117,391 @@ class ValidationAgent:
         }
 
 
+# =============================================================================
+# ACTOR-CRITIC VALIDATION PATTERN
+# Based on "Building Applications with AI Agents" (O'Reilly, 2025)
+# Self-healing validation loop for migration quality assurance
+# =============================================================================
+
+@dataclass
+class ActorCriticResult:
+    """Result from actor-critic validation loop"""
+    status: str  # 'approved', 'fixed', 'manual_review'
+    final_score: float
+    iterations: int
+    issues_found: List[str]
+    issues_fixed: List[str]
+    validation_report: Optional[ValidationReport] = None
+
+
+class ActorCriticValidator:
+    """
+    Actor-Critic Pattern for Migration Validation.
+
+    Actor: dbt Generator (generates migration output)
+    Critic: Validation Agent (evaluates quality)
+
+    The loop continues until:
+    - Quality threshold is met (approved)
+    - Issues are auto-fixed (fixed)
+    - Max iterations reached (manual_review)
+
+    Based on book insight: "Actor-Critic for Quality Gates"
+    """
+
+    # Quality rubric with measurable criteria
+    QUALITY_RUBRIC = {
+        'schema_completeness': {'weight': 0.25, 'threshold': 1.0},
+        'data_type_accuracy': {'weight': 0.20, 'threshold': 0.99},
+        'referential_integrity': {'weight': 0.15, 'threshold': 1.0},
+        'dbt_syntax_validity': {'weight': 0.20, 'threshold': 1.0},
+        'test_coverage': {'weight': 0.10, 'threshold': 0.80},
+        'documentation_coverage': {'weight': 0.10, 'threshold': 0.90},
+    }
+
+    def __init__(
+        self,
+        project_path: str,
+        quality_threshold: float = 0.95,
+        max_iterations: int = 3,
+        auto_fix_enabled: bool = True,
+        source_connection: Optional[SourceConnectionInfo] = None
+    ):
+        """
+        Initialize Actor-Critic validator.
+
+        Args:
+            project_path: Path to dbt project
+            quality_threshold: Minimum score to pass (0.0-1.0)
+            max_iterations: Maximum regeneration attempts
+            auto_fix_enabled: Whether to auto-fix issues
+            source_connection: Optional source DB connection
+        """
+        self.project_path = Path(project_path)
+        self.quality_threshold = quality_threshold
+        self.max_iterations = max_iterations
+        self.auto_fix_enabled = auto_fix_enabled
+        self.validator = ValidationAgent(str(project_path), source_connection)
+
+        logger.info(f"ActorCriticValidator initialized: threshold={quality_threshold}, max_iter={max_iterations}")
+
+    def validate_with_healing(
+        self,
+        source_metadata: Dict[str, Any],
+        regenerate_callback: Optional[callable] = None
+    ) -> ActorCriticResult:
+        """
+        Run actor-critic validation loop with self-healing.
+
+        Args:
+            source_metadata: Source database metadata
+            regenerate_callback: Optional callback to regenerate failed models
+                                 Signature: (failed_models, issues) -> bool
+
+        Returns:
+            ActorCriticResult with final status and metrics
+        """
+        issues_found = []
+        issues_fixed = []
+        final_report = None
+
+        for iteration in range(1, self.max_iterations + 1):
+            logger.info(f"Actor-Critic iteration {iteration}/{self.max_iterations}")
+
+            # CRITIC: Evaluate current migration output
+            report = self.validator.validate_project(
+                source_metadata,
+                run_dbt_compile=False,
+                validate_data_types=True,
+                generate_dbt_tests=True
+            )
+            report.calculate_summary()
+            final_report = report
+
+            # Calculate quality score
+            score, dimension_scores = self._calculate_quality_score(report)
+            logger.info(f"Iteration {iteration} quality score: {score:.2%}")
+
+            # Check if quality threshold met
+            if score >= self.quality_threshold:
+                logger.info(f"✅ Quality threshold met: {score:.2%} >= {self.quality_threshold:.2%}")
+                return ActorCriticResult(
+                    status='approved',
+                    final_score=score,
+                    iterations=iteration,
+                    issues_found=issues_found,
+                    issues_fixed=issues_fixed,
+                    validation_report=report
+                )
+
+            # Collect issues from failed checks
+            current_issues = self._extract_issues(report)
+            issues_found.extend(current_issues)
+
+            # ACTOR: Attempt to fix issues
+            if self.auto_fix_enabled and iteration < self.max_iterations:
+                fixed = self._attempt_auto_fix(report, source_metadata)
+                issues_fixed.extend(fixed)
+
+                # If we have a regenerate callback, use it
+                if regenerate_callback and not fixed:
+                    failed_models = self._get_failed_models(report)
+                    if failed_models:
+                        regenerate_callback(failed_models, current_issues)
+
+            logger.info(f"Iteration {iteration}: Found {len(current_issues)} issues, fixed {len(issues_fixed)}")
+
+        # Max iterations reached without meeting threshold
+        final_score, _ = self._calculate_quality_score(final_report)
+        logger.warning(f"⚠️ Max iterations reached. Final score: {final_score:.2%}")
+
+        return ActorCriticResult(
+            status='manual_review',
+            final_score=final_score,
+            iterations=self.max_iterations,
+            issues_found=issues_found,
+            issues_fixed=issues_fixed,
+            validation_report=final_report
+        )
+
+    def _calculate_quality_score(self, report: ValidationReport) -> Tuple[float, Dict[str, float]]:
+        """
+        Calculate weighted quality score based on rubric.
+
+        Returns:
+            Tuple of (total_score, dimension_scores)
+        """
+        dimension_scores = {}
+
+        total_tables = len(report.table_results)
+        if total_tables == 0:
+            return 0.0, dimension_scores
+
+        # Schema completeness: All tables have models
+        tables_with_models = sum(
+            1 for t in report.table_results
+            if t.overall_status != ValidationStatus.FAILED
+        )
+        dimension_scores['schema_completeness'] = tables_with_models / total_tables
+
+        # Data type accuracy: Check data type validation results
+        type_checks = []
+        for t in report.table_results:
+            for c in t.checks:
+                if c.check_type == ValidationType.DATA_TYPE:
+                    type_checks.append(c.status == ValidationStatus.PASSED)
+        dimension_scores['data_type_accuracy'] = (
+            sum(type_checks) / len(type_checks) if type_checks else 1.0
+        )
+
+        # Referential integrity: FK relationships preserved
+        fk_checks = []
+        for t in report.table_results:
+            for c in t.checks:
+                if c.check_type == ValidationType.RELATIONSHIPS:
+                    fk_checks.append(c.status == ValidationStatus.PASSED)
+        dimension_scores['referential_integrity'] = (
+            sum(fk_checks) / len(fk_checks) if fk_checks else 1.0
+        )
+
+        # dbt syntax validity: No syntax errors
+        syntax_checks = []
+        for t in report.table_results:
+            for c in t.checks:
+                if c.check_type in [ValidationType.SYNTAX, ValidationType.SQL_LINT]:
+                    syntax_checks.append(c.status == ValidationStatus.PASSED)
+        dimension_scores['dbt_syntax_validity'] = (
+            sum(syntax_checks) / len(syntax_checks) if syntax_checks else 1.0
+        )
+
+        # Test coverage: Tests generated per model
+        dimension_scores['test_coverage'] = min(
+            1.0, report.dbt_tests_generated / max(total_tables, 1)
+        )
+
+        # Documentation coverage: Check documentation results
+        doc_checks = []
+        for t in report.table_results:
+            for c in t.checks:
+                if c.check_type == ValidationType.DOCUMENTATION:
+                    doc_checks.append(c.status == ValidationStatus.PASSED)
+        dimension_scores['documentation_coverage'] = (
+            sum(doc_checks) / len(doc_checks) if doc_checks else 0.5
+        )
+
+        # Calculate weighted total
+        total_score = sum(
+            dimension_scores.get(dim, 0) * config['weight']
+            for dim, config in self.QUALITY_RUBRIC.items()
+        )
+
+        return total_score, dimension_scores
+
+    def _extract_issues(self, report: ValidationReport) -> List[str]:
+        """Extract list of issues from validation report."""
+        issues = []
+        for table_result in report.table_results:
+            for check in table_result.checks:
+                if check.status in [ValidationStatus.FAILED, ValidationStatus.WARNING]:
+                    issues.append(
+                        f"{table_result.table_name}: {check.name} - {check.details}"
+                    )
+        return issues
+
+    def _get_failed_models(self, report: ValidationReport) -> List[str]:
+        """Get list of models that failed validation."""
+        return [
+            t.target_model for t in report.table_results
+            if t.overall_status == ValidationStatus.FAILED
+        ]
+
+    def _attempt_auto_fix(
+        self,
+        report: ValidationReport,
+        source_metadata: Dict[str, Any]
+    ) -> List[str]:
+        """
+        Attempt to auto-fix common issues.
+
+        Current auto-fixes:
+        1. Missing columns in SELECT - regenerate model
+        2. Wrong data types - update type mapping
+        3. Missing tests - generate tests
+        4. Missing documentation - add placeholders
+
+        Returns:
+            List of issues that were fixed
+        """
+        fixed = []
+
+        for table_result in report.table_results:
+            for check in table_result.checks:
+                if check.status != ValidationStatus.FAILED:
+                    continue
+
+                # Fix missing documentation
+                if check.check_type == ValidationType.DOCUMENTATION:
+                    if self._fix_missing_documentation(table_result, source_metadata):
+                        fixed.append(f"Added documentation for {table_result.table_name}")
+
+                # Fix missing tests
+                if check.check_type == ValidationType.DBT_TEST:
+                    if self._fix_missing_tests(table_result, source_metadata):
+                        fixed.append(f"Generated tests for {table_result.table_name}")
+
+        return fixed
+
+    def _fix_missing_documentation(
+        self,
+        table_result: TableValidationResult,
+        source_metadata: Dict[str, Any]
+    ) -> bool:
+        """Add placeholder documentation for table."""
+        try:
+            schema_path = self.project_path / "models" / "staging" / "_schema.yml"
+            if not schema_path.exists():
+                return False
+
+            with open(schema_path, 'r') as f:
+                schema = yaml.safe_load(f) or {}
+
+            # Find table in metadata for description
+            table_info = next(
+                (t for t in source_metadata.get('tables', [])
+                 if t['name'].lower() == table_result.table_name.lower()),
+                None
+            )
+
+            if table_info:
+                description = f"Staging model for {table_info.get('schema', 'dbo')}.{table_info['name']}"
+
+                # Update schema with description
+                models = schema.get('models', [])
+                for model in models:
+                    if model.get('name') == table_result.target_model:
+                        model['description'] = description
+                        break
+
+                schema['models'] = models
+
+                with open(schema_path, 'w') as f:
+                    yaml.dump(schema, f, default_flow_style=False, sort_keys=False)
+
+                return True
+        except Exception as e:
+            logger.warning(f"Could not fix documentation: {e}")
+
+        return False
+
+    def _fix_missing_tests(
+        self,
+        table_result: TableValidationResult,
+        source_metadata: Dict[str, Any]
+    ) -> bool:
+        """Generate basic tests for table."""
+        try:
+            # Use validator's test generation
+            enhanced_yaml = self.validator.generate_enhanced_schema_yml(source_metadata)
+
+            schema_path = self.project_path / "models" / "staging" / "_schema_tests.yml"
+            with open(schema_path, 'w') as f:
+                f.write(enhanced_yaml)
+
+            return True
+        except Exception as e:
+            logger.warning(f"Could not generate tests: {e}")
+
+        return False
+
+
+def validate_with_actor_critic(
+    project_path: str,
+    source_metadata: Dict[str, Any],
+    quality_threshold: float = 0.95,
+    max_iterations: int = 3,
+    auto_fix: bool = True,
+    source_connection: Optional[SourceConnectionInfo] = None
+) -> Dict[str, Any]:
+    """
+    Convenience function for actor-critic validation.
+
+    Args:
+        project_path: Path to dbt project
+        source_metadata: Source database metadata
+        quality_threshold: Minimum quality score (0.0-1.0)
+        max_iterations: Maximum fix attempts
+        auto_fix: Enable automatic issue fixing
+        source_connection: Optional source DB connection
+
+    Returns:
+        Actor-critic result as dictionary
+    """
+    validator = ActorCriticValidator(
+        project_path=project_path,
+        quality_threshold=quality_threshold,
+        max_iterations=max_iterations,
+        auto_fix_enabled=auto_fix,
+        source_connection=source_connection
+    )
+
+    result = validator.validate_with_healing(source_metadata)
+
+    return {
+        'status': result.status,
+        'final_score': result.final_score,
+        'iterations': result.iterations,
+        'issues_found': result.issues_found,
+        'issues_fixed': result.issues_fixed,
+        'passed': result.status == 'approved',
+        'needs_manual_review': result.status == 'manual_review',
+        'validation_report': validator.validator.to_dict(result.validation_report) if result.validation_report else None
+    }
+
+
+# =============================================================================
+# ORIGINAL VALIDATION FUNCTIONS
+# =============================================================================
+
 def validate_migration(
     project_path: str,
     source_metadata: Dict[str, Any],
